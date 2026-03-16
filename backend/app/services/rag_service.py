@@ -17,9 +17,9 @@ class RAGService:
     """Manages embedding generation and vector similarity search for
     API endpoints stored in PostgreSQL with pgvector."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(self, db: AsyncSession, mlops_client: MLOpsClient | None = None) -> None:
         self._db = db
-        self._mlops = MLOpsClient()
+        self._mlops = mlops_client or MLOpsClient()
 
     async def index_endpoints(
         self,
@@ -88,33 +88,39 @@ class RAGService:
         if query_embedding is None:
             return []
 
-        # Build the query using pgvector's <=> cosine distance operator
-        embedding_literal = f"[{','.join(str(v) for v in query_embedding)}]"
+        # Build the query using pgvector's <=> cosine distance operator.
+        # The embedding is passed as a bound parameter to avoid SQL injection.
+        embedding_literal = f"[{','.join(str(float(v)) for v in query_embedding)}]"
 
         if swagger_source_ids:
-            ids_str = ",".join(str(sid) for sid in swagger_source_ids)
+            # Validate that all IDs are integers to prevent injection
+            safe_ids = [int(sid) for sid in swagger_source_ids]
+            placeholders = ",".join(f":sid_{i}" for i in range(len(safe_ids)))
+            bind_params = {f"sid_{i}": sid for i, sid in enumerate(safe_ids)}
+            bind_params["limit"] = limit
+            bind_params["embedding"] = embedding_literal
             stmt = text(
                 f"""
                 SELECT id, swagger_source_id, method, path, summary, description,
                        parameters, request_body, response_schema, embedding, created_at
                 FROM api_endpoints
-                WHERE swagger_source_id IN ({ids_str})
+                WHERE swagger_source_id IN ({placeholders})
                   AND embedding IS NOT NULL
-                ORDER BY embedding <=> '{embedding_literal}'::vector
+                ORDER BY embedding <=> :embedding ::vector
                 LIMIT :limit
                 """
-            ).bindparams(limit=limit)
+            ).bindparams(**bind_params)
         else:
             stmt = text(
-                f"""
+                """
                 SELECT id, swagger_source_id, method, path, summary, description,
                        parameters, request_body, response_schema, embedding, created_at
                 FROM api_endpoints
                 WHERE embedding IS NOT NULL
-                ORDER BY embedding <=> '{embedding_literal}'::vector
+                ORDER BY embedding <=> :embedding ::vector
                 LIMIT :limit
                 """
-            ).bindparams(limit=limit)
+            ).bindparams(embedding=embedding_literal, limit=limit)
 
         result = await self._db.execute(stmt)
         rows = result.fetchall()

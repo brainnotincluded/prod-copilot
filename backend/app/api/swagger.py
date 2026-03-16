@@ -4,11 +4,12 @@ from typing import Optional
 
 import httpx
 import yaml
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.params import Form
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth import CurrentUser, Role, require_role
 from app.db.models import ApiEndpoint, SwaggerSource
 from app.db.session import get_db
 from app.schemas.models import EndpointSearchResult, SwaggerSourceResponse, SwaggerUploadResponse
@@ -25,6 +26,7 @@ async def upload_swagger(
     url: Optional[str] = Form(None),
     name: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(require_role(Role.EDITOR)),
 ) -> SwaggerUploadResponse:
     """Upload a Swagger/OpenAPI spec from a file (JSON/YAML) or a URL."""
     if file is None and url is None:
@@ -46,13 +48,17 @@ async def upload_swagger(
         except json.JSONDecodeError:
             try:
                 spec_dict = yaml.safe_load(raw_content)
-                if not isinstance(spec_dict, dict):
-                    raise ValueError("YAML did not parse to a dictionary")
             except yaml.YAMLError as exc:
                 raise HTTPException(
                     status_code=400,
                     detail=f"Failed to parse file as JSON or YAML: {exc}",
                 )
+
+        if not isinstance(spec_dict, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Spec must be a JSON/YAML object (dictionary), not a scalar or array.",
+            )
 
         if name is None:
             name = spec_dict.get("info", {}).get("title", file_name)
@@ -74,13 +80,17 @@ async def upload_swagger(
         except json.JSONDecodeError:
             try:
                 spec_dict = yaml.safe_load(raw_content)
-                if not isinstance(spec_dict, dict):
-                    raise ValueError("YAML did not parse to a dictionary")
             except yaml.YAMLError as exc:
                 raise HTTPException(
                     status_code=400,
                     detail=f"Failed to parse response as JSON or YAML: {exc}",
                 )
+
+        if not isinstance(spec_dict, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Spec must be a JSON/YAML object (dictionary), not a scalar or array.",
+            )
 
         if name is None:
             name = spec_dict.get("info", {}).get("title", url)
@@ -98,8 +108,25 @@ async def upload_swagger(
     # Extract API base URL from the spec
     base_url = SwaggerParser.extract_base_url(spec_dict)
 
+    # Deduplication: check if a source with the same name + base_url already exists
+    import hashlib
+    raw_json_str = json.dumps(spec_dict, ensure_ascii=False, sort_keys=True)
+    spec_hash = hashlib.sha256(raw_json_str.encode()).hexdigest()[:16]
+
+    existing = await db.execute(
+        select(SwaggerSource).where(
+            SwaggerSource.name == name,
+            SwaggerSource.base_url == base_url,
+        )
+    )
+    duplicate = existing.scalar_one_or_none()
+    if duplicate:
+        raise HTTPException(
+            status_code=409,
+            detail=f"API '{name}' with base URL '{base_url}' is already uploaded (id={duplicate.id}). Delete it first to re-upload.",
+        )
+
     # Store the swagger source
-    raw_json_str = json.dumps(spec_dict, ensure_ascii=False)
     swagger_source = SwaggerSource(
         name=name,
         url=url,
@@ -127,11 +154,13 @@ async def upload_swagger(
 
 @router.get("/list", response_model=list[SwaggerSourceResponse])
 async def list_swagger_sources(
+    limit: int = Query(100, ge=1, le=500, description="Max results"),
+    offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db),
 ) -> list[SwaggerSourceResponse]:
     """List all uploaded Swagger/OpenAPI sources."""
     result = await db.execute(
-        select(SwaggerSource).order_by(SwaggerSource.created_at.desc())
+        select(SwaggerSource).order_by(SwaggerSource.created_at.desc()).offset(offset).limit(limit)
     )
     sources = result.scalars().all()
     return [
@@ -209,6 +238,7 @@ async def get_source_stats(
 async def delete_swagger_source(
     source_id: int,
     db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(require_role(Role.ADMIN)),
 ) -> dict:
     """Delete a Swagger source and all its endpoints."""
     result = await db.execute(
