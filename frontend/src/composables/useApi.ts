@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance } from 'axios'
 import { useAuth } from './useAuth'
+import router from '@/router'
 
 let instance: AxiosInstance | null = null
 
@@ -12,11 +13,17 @@ function createApiInstance(): AxiosInstance {
     },
   })
 
-  // Add request interceptor to inject X-User-Role header
+  // Add request interceptor to inject auth headers
   api.interceptors.request.use(
     (config) => {
-      const { getRoleHeader } = useAuth()
-      config.headers['X-User-Role'] = getRoleHeader()
+      const { getAuthHeaders } = useAuth()
+      const authHeaders = getAuthHeaders()
+      
+      // Merge auth headers into request
+      Object.entries(authHeaders).forEach(([key, value]) => {
+        config.headers[key] = value
+      })
+      
       return config
     },
     (error) => Promise.reject(error)
@@ -25,6 +32,21 @@ function createApiInstance(): AxiosInstance {
   api.interceptors.response.use(
     (response) => response,
     (error) => {
+      // Handle authentication errors
+      if (error.response?.status === 401) {
+        const { logout } = useAuth()
+        logout()
+        router.push('/login')
+        return Promise.reject(new Error('Session expired. Please sign in again.'))
+      }
+      
+      // Handle authorization errors
+      if (error.response?.status === 403) {
+        const message = error.response?.data?.detail || 
+          'You do not have permission to perform this action'
+        return Promise.reject(new Error(message))
+      }
+      
       const message =
         error.response?.data?.detail ||
         error.response?.data?.message ||

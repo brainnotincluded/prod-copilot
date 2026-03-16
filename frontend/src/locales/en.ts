@@ -129,6 +129,7 @@ export default {
   'settings.devRoleDesc': 'Select role for testing permissions (X-User-Role header).',
   'settings.canUpload': 'Upload APIs',
   'settings.canDelete': 'Delete APIs',
+  'settings.canView': 'View APIs',
 
   // Errors (store level)
   'error.noData': 'No data was returned.',

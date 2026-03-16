@@ -129,6 +129,7 @@ export default {
   'settings.devRoleDesc': 'Выберите роль для тестирования прав (X-User-Role header).',
   'settings.canUpload': 'Загрузка API',
   'settings.canDelete': 'Удаление API',
+  'settings.canView': 'Просмотр API',
 
   // Errors (store level)
   'error.noData': 'Данные не были возвращены.',

@@ -2,10 +2,12 @@
 import { useLocale, type Locale } from '@/composables/useLocale'
 import { useTheme, type Theme } from '@/composables/useTheme'
 import { useAuth, type UserRole } from '@/composables/useAuth'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
 
 const { locale, t } = useLocale()
 const { theme, setTheme } = useTheme()
-const { role, setRole, canUpload, canDelete } = useAuth()
+const { user, role, updateRole, canUpload, canDelete, logout } = useAuth()
 
 const roles: { value: UserRole; label: string; icon: string; desc: string }[] = [
   { value: 'viewer', label: 'Viewer', icon: 'pi pi-eye', desc: 'Read-only access' },
@@ -27,12 +29,43 @@ const themes: { value: Theme; icon: string; key: string }[] = [
 function selectLocale(loc: Locale) {
   locale.value = loc
 }
+
+function handleLogout() {
+  logout()
+}
 </script>
 
 <template>
   <div class="settings-view">
     <div class="settings-container">
       <h1 class="settings-title">{{ t('common.settings') }}</h1>
+
+      <!-- User Profile -->
+      <section class="settings-section">
+        <h2 class="section-title">User Profile</h2>
+        <Card class="profile-card">
+          <template #content>
+            <div class="profile-content">
+              <div class="profile-avatar">
+                <i class="pi pi-user"></i>
+              </div>
+              <div class="profile-info">
+                <div class="profile-name">{{ user?.username || 'Unknown User' }}</div>
+                <div class="profile-role">
+                  <span class="role-badge" :class="`role-${role}`">{{ role }}</span>
+                </div>
+              </div>
+              <Button
+                label="Logout"
+                icon="pi pi-sign-out"
+                severity="secondary"
+                text
+                @click="handleLogout"
+              />
+            </div>
+          </template>
+        </Card>
+      </section>
 
       <!-- Language -->
       <section class="settings-section">
@@ -72,7 +105,7 @@ function selectLocale(loc: Locale) {
         </div>
       </section>
 
-      <!-- Dev Mode: User Role -->
+      <!-- User Role -->
       <section class="settings-section dev-section">
         <h2 class="section-title">{{ t('settings.devRole') }}</h2>
         <p class="section-desc">{{ t('settings.devRoleDesc') }}</p>
@@ -82,7 +115,7 @@ function selectLocale(loc: Locale) {
             :key="r.value"
             class="option-card"
             :class="{ active: role === r.value }"
-            @click="setRole(r.value)"
+            @click="updateRole(r.value)"
           >
             <i :class="r.icon" class="option-icon"></i>
             <div class="role-info">
@@ -93,6 +126,10 @@ function selectLocale(loc: Locale) {
           </button>
         </div>
         <div class="role-permissions">
+          <div class="permission-item" :class="{ allowed: true }">
+            <i :class="'pi pi-check'"></i>
+            <span>{{ t('settings.canView') }}</span>
+          </div>
           <div class="permission-item" :class="{ allowed: canUpload }">
             <i :class="canUpload ? 'pi pi-check' : 'pi pi-times'"></i>
             <span>{{ t('settings.canUpload') }}</span>
@@ -145,6 +182,83 @@ function selectLocale(loc: Locale) {
   font-size: 13px;
   color: var(--color-text-secondary);
   line-height: 1.5;
+}
+
+/* Profile Card */
+.profile-card {
+  :deep(.p-card-content) {
+    padding: 0;
+  }
+}
+
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px;
+}
+
+.profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.profile-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.profile-role {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-light);
+}
+
+.role-badge.role-viewer {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.role-badge.role-editor {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.role-badge.role-admin {
+  background: rgba(251, 188, 4, 0.1);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
 }
 
 .option-cards {
@@ -263,6 +377,14 @@ function selectLocale(loc: Locale) {
   .role-permissions {
     flex-direction: column;
     gap: 8px;
+  }
+  
+  .profile-content {
+    flex-wrap: wrap;
+  }
+  
+  .profile-info {
+    min-width: 0;
   }
 }
 </style>

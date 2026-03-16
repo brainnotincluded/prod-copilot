@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useQueryStore } from '@/stores/query'
 import { useLocale } from '@/composables/useLocale'
 import { useAuth } from '@/composables/useAuth'
+import Button from 'primevue/button'
+import Menu from 'primevue/menu'
+import type { MenuItem } from 'primevue/menuitem'
 
 const props = defineProps<{
   sidebarCollapsed: boolean
@@ -14,9 +17,12 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const router = useRouter()
 const queryStore = useQueryStore()
 const { t } = useLocale()
-const { role, isAdmin } = useAuth()
+const { user, role, isAdmin, logout } = useAuth()
+
+const userMenuRef = ref<InstanceType<typeof Menu>>()
 
 const roleBadgeClass = computed(() => {
   switch (role.value) {
@@ -43,6 +49,38 @@ const pageTitle = computed(() => {
       return t('nav.appName')
   }
 })
+
+const userMenuItems = computed<MenuItem[]>(() => [
+  {
+    label: user.value?.username || 'User',
+    icon: 'pi pi-user',
+    disabled: true,
+  },
+  {
+    separator: true,
+  },
+  {
+    label: 'Settings',
+    icon: 'pi pi-cog',
+    command: () => {
+      if (route.path !== '/settings') {
+        router.push('/settings')
+      }
+    },
+  },
+  {
+    separator: true,
+  },
+  {
+    label: 'Logout',
+    icon: 'pi pi-sign-out',
+    command: logout,
+  },
+])
+
+const toggleUserMenu = (event: MouseEvent) => {
+  userMenuRef.value?.toggle(event)
+}
 </script>
 
 <template>
@@ -54,13 +92,31 @@ const pageTitle = computed(() => {
       <h1 class="page-title">{{ pageTitle }}</h1>
     </div>
     <div class="header-right">
-      <div class="role-badge" :class="roleBadgeClass" title="Dev mode: X-User-Role header">
+      <div class="role-badge" :class="roleBadgeClass" title="Current role">
         <i :class="isAdmin ? 'pi pi-shield' : 'pi pi-user'"></i>
         <span class="role-text">{{ role }}</span>
       </div>
       <div class="connection-status" :class="{ connected: queryStore.isConnected }">
         <span class="status-dot"></span>
         <span class="status-text">{{ queryStore.isConnected ? t('common.connected') : t('common.disconnected') }}</span>
+      </div>
+      
+      <!-- User Menu -->
+      <div class="user-menu-wrapper">
+        <Button
+          icon="pi pi-user-circle"
+          class="user-menu-btn"
+          text
+          rounded
+          :aria-label="'User menu'"
+          @click="toggleUserMenu"
+        />
+        <Menu
+          ref="userMenuRef"
+          :model="userMenuItems"
+          :popup="true"
+          class="user-menu"
+        />
       </div>
     </div>
   </header>
@@ -95,6 +151,7 @@ const pageTitle = computed(() => {
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   transition: background var(--transition-fast);
+  cursor: pointer;
 }
 
 .menu-btn:hover {
@@ -174,6 +231,22 @@ const pageTitle = computed(() => {
   font-size: 10px;
 }
 
+/* User Menu */
+.user-menu-wrapper {
+  position: relative;
+}
+
+.user-menu-btn {
+  width: 36px;
+  height: 36px;
+  color: var(--color-text-secondary);
+}
+
+.user-menu-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
 /* Hide menu button on mobile - bottom nav is used instead */
 @media (max-width: 768px) {
   .menu-btn {
@@ -207,5 +280,19 @@ const pageTitle = computed(() => {
   .app-header {
     padding: 0 12px;
   }
+}
+
+/* Deep selectors for PrimeVue Menu styling */
+:global(.user-menu.p-menu) {
+  min-width: 160px;
+}
+
+:global(.user-menu .p-menu-item-disabled) {
+  opacity: 1 !important;
+}
+
+:global(.user-menu .p-menu-item-disabled .p-menu-item-content) {
+  font-weight: 600;
+  color: var(--text-color) !important;
 }
 </style>
