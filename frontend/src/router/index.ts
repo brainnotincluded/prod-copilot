@@ -10,6 +10,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
+    path: '/register',
+    name: 'register',
+    component: () => import('@/views/RegisterView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/',
     name: 'home',
     redirect: '/chat',
@@ -58,7 +64,7 @@ router.beforeEach((to, from, next) => {
   // Allow access to public routes
   if (to.meta.public) {
     // If already authenticated, redirect to home
-    if (isAuthenticated.value && to.name === 'login') {
+    if (isAuthenticated.value && (to.name === 'login' || to.name === 'register')) {
       next('/chat')
       return
     }

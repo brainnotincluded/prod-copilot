@@ -22,7 +22,7 @@ const route = useRoute()
 const router = useRouter()
 const queryStore = useQueryStore()
 const { t } = useLocale()
-const { user, role, isAdmin, logout, userInitials, avatarColor } = useAuth()
+const { user, role, isAdmin, isEditor, logout, userInitials, avatarColor } = useAuth()
 
 const userMenuRef = ref<InstanceType<typeof Menu>>()
 

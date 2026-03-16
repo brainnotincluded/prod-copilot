@@ -7,7 +7,7 @@ import Card from 'primevue/card'
 
 const { locale, t } = useLocale()
 const { theme, setTheme } = useTheme()
-const { user, role, updateRole, canUpload, canDelete, logout } = useAuth()
+const { user, role, canUpload, canDelete, logout } = useAuth()
 
 const roles: { value: UserRole; label: string; icon: string; desc: string }[] = [
   { value: 'viewer', label: 'Viewer', icon: 'pi pi-eye', desc: 'Read-only access' },
@@ -50,7 +50,7 @@ function handleLogout() {
                 <i class="pi pi-user"></i>
               </div>
               <div class="profile-info">
-                <div class="profile-name">{{ user?.username || 'Unknown User' }}</div>
+                <div class="profile-name">{{ user?.name || user?.email || 'Unknown User' }}</div>
                 <div class="profile-role">
                   <span class="role-badge" :class="`role-${role}`">{{ role }}</span>
                 </div>
@@ -110,12 +110,11 @@ function handleLogout() {
         <h2 class="section-title">{{ t('settings.devRole') }}</h2>
         <p class="section-desc">{{ t('settings.devRoleDesc') }}</p>
         <div class="option-cards three">
-          <button
+          <div
             v-for="r in roles"
             :key="r.value"
-            class="option-card"
+            class="option-card readonly"
             :class="{ active: role === r.value }"
-            @click="updateRole(r.value)"
           >
             <i :class="r.icon" class="option-icon"></i>
             <div class="role-info">
@@ -123,7 +122,7 @@ function handleLogout() {
               <span class="role-desc">{{ r.desc }}</span>
             </div>
             <i v-if="role === r.value" class="pi pi-check option-check"></i>
-          </button>
+          </div>
         </div>
         <div class="role-permissions">
           <div class="permission-item" :class="{ allowed: true }">
@@ -292,6 +291,19 @@ function handleLogout() {
 .option-card.active {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
+}
+
+.option-card.readonly {
+  cursor: default;
+}
+
+.option-card.readonly:hover {
+  border-color: var(--color-border-light);
+  box-shadow: none;
+}
+
+.option-card.readonly.active:hover {
+  border-color: var(--color-accent);
 }
 
 .option-flag {

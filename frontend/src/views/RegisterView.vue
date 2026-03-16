@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
@@ -8,17 +8,89 @@ import Message from 'primevue/message'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
-const { login, isLoading, error } = useAuth()
+const { register, isLoading, error } = useAuth()
 
+const name = ref('')
 const email = ref('')
 const password = ref('')
-const rememberMe = ref(false)
+const confirmPassword = ref('')
+const validationErrors = ref<Record<string, string>>({})
 
-async function handleSubmit(): Promise<void> {
+const passwordStrength = computed(() => {
+  const pwd = password.value
+  if (!pwd) return 0
+  let strength = 0
+  if (pwd.length >= 6) strength++
+  if (pwd.length >= 10) strength++
+  if (/[A-Z]/.test(pwd)) strength++
+  if (/[0-9]/.test(pwd)) strength++
+  if (/[^A-Za-z0-9]/.test(pwd)) strength++
+  return Math.min(strength, 4)
+})
+
+const passwordStrengthLabel = computed(() => {
+  const labels = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong']
+  return labels[passwordStrength.value]
+})
+
+const passwordStrengthColor = computed(() => {
+  const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981']
+  return colors[passwordStrength.value]
+})
+
+const isFormValid = computed(() => {
+  return name.value.trim() && 
+         email.value.trim() && 
+         password.value.length >= 6 &&
+         password.value === confirmPassword.value
+})
+
+const validateForm = (): boolean => {
+  const errors: Record<string, string> = {}
+
+  if (!name.value.trim()) {
+    errors.name = 'Full name is required'
+  }
+
+  if (!email.value.trim()) {
+    errors.email = 'Email is required'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    errors.email = 'Please enter a valid email address'
+  }
+
+  if (!password.value) {
+    errors.password = 'Password is required'
+  } else if (password.value.length < 6) {
+    errors.password = 'Password must be at least 6 characters'
+  }
+
+  if (!confirmPassword.value) {
+    errors.confirmPassword = 'Please confirm your password'
+  } else if (password.value !== confirmPassword.value) {
+    errors.confirmPassword = 'Passwords do not match'
+  }
+
+  validationErrors.value = errors
+  return Object.keys(errors).length === 0
+}
+
+const clearError = () => {
   error.value = null
+}
 
-  const success = await login(email.value, password.value)
+watch([name, email, password, confirmPassword], () => {
+  validationErrors.value = {}
+}, { deep: true })
 
+const handleSubmit = async () => {
+  clearError()
+
+  if (!validateForm()) {
+    return
+  }
+
+  const success = await register(email.value, password.value, name.value)
+  
   if (success) {
     router.push('/chat')
   }
@@ -45,19 +117,35 @@ async function handleSubmit(): Promise<void> {
       <!-- Card -->
       <div class="auth-card">
         <div class="auth-header">
-          <h1 class="auth-title">Welcome back</h1>
-          <p class="auth-subtitle">Sign in to your account</p>
+          <h1 class="auth-title">Create Account</h1>
+          <p class="auth-subtitle">Get started for free</p>
         </div>
 
         <form class="auth-form" @submit.prevent="handleSubmit">
           <Message
             v-if="error"
             severity="error"
-            :closable="false"
+            :closable="true"
+            @close="clearError"
             class="auth-error"
           >
             {{ error }}
           </Message>
+
+          <div class="form-field">
+            <label for="name" class="field-label">Full Name</label>
+            <InputText
+              id="name"
+              v-model="name"
+              type="text"
+              placeholder="Enter your full name"
+              class="field-input"
+              :class="{ 'p-invalid': validationErrors.name }"
+              :disabled="isLoading"
+              autofocus
+            />
+            <small v-if="validationErrors.name" class="field-error">{{ validationErrors.name }}</small>
+          </div>
 
           <div class="form-field">
             <label for="email" class="field-label">Email</label>
@@ -67,10 +155,10 @@ async function handleSubmit(): Promise<void> {
               type="email"
               placeholder="Enter your email"
               class="field-input"
+              :class="{ 'p-invalid': validationErrors.email }"
               :disabled="isLoading"
-              required
-              autofocus
             />
+            <small v-if="validationErrors.email" class="field-error">{{ validationErrors.email }}</small>
           </div>
 
           <div class="form-field">
@@ -78,48 +166,65 @@ async function handleSubmit(): Promise<void> {
             <Password
               id="password"
               v-model="password"
-              placeholder="Enter your password"
+              placeholder="Create a password"
               class="field-input"
-              :feedback="false"
+              :class="{ 'p-invalid': validationErrors.password }"
               :disabled="isLoading"
               toggleMask
-              required
-              @keyup.enter="handleSubmit"
+              :feedback="false"
             />
+            <small v-if="validationErrors.password" class="field-error">{{ validationErrors.password }}</small>
+            
+            <div v-if="password" class="password-strength">
+              <div class="strength-bar">
+                <div
+                  class="strength-fill"
+                  :style="{ 
+                    width: `${(passwordStrength / 4) * 100}%`,
+                    backgroundColor: passwordStrengthColor
+                  }"
+                />
+              </div>
+              <span class="strength-label" :style="{ color: passwordStrengthColor }">
+                {{ passwordStrengthLabel }}
+              </span>
+            </div>
           </div>
 
-          <div class="form-options">
-            <div class="remember-me">
-              <input
-                id="remember"
-                v-model="rememberMe"
-                type="checkbox"
-                class="checkbox-input"
-              />
-              <label for="remember" class="checkbox-label">Remember me</label>
-            </div>
-            <a href="#" class="forgot-link" @click.prevent>Forgot password?</a>
+          <div class="form-field">
+            <label for="confirmPassword" class="field-label">Confirm Password</label>
+            <Password
+              id="confirmPassword"
+              v-model="confirmPassword"
+              placeholder="Confirm your password"
+              class="field-input"
+              :class="{ 'p-invalid': validationErrors.confirmPassword }"
+              :disabled="isLoading"
+              toggleMask
+              :feedback="false"
+              @keyup.enter="handleSubmit"
+            />
+            <small v-if="validationErrors.confirmPassword" class="field-error">{{ validationErrors.confirmPassword }}</small>
           </div>
 
           <Button
             type="submit"
             :loading="isLoading"
-            :disabled="isLoading || !email || !password"
+            :disabled="isLoading || !isFormValid"
             class="submit-button"
-            label="Sign In"
+            label="Create Account"
           />
         </form>
 
         <div class="auth-footer">
-          <span class="footer-text">Don't have an account?</span>
-          <router-link to="/register" class="footer-link">Create one</router-link>
+          <span class="footer-text">Already have an account?</span>
+          <router-link to="/login" class="footer-link">Sign in</router-link>
         </div>
       </div>
 
-      <!-- Demo hint -->
-      <p class="demo-hint">
-        <i class="pi pi-info-circle"></i>
-        Demo: any email with 3+ char password works
+      <!-- Terms hint -->
+      <p class="terms-hint">
+        By creating an account, you agree to our Terms of Service and Privacy Policy
       </p>
     </div>
   </div>
@@ -287,6 +392,16 @@ async function handleSubmit(): Promise<void> {
   color: var(--color-text-tertiary, #80868b);
 }
 
+.field-input.p-invalid :deep(.p-inputtext),
+.field-input.p-invalid :deep(.p-password-input) {
+  border-color: var(--color-error, #ea4335);
+}
+
+.field-input.p-invalid :deep(.p-inputtext:focus),
+.field-input.p-invalid :deep(.p-password-input:focus) {
+  box-shadow: 0 0 0 3px rgba(234, 67, 53, 0.1);
+}
+
 .field-input :deep(.p-password-toggle) {
   color: var(--color-text-secondary, #5f6368);
   transition: color 0.2s ease;
@@ -296,49 +411,36 @@ async function handleSubmit(): Promise<void> {
   color: var(--color-text-primary, #202124);
 }
 
-/* Options */
-.form-options {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-top: -0.25rem;
+.field-error {
+  color: var(--color-error, #ea4335);
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
 }
 
-.remember-me {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+/* Password strength */
+.password-strength {
+  margin-top: 0.375rem;
 }
 
-.checkbox-input {
-  width: 1rem;
-  height: 1rem;
-  border: 1px solid var(--color-border, #e0e0e0);
-  border-radius: 4px;
-  background: var(--color-bg, #ffffff);
-  cursor: pointer;
-  accent-color: var(--color-accent, #1a73e8);
+.strength-bar {
+  height: 3px;
+  background: var(--color-border-light, #eeeeee);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
-.checkbox-label {
-  font-size: 0.8125rem;
-  color: var(--color-text-secondary, #5f6368);
-  cursor: pointer;
-  user-select: none;
+.strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }
 
-.forgot-link {
-  font-size: 0.8125rem;
-  color: var(--color-accent, #1a73e8);
-  text-decoration: none;
+.strength-label {
+  font-size: 0.6875rem;
   font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
+  margin-top: 0.25rem;
+  display: block;
+  transition: color 0.3s ease;
 }
 
 /* Submit Button */
@@ -397,20 +499,16 @@ async function handleSubmit(): Promise<void> {
   text-decoration: underline;
 }
 
-/* Demo hint */
-.demo-hint {
+/* Terms hint */
+.terms-hint {
   text-align: center;
   margin-top: 1.25rem;
   font-size: 0.75rem;
   color: var(--color-text-tertiary, #80868b);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-}
-
-.demo-hint i {
-  font-size: 0.875rem;
+  line-height: 1.5;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Dark theme adjustments */
@@ -459,13 +557,17 @@ async function handleSubmit(): Promise<void> {
   color: var(--color-text-tertiary, #6b7280);
 }
 
-[data-theme="dark"] .checkbox-input {
-  background: var(--color-bg, #1a1a1a);
-  border-color: var(--color-border, #3c4043);
+[data-theme="dark"] .field-input.p-invalid :deep(.p-inputtext),
+[data-theme="dark"] .field-input.p-invalid :deep(.p-password-input) {
+  border-color: var(--color-error, #f28b82);
 }
 
-[data-theme="dark"] .checkbox-label {
-  color: var(--color-text-secondary, #9aa0a6);
+[data-theme="dark"] .field-error {
+  color: var(--color-error, #f28b82);
+}
+
+[data-theme="dark"] .strength-bar {
+  background: var(--color-border, #3c4043);
 }
 
 [data-theme="dark"] .auth-footer {
@@ -485,12 +587,6 @@ async function handleSubmit(): Promise<void> {
   .auth-title {
     font-size: 1.375rem;
   }
-  
-  .form-options {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
 }
 
 /* Reduced motion */
@@ -502,7 +598,8 @@ async function handleSubmit(): Promise<void> {
   
   .auth-card,
   .submit-button,
-  .field-input :deep(.p-inputtext) {
+  .field-input :deep(.p-inputtext),
+  .strength-fill {
     transition: none;
   }
 }
