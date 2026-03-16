@@ -121,4 +121,35 @@ const pageTitle = computed(() => {
 .status-text {
   font-weight: 500;
 }
+
+/* Hide menu button on mobile - bottom nav is used instead */
+@media (max-width: 768px) {
+  .menu-btn {
+    display: none;
+  }
+  
+  .page-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  .app-header {
+    padding: 0 16px;
+    height: var(--mobile-header-height);
+  }
+  
+  .status-text {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-title {
+    font-size: 17px;
+  }
+  
+  .app-header {
+    padding: 0 12px;
+  }
+}
 </style>
