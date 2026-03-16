@@ -358,7 +358,9 @@ async def orchestrate_stream(request: OrchestrationRequest):
                 llm = get_llm_client()
 
                 chat_msgs = [
-                    {"role": "system", "content": "You are a helpful API copilot assistant. Answer in the user's language. Be concise and friendly."},
+                    {"role": "system", "content": "You are Prod Copilot — an AI assistant that helps users work with their APIs. "
+                     "Users upload Swagger/OpenAPI specs, and you help them explore endpoints, query data, build audiences, analyze campaigns, etc. "
+                     "Answer in the user's language. Be concise and friendly. Never mention your model name or architecture."},
                 ]
                 if chat_history:
                     for msg in chat_history[-6:]:
