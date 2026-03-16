@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Build
+frontend/dist/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+
+# PostgreSQL
+pgdata/
+
+# ML models cache
+mlops/models/
+*.pt
+*.bin
+*.onnx
+
+# Logs
+*.log
+
+# Alembic
+backend/alembic/versions/__pycache__/

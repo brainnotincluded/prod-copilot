@@ -1,0 +1,188 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "E-Commerce API",
+    "version": "2.1.0",
+    "description": "Full e-commerce platform API"
+  },
+  "paths": {
+    "/api/v1/users": {
+      "get": {
+        "summary": "List all users",
+        "description": "Returns paginated list of registered users with filters by role, status, and registration date",
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer"}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer"}},
+          {"name": "role", "in": "query", "schema": {"type": "string"}},
+          {"name": "status", "in": "query", "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "List of users"}}
+      },
+      "post": {
+        "summary": "Create new user",
+        "description": "Register a new user account with email, password and profile details",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {"type": "string"},
+                  "password": {"type": "string"},
+                  "name": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"201": {"description": "User created"}}
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "description": "Returns detailed user profile including orders history and preferences",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "User details"}}
+      },
+      "put": {
+        "summary": "Update user",
+        "description": "Update user profile information including name, email and settings",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "User updated"}}
+      },
+      "delete": {
+        "summary": "Delete user",
+        "description": "Permanently delete user account and associated data",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"204": {"description": "User deleted"}}
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "summary": "Search products",
+        "description": "Search and filter products by category, price range, availability and text query",
+        "parameters": [
+          {"name": "q", "in": "query", "schema": {"type": "string"}},
+          {"name": "category", "in": "query", "schema": {"type": "string"}},
+          {"name": "min_price", "in": "query", "schema": {"type": "number"}},
+          {"name": "max_price", "in": "query", "schema": {"type": "number"}},
+          {"name": "in_stock", "in": "query", "schema": {"type": "boolean"}}
+        ],
+        "responses": {"200": {"description": "Product list"}}
+      },
+      "post": {
+        "summary": "Create product",
+        "description": "Add a new product to the catalog with name, description, price, images and inventory",
+        "responses": {"201": {"description": "Product created"}}
+      }
+    },
+    "/api/v1/products/{id}": {
+      "get": {
+        "summary": "Get product details",
+        "description": "Returns full product information including reviews, ratings and related products",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Product details"}}
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "summary": "List orders",
+        "description": "Returns paginated list of orders with filters by status, date range and customer",
+        "parameters": [
+          {"name": "status", "in": "query", "schema": {"type": "string"}},
+          {"name": "from_date", "in": "query", "schema": {"type": "string", "format": "date"}},
+          {"name": "to_date", "in": "query", "schema": {"type": "string", "format": "date"}},
+          {"name": "customer_id", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Order list"}}
+      },
+      "post": {
+        "summary": "Create order",
+        "description": "Place a new order with items, shipping address and payment method",
+        "responses": {"201": {"description": "Order created"}}
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "summary": "Get order details",
+        "description": "Returns full order information including items, shipping status and payment details",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Order details"}}
+      },
+      "patch": {
+        "summary": "Update order status",
+        "description": "Update order status: pending, confirmed, shipped, delivered, cancelled",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Order updated"}}
+      }
+    },
+    "/api/v1/analytics/revenue": {
+      "get": {
+        "summary": "Revenue analytics",
+        "description": "Get revenue statistics grouped by day, week or month with comparison to previous period",
+        "parameters": [
+          {"name": "period", "in": "query", "schema": {"type": "string", "enum": ["day", "week", "month"]}},
+          {"name": "from_date", "in": "query", "schema": {"type": "string", "format": "date"}},
+          {"name": "to_date", "in": "query", "schema": {"type": "string", "format": "date"}}
+        ],
+        "responses": {"200": {"description": "Revenue data"}}
+      }
+    },
+    "/api/v1/analytics/top-products": {
+      "get": {
+        "summary": "Top selling products",
+        "description": "Returns top selling products ranked by revenue or quantity sold",
+        "parameters": [
+          {"name": "limit", "in": "query", "schema": {"type": "integer"}},
+          {"name": "sort_by", "in": "query", "schema": {"type": "string", "enum": ["revenue", "quantity"]}}
+        ],
+        "responses": {"200": {"description": "Top products"}}
+      }
+    },
+    "/api/v1/analytics/customers": {
+      "get": {
+        "summary": "Customer analytics",
+        "description": "Customer behavior analytics: retention rate, average order value, lifetime value, geographic distribution",
+        "parameters": [
+          {"name": "metric", "in": "query", "schema": {"type": "string"}},
+          {"name": "segment", "in": "query", "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "Customer analytics data"}}
+      }
+    },
+    "/api/v1/inventory": {
+      "get": {
+        "summary": "Get inventory status",
+        "description": "Returns current inventory levels for all products with low stock alerts",
+        "parameters": [
+          {"name": "warehouse", "in": "query", "schema": {"type": "string"}},
+          {"name": "low_stock", "in": "query", "schema": {"type": "boolean"}}
+        ],
+        "responses": {"200": {"description": "Inventory data"}}
+      }
+    },
+    "/api/v1/shipping/track/{tracking_number}": {
+      "get": {
+        "summary": "Track shipment",
+        "description": "Track package location and delivery status by tracking number with GPS coordinates",
+        "parameters": [
+          {"name": "tracking_number", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "Tracking info with coordinates"}}
+      }
+    }
+  }
+}

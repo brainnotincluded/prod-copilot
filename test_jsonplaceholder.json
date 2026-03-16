@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "JSONPlaceholder API",
+    "version": "1.0.0",
+    "description": "Free fake REST API for testing"
+  },
+  "servers": [
+    {"url": "https://jsonplaceholder.typicode.com"}
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "List all users",
+        "description": "Returns a list of all registered users with their contact details, address and company information",
+        "responses": {"200": {"description": "List of users"}}
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "description": "Returns detailed information about a specific user",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "User details"}}
+      }
+    },
+    "/posts": {
+      "get": {
+        "summary": "List all posts",
+        "description": "Returns all blog posts with title, body and author userId",
+        "parameters": [
+          {"name": "userId", "in": "query", "schema": {"type": "integer"}, "description": "Filter posts by user ID"}
+        ],
+        "responses": {"200": {"description": "List of posts"}}
+      }
+    },
+    "/posts/{id}": {
+      "get": {
+        "summary": "Get post by ID",
+        "description": "Returns a specific blog post with title and body",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Post details"}}
+      }
+    },
+    "/posts/{id}/comments": {
+      "get": {
+        "summary": "Get comments for a post",
+        "description": "Returns all comments for a specific post including commenter name and email",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "List of comments"}}
+      }
+    },
+    "/todos": {
+      "get": {
+        "summary": "List all todos",
+        "description": "Returns all todo items with title and completion status",
+        "parameters": [
+          {"name": "userId", "in": "query", "schema": {"type": "integer"}},
+          {"name": "completed", "in": "query", "schema": {"type": "boolean"}}
+        ],
+        "responses": {"200": {"description": "List of todos"}}
+      }
+    },
+    "/albums": {
+      "get": {
+        "summary": "List all albums",
+        "description": "Returns all photo albums with title and owner userId",
+        "parameters": [
+          {"name": "userId", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "List of albums"}}
+      }
+    }
+  }
+}

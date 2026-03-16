@@ -1,0 +1,177 @@
+<script setup lang="ts">
+import { ref, computed, nextTick, watch } from 'vue'
+import { useChatStore } from '@/stores/chat'
+import { useQueryStore } from '@/stores/query'
+import ChatMessage from '@/components/chat/ChatMessage.vue'
+import ChatInput from '@/components/chat/ChatInput.vue'
+
+const chatStore = useChatStore()
+const queryStore = useQueryStore()
+const messagesContainer = ref<HTMLElement | null>(null)
+
+const hasMessages = computed(() => chatStore.messages.length > 0)
+
+function handleSend(text: string) {
+  queryStore.sendQuery(text)
+  scrollToBottom()
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTo({
+        top: messagesContainer.value.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  })
+}
+
+// Scroll when new messages arrive
+watch(
+  () => chatStore.messages.length,
+  () => scrollToBottom()
+)
+
+// Scroll when steps update or results come in
+watch(
+  () => chatStore.messages.map((m) => (m.steps?.length || 0) + (m.result ? 1 : 0) + (m.content?.length || 0)),
+  () => scrollToBottom(),
+  { deep: true }
+)
+</script>
+
+<template>
+  <div class="chat-view">
+    <div v-if="!hasMessages" class="chat-empty">
+      <div class="empty-content">
+        <div class="empty-logo">P</div>
+        <h2 class="empty-title">What can I help you with?</h2>
+        <p class="empty-subtitle">
+          Ask anything about your APIs. I'll orchestrate requests and return structured results.
+        </p>
+        <div class="empty-suggestions">
+          <button
+            class="suggestion-chip"
+            @click="handleSend('List all available API endpoints')"
+          >
+            List all available API endpoints
+          </button>
+          <button
+            class="suggestion-chip"
+            @click="handleSend('Show me the most used endpoints this week')"
+          >
+            Show me the most used endpoints this week
+          </button>
+          <button
+            class="suggestion-chip"
+            @click="handleSend('Find users created in the last 24 hours')"
+          >
+            Find users created in the last 24 hours
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-else ref="messagesContainer" class="chat-messages">
+      <ChatMessage
+        v-for="message in chatStore.messages"
+        :key="message.id"
+        :message="message"
+      />
+    </div>
+
+    <div class="chat-input-area">
+      <ChatInput @send="handleSend" :disabled="queryStore.isLoading" />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.chat-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-bg);
+}
+
+.chat-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 640px;
+}
+
+.empty-logo {
+  width: 64px;
+  height: 64px;
+  background: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.empty-title {
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  letter-spacing: -0.5px;
+}
+
+.empty-subtitle {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+.empty-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.suggestion-chip {
+  padding: 10px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.suggestion-chip:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.chat-input-area {
+  flex-shrink: 0;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-light);
+}
+</style>

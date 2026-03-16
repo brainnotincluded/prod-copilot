@@ -1,0 +1,36 @@
+{
+  "name": "prod-copilot-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@primevue/themes": "^4.2.1",
+    "@vue-flow/background": "^1.3.2",
+    "@vue-flow/controls": "^1.1.3",
+    "@vue-flow/core": "^1.48.2",
+    "@vue-flow/minimap": "^1.5.4",
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
+    "axios": "^1.7.7",
+    "echarts": "^6.0.0",
+    "leaflet": "^1.9.4",
+    "marked": "^17.0.4",
+    "pinia": "^2.2.2",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.2.1",
+    "vue": "^3.4.38",
+    "vue-echarts": "^8.0.1",
+    "vue-router": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.12",
+    "@vitejs/plugin-vue": "^5.1.3",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.6",
+    "vue-tsc": "^2.1.6"
+  }
+}
