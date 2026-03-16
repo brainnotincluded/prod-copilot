@@ -20,9 +20,10 @@ async def list_endpoints(
     method: Optional[str] = Query(None, description="Filter by HTTP method (GET, POST, etc.)"),
     path_contains: Optional[str] = Query(None, description="Filter by path substring"),
     search: Optional[str] = Query(None, description="Text search in summary and description"),
-    tag: Optional[str] = Query(None, description="Filter by tag"),
     has_parameters: Optional[bool] = Query(None, description="Filter endpoints that accept parameters"),
     has_request_body: Optional[bool] = Query(None, description="Filter endpoints with request body"),
+    limit: int = Query(200, ge=1, le=1000, description="Max results (pagination)"),
+    offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db),
 ) -> list[EndpointSearchResult]:
     """List ALL indexed endpoints with optional filters.
@@ -39,11 +40,13 @@ async def list_endpoints(
     if method:
         stmt = stmt.where(ApiEndpoint.method == method.upper())
     if path_contains:
-        stmt = stmt.where(ApiEndpoint.path.ilike(f"%{path_contains}%"))
+        safe = path_contains.replace("%", r"\%").replace("_", r"\_")
+        stmt = stmt.where(ApiEndpoint.path.ilike(f"%{safe}%"))
     if search:
+        safe_s = search.replace("%", r"\%").replace("_", r"\_")
         stmt = stmt.where(
-            ApiEndpoint.summary.ilike(f"%{search}%")
-            | ApiEndpoint.description.ilike(f"%{search}%")
+            ApiEndpoint.summary.ilike(f"%{safe_s}%")
+            | ApiEndpoint.description.ilike(f"%{safe_s}%")
         )
     if has_parameters is True:
         stmt = stmt.where(ApiEndpoint.parameters.isnot(None))
@@ -51,6 +54,7 @@ async def list_endpoints(
         stmt = stmt.where(ApiEndpoint.request_body.isnot(None))
 
     stmt = stmt.order_by(ApiEndpoint.swagger_source_id, ApiEndpoint.id)
+    stmt = stmt.offset(offset).limit(limit)
     result = await db.execute(stmt)
     endpoints = result.scalars().all()
 

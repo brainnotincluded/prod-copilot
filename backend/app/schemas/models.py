@@ -29,8 +29,22 @@ class OrchestrationStep(BaseModel):
     step: int
     action: str
     description: str
-    status: Literal["pending", "running", "completed", "error"]
+    status: Literal["pending", "running", "completed", "error", "skipped"]
     result: dict[str, Any] | None = None
+    correlation_id: str | None = None
+    duration_ms: float | None = None
+
+
+# ---------------------------------------------------------------------------
+# Health
+# ---------------------------------------------------------------------------
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok", "degraded", "error"]
+    db: Literal["ok", "error"]
+    mlops: Literal["ok", "error"]
+    version: str
 
 
 # ---------------------------------------------------------------------------

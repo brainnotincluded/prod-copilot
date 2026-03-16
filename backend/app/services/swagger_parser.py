@@ -26,17 +26,84 @@ class SwaggerParser:
 
     HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head", "trace"}
 
+    # Maximum $ref resolution depth to prevent infinite recursion
+    _MAX_REF_DEPTH = 15
+
     def parse(self, spec: dict[str, Any]) -> list[ParsedEndpoint]:
         """Detect spec version and dispatch to the appropriate parser."""
-        if "swagger" in spec:
-            return self._parse_swagger2(spec)
-        elif "openapi" in spec:
-            return self._parse_openapi3(spec)
+        # Resolve all $ref pointers in-place so downstream code sees
+        # real schemas instead of {"$ref": "#/components/schemas/Pet"}.
+        resolved = self._resolve_refs(spec, spec)
+
+        if "swagger" in resolved:
+            return self._parse_swagger2(resolved)
+        elif "openapi" in resolved:
+            return self._parse_openapi3(resolved)
         else:
             logger.warning(
                 "Could not detect spec version, attempting OpenAPI 3.x parse."
             )
-            return self._parse_openapi3(spec)
+            return self._parse_openapi3(resolved)
+
+    # ------------------------------------------------------------------
+    # $ref resolution
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def _resolve_refs(
+        cls,
+        node: Any,
+        root: dict[str, Any],
+        depth: int = 0,
+        _seen: set[str] | None = None,
+    ) -> Any:
+        """Recursively resolve JSON Pointer $ref values against the spec root.
+
+        - Only resolves local references (starting with ``#/``).
+        - Guards against circular references via a ``_seen`` set.
+        - Limits recursion depth to ``_MAX_REF_DEPTH``.
+        """
+        if _seen is None:
+            _seen = set()
+
+        if depth > cls._MAX_REF_DEPTH:
+            return node
+
+        if isinstance(node, dict):
+            ref = node.get("$ref")
+            if isinstance(ref, str) and ref.startswith("#/"):
+                if ref in _seen:
+                    # Circular reference — return a stub
+                    return {"type": "object", "description": f"(circular: {ref})"}
+                _seen = _seen | {ref}
+                resolved = cls._follow_ref(ref, root)
+                if resolved is not None:
+                    return cls._resolve_refs(resolved, root, depth + 1, _seen)
+                return node  # unresolvable ref — leave as-is
+
+            return {
+                k: cls._resolve_refs(v, root, depth + 1, _seen)
+                for k, v in node.items()
+            }
+
+        if isinstance(node, list):
+            return [cls._resolve_refs(item, root, depth + 1, _seen) for item in node]
+
+        return node
+
+    @staticmethod
+    def _follow_ref(ref: str, root: dict[str, Any]) -> Any | None:
+        """Follow a JSON Pointer like ``#/components/schemas/Pet``."""
+        parts = ref.lstrip("#/").split("/")
+        current: Any = root
+        for part in parts:
+            if isinstance(current, dict):
+                current = current.get(part)
+            else:
+                return None
+            if current is None:
+                return None
+        return current
 
     # ------------------------------------------------------------------
     # Swagger 2.0

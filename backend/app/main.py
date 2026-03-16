@@ -41,7 +41,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -50,16 +50,66 @@ app.include_router(api_router, prefix="/api")
 
 
 @app.get("/health")
-async def health_check() -> dict:
-    return {"status": "ok"}
+async def health_check():
+    """Check health of the service and its dependencies (DB, MLOps)."""
+    import httpx
+    from starlette.responses import JSONResponse
+    from app.config import settings
+    from app.db.session import async_session_factory
+
+    db_status = "error"
+    mlops_status = "error"
+
+    # Check DB
+    try:
+        async with async_session_factory() as session:
+            await session.execute(text("SELECT 1"))
+        db_status = "ok"
+    except Exception as exc:
+        logger.warning("Health check: DB unreachable: %s", exc)
+
+    # Check MLOps
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resp = await client.get(f"{settings.mlops_base_url}/health")
+            if resp.status_code == 200:
+                mlops_status = "ok"
+    except Exception as exc:
+        logger.warning("Health check: MLOps unreachable: %s", exc)
+
+    if db_status == "ok" and mlops_status == "ok":
+        overall = "ok"
+    elif db_status == "error" and mlops_status == "error":
+        overall = "error"
+    else:
+        overall = "degraded"
+
+    status_code = 503 if overall == "error" else 200
+
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": overall,
+            "db": db_status,
+            "mlops": mlops_status,
+            "version": "1.0.0",
+        },
+    )
 
 
 @app.get("/api/sandbox/files/{session_id}/{filename}")
 async def proxy_sandbox_file(session_id: str, filename: str):
     """Proxy sandbox files from MLOps service."""
+    import re
     import httpx
     from fastapi import HTTPException
     from fastapi.responses import Response
+
+    # Prevent path traversal: only allow safe characters in both params
+    safe_pattern = re.compile(r"^[a-zA-Z0-9._-]+$")
+    if not safe_pattern.match(session_id) or not safe_pattern.match(filename):
+        raise HTTPException(status_code=400, detail="Invalid session_id or filename.")
+
     async with httpx.AsyncClient() as client:
         resp = await client.get(f"http://mlops:8001/api/sandbox/files/{session_id}/{filename}")
         if resp.status_code != 200:
