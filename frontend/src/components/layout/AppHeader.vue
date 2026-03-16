@@ -17,11 +17,11 @@ const queryStore = useQueryStore()
 const pageTitle = computed(() => {
   switch (route.path) {
     case '/chat':
-      return 'Chat'
+      return 'Чат'
     case '/swagger':
-      return 'API Sources'
+      return 'API Источники'
     case '/dashboard':
-      return 'Dashboard'
+      return 'Панель'
     default:
       return 'Prod Copilot'
   }
@@ -31,7 +31,7 @@ const pageTitle = computed(() => {
 <template>
   <header class="app-header">
     <div class="header-left">
-      <button class="menu-btn" @click="emit('toggleSidebar')" title="Toggle sidebar">
+      <button class="menu-btn" @click="emit('toggleSidebar')" title="Переключить боковую панель">
         <i class="pi pi-bars"></i>
       </button>
       <h1 class="page-title">{{ pageTitle }}</h1>
@@ -39,7 +39,7 @@ const pageTitle = computed(() => {
     <div class="header-right">
       <div class="connection-status" :class="{ connected: queryStore.isConnected }">
         <span class="status-dot"></span>
-        <span class="status-text">{{ queryStore.isConnected ? 'Connected' : 'Disconnected' }}</span>
+        <span class="status-text">{{ queryStore.isConnected ? 'Подключен' : 'Отключен' }}</span>
       </div>
     </div>
   </header>

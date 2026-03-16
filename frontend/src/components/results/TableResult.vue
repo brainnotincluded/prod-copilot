@@ -107,10 +107,10 @@ function formatCell(value: any): string {
             v-model="filterText"
             type="text"
             class="filter-input"
-            placeholder="Filter..."
+            placeholder="Поиск..."
           />
         </div>
-        <span class="row-count">{{ filteredRows.length }} rows</span>
+        <span class="row-count">{{ filteredRows.length }} строк</span>
       </div>
     </div>
     <div class="table-wrapper">
@@ -136,7 +136,7 @@ function formatCell(value: any): string {
         </thead>
         <tbody>
           <tr v-if="filteredRows.length === 0">
-            <td :colspan="columns.length" class="table-empty">No data</td>
+            <td :colspan="columns.length" class="table-empty">Нет данных</td>
           </tr>
           <tr v-for="(row, idx) in filteredRows" :key="idx" class="table-row">
             <td v-for="(col, colIdx) in columns" :key="col" class="table-td">

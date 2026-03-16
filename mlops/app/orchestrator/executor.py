@@ -201,7 +201,13 @@ async def _execute_single_step(
             return step
 
         if step.action == "api_call":
-            base_url = context.get("base_url", "")
+            # Use the endpoint's own base_url (from its swagger source) instead of
+            # a single global base_url so that multi-source queries hit the correct server.
+            if step.endpoint:
+                ep_base_url = step.endpoint.get("base_url", "") or context.get("base_url", "")
+            else:
+                ep_base_url = context.get("base_url", "")
+            base_url = ep_base_url
 
             # No base_url means the swagger source didn't have a server URL — can't call APIs
             if not base_url:

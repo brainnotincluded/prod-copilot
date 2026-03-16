@@ -55,11 +55,11 @@ function formatDate(dateStr: string): string {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
   if (diffDays === 0) {
-    return 'Today'
+    return 'Сегодня'
   } else if (diffDays === 1) {
-    return 'Yesterday'
+    return 'Вчера'
   } else if (diffDays < 7) {
-    return `${diffDays} days ago`
+    return `${diffDays} дн. назад`
   }
 
   return date.toLocaleDateString(undefined, {
@@ -70,9 +70,9 @@ function formatDate(dateStr: string): string {
 }
 
 function confirmDelete(id: number, name: string) {
-  if (window.confirm(`Remove API source "${name}"? This will delete all indexed endpoints. This cannot be undone.`)) {
+  if (window.confirm(`Удалить API источник "${name}"? Все проиндексированные эндпоинты будут удалены. Это действие нельзя отменить.`)) {
     emit('delete', id)
-    showToast(`Deleted "${name}"`, 'success')
+    showToast(`Удалено "${name}"`, 'success')
   }
 }
 
@@ -106,13 +106,13 @@ function isValidUrl(str: string): boolean {
   <div class="swagger-list">
     <div v-if="loading && swaggers.length === 0" class="list-loading">
       <i class="pi pi-spin pi-spinner"></i>
-      <span>Loading API sources...</span>
+      <span>Загрузка API источников...</span>
     </div>
 
     <div v-else-if="swaggers.length === 0" class="list-empty">
       <i class="pi pi-inbox list-empty-icon"></i>
-      <p>No API sources added yet.</p>
-      <p class="list-empty-hint">Upload a Swagger file or import from a URL to get started.</p>
+      <p>API источники ещё не добавлены.</p>
+      <p class="list-empty-hint">Загрузите Swagger файл или импортируйте по URL, чтобы начать.</p>
     </div>
 
     <div v-else class="list-items">
@@ -126,7 +126,7 @@ function isValidUrl(str: string): boolean {
             <span
               class="status-dot"
               :class="getBaseUrl(swagger) ? 'green' : 'yellow'"
-              :title="getBaseUrl(swagger) ? 'Base URL detected' : 'No base URL'"
+              :title="getBaseUrl(swagger) ? 'Base URL обнаружен' : 'Нет base URL'"
             ></span>
           </div>
           <div class="card-info">
@@ -143,7 +143,7 @@ function isValidUrl(str: string): boolean {
             </div>
             <div class="card-meta">
               <span class="endpoint-badge">
-                {{ getEndpointCount(swagger) }} endpoints
+                {{ getEndpointCount(swagger) }} эндпоинтов
               </span>
               <span class="meta-dot"></span>
               <span class="import-date">
@@ -154,7 +154,7 @@ function isValidUrl(str: string): boolean {
                 <span class="meta-dot"></span>
                 <a :href="swagger.url" target="_blank" rel="noopener" class="source-url">
                   <i class="pi pi-external-link meta-icon"></i>
-                  Source
+                  Источник
                 </a>
               </template>
             </div>
@@ -163,14 +163,14 @@ function isValidUrl(str: string): boolean {
             <button
               class="action-btn view-btn"
               @click="viewEndpoints(swagger.id)"
-              title="View in API Maps"
+              title="Открыть на Карте API"
             >
               <i class="pi pi-map"></i>
             </button>
             <button
               class="action-btn delete-btn"
               @click="confirmDelete(swagger.id, swagger.name)"
-              title="Delete this API source"
+              title="Удалить этот API источник"
             >
               <i class="pi pi-trash"></i>
             </button>

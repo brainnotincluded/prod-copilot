@@ -23,18 +23,18 @@ function refreshList() {
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-title-row">
-          <h1 class="page-title">API Sources</h1>
+          <h1 class="page-title">API Источники</h1>
           <span v-if="sourceCount > 0" class="page-count">{{ sourceCount }}</span>
         </div>
         <p class="page-description">
-          Import and manage your OpenAPI/Swagger specifications. These are used to orchestrate API queries.
+          Импортируйте и управляйте вашими OpenAPI/Swagger спецификациями. Они используются для оркестрации API запросов.
         </p>
       </div>
 
       <!-- Upload Card -->
       <div class="section-card">
         <div class="card-header">
-          <h2 class="card-title">Add API Specification</h2>
+          <h2 class="card-title">Добавить API спецификацию</h2>
         </div>
         <SwaggerUpload />
       </div>
@@ -42,8 +42,8 @@ function refreshList() {
       <!-- Sources List -->
       <div class="section">
         <div class="section-header">
-          <h2 class="section-title">Connected Sources</h2>
-          <button class="refresh-btn" @click="refreshList" title="Refresh list">
+          <h2 class="section-title">Подключённые источники</h2>
+          <button class="refresh-btn" @click="refreshList" title="Обновить список">
             <i class="pi pi-refresh" :class="{ 'pi-spin': swaggerStore.isLoading }"></i>
           </button>
         </div>
