@@ -356,11 +356,9 @@ async def _execute_single_step(
             step.status = "completed"
 
         elif step.action == "format_output":
-            # If multiple steps produced results, merge them into a combined view
+            # Get data for formatting
             step_results = context.get("step_results", {})
-            if len(step_results) > 1:
-                latest_data = _merge_all_step_results(context)
-            elif step_results:
+            if step_results:
                 latest_data = _get_latest_data(context)
             else:
                 # No API calls were made — use available_endpoints if present
@@ -626,12 +624,19 @@ def _get_latest_data(context: dict) -> dict | list | None:
         # extract the body and check if the call actually succeeded
         if "status_code" in result and "success" in result:
             if not result.get("success"):
-                # API call failed — return error info so downstream can handle it
                 error_msg = result.get("error", f"API returned status {result.get('status_code')}")
                 return {"error": error_msg}
             body = result.get("body")
             if body is None or body == {} or body == "":
                 return None
+            # Unwrap paginated responses: {"body": [...], "meta": {...}}
+            if isinstance(body, dict):
+                if "body" in body and isinstance(body["body"], list):
+                    return body["body"]
+                if "data" in body and isinstance(body["data"], list):
+                    return body["data"]
+                if "items" in body and isinstance(body["items"], list):
+                    return body["items"]
             return body
 
         if "data" in result:

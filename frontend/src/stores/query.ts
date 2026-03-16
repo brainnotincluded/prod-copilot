@@ -5,6 +5,38 @@ import { useWebSocket } from '@/composables/useWebSocket'
 import { useLocale } from '@/composables/useLocale'
 import type { OrchestrationStep, QueryResult, WebSocketMessage } from '@/types'
 
+// Save message to backend history (fire-and-forget)
+async function saveToHistory(conversationId: number, role: string, content: string | null, resultData?: any) {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token || !conversationId) return
+    await fetch(`/api/v1/history/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ role, content, result_data: resultData || null }),
+    })
+  } catch {
+    // fire-and-forget
+  }
+}
+
+async function createConversation(title: string): Promise<number | null> {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return null
+    const resp = await fetch('/api/v1/history/conversations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ title }),
+    })
+    if (!resp.ok) return null
+    const data = await resp.json()
+    return data.id
+  } catch {
+    return null
+  }
+}
+
 export const useQueryStore = defineStore('query', () => {
   const { t } = useLocale()
   const orchestrationSteps = ref<OrchestrationStep[]>([])
@@ -12,9 +44,9 @@ export const useQueryStore = defineStore('query', () => {
   const isLoading = ref(false)
   const currentMessageId = ref<string | null>(null)
   const selectedSourceIds = ref<number[]>([])
+  const conversationId = ref<number | null>(null)
 
-  const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
-  const { send, onMessage, isConnected } = useWebSocket(`${WS_BASE_URL}/api/v1/ws/query`)
+  const { send, onMessage, isConnected } = useWebSocket('/api/v1/ws/query')
 
   onMessage((msg: WebSocketMessage) => {
     const chatStore = useChatStore()
@@ -55,32 +87,49 @@ export const useQueryStore = defineStore('query', () => {
           const isEmptyData = !hasRealData ||
             (Object.keys(currentResult.value.data).length === 1 && isEmptyContent)
 
+          let finalContent = ''
           if (isChatMode) {
-            // Chat mode: show text inline, hide steps and result renderer
+            finalContent = textContent
             chatStore.updateMessage(currentMessageId.value, {
               result: undefined,
               steps: [],
               content: textContent,
             })
           } else if (isEmptyData) {
-            // Empty result: show error text
+            finalContent = textContent || t('error.noData')
             chatStore.updateMessage(currentMessageId.value, {
               result: undefined,
-              content: textContent || t('error.noData'),
+              content: finalContent,
             })
           } else {
-            // API result with data: show result renderer + optional summary text
             const summary = currentResult.value.metadata?.summary || ''
-            // Build a brief data description for chat context
             let dataHint = summary
             const rows = currentResult.value.data?.rows
             if (rows && Array.isArray(rows)) {
               dataHint += ` (${rows.length} rows returned)`
             }
+            finalContent = dataHint
             chatStore.updateMessage(currentMessageId.value, {
               result: currentResult.value,
               content: dataHint,
             })
+          }
+
+          // Save assistant response to history (include steps for replay)
+          if (conversationId.value) {
+            const historyData: any = {}
+            if (!isChatMode && !isEmptyData && currentResult.value) {
+              historyData.result = currentResult.value
+            }
+            if (orchestrationSteps.value.length > 0) {
+              historyData.steps = orchestrationSteps.value
+            }
+            saveToHistory(
+              conversationId.value,
+              'assistant',
+              finalContent || null,
+              Object.keys(historyData).length > 0 ? historyData : undefined,
+            )
           }
         }
         isLoading.value = false
@@ -103,12 +152,17 @@ export const useQueryStore = defineStore('query', () => {
     }
   })
 
-  function sendQuery(text: string, sourceIds?: number[]) {
+  async function sendQuery(text: string, sourceIds?: number[]) {
     const chatStore = useChatStore()
 
-    // Persist selected source IDs
     if (sourceIds !== undefined) {
       selectedSourceIds.value = sourceIds
+    }
+
+    // Create conversation on first message
+    if (!conversationId.value) {
+      const id = await createConversation(text.slice(0, 80))
+      conversationId.value = id
     }
 
     const userMessage = {
@@ -118,6 +172,11 @@ export const useQueryStore = defineStore('query', () => {
       timestamp: new Date(),
     }
     chatStore.addMessage(userMessage)
+
+    // Save user message to history
+    if (conversationId.value) {
+      saveToHistory(conversationId.value, 'user', text)
+    }
 
     const assistantId = chatStore.generateId()
     const assistantMessage = {
@@ -134,9 +193,8 @@ export const useQueryStore = defineStore('query', () => {
     currentResult.value = null
     isLoading.value = true
 
-    // Include recent chat history for context
     const recentMessages = chatStore.messages
-      .slice(-10)  // last 10 messages
+      .slice(-10)
       .filter(m => m.content)
       .map(m => ({ role: m.role, content: m.content }))
 
@@ -149,12 +207,19 @@ export const useQueryStore = defineStore('query', () => {
     send(payload)
   }
 
+  function startNewConversation() {
+    conversationId.value = null
+    useChatStore().clearChat()
+  }
+
   return {
     orchestrationSteps,
     currentResult,
     isLoading,
     isConnected,
     selectedSourceIds,
+    conversationId,
     sendQuery,
+    startNewConversation,
   }
 })

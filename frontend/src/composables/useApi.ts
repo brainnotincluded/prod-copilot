@@ -2,7 +2,7 @@ import axios, { type AxiosInstance } from 'axios'
 import { useAuth } from './useAuth'
 import router from '@/router'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = ''  // Use relative URLs — Vite proxy handles /api/* routing
 
 let instance: AxiosInstance | null = null
 

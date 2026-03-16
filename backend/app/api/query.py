@@ -104,8 +104,10 @@ async def query(
 
 
 @router.websocket("/ws/query")
-async def ws_query(websocket: WebSocket) -> None:
+async def ws_query(websocket: WebSocket, token: str | None = None) -> None:
     """WebSocket endpoint for streaming orchestration.
+
+    Authentication: pass JWT token as ?token= query parameter.
 
     Protocol:
     - Client sends JSON: {"query": "...", "swagger_source_ids": [1, 2] | null}
@@ -113,6 +115,21 @@ async def ws_query(websocket: WebSocket) -> None:
       - OrchestrationStep messages during processing
       - Final ResultResponse message
     """
+    # Validate token before accepting
+    if not token:
+        await websocket.close(code=4001, reason="Authentication required")
+        return
+
+    from app.api.auth import SECRET_KEY, ALGORITHM
+    from jose import JWTError, jwt as jose_jwt
+    try:
+        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if not payload.get("sub"):
+            raise ValueError("Invalid token payload")
+    except (JWTError, ValueError):
+        await websocket.close(code=4001, reason="Invalid token")
+        return
+
     await websocket.accept()
     mlops_client = MLOpsClient()
 
@@ -189,26 +206,24 @@ async def ws_query(websocket: WebSocket) -> None:
 
                     elif event_type in ("step_start", "step_complete", "step_error"):
                         step_num = chunk.get("step", step_counter)
+                        action_name = chunk.get("action", "")
+                        description = chunk.get("description", "")
 
                         if event_type == "step_start":
                             status = "running"
-                            # Store action and description from step_start
-                            action_name = chunk.get("action", "processing")
-                            description = chunk.get("description", "")
                             step_action_map[step_num] = action_name
                             step_description_map[step_num] = description
                         elif event_type == "step_complete":
                             status = "completed"
-                            # Use stored action/description, fall back to chunk values
-                            action_name = chunk.get("action") or step_action_map.get(step_num, "processing")
-                            description = chunk.get("description") or step_description_map.get(step_num, "")
-                        else:  # step_error
+                            action_name = action_name or step_action_map.get(step_num, "processing")
+                            description = description or step_description_map.get(step_num, "")
+                        else:
                             status = "error"
-                            action_name = chunk.get("action") or step_action_map.get(step_num, "processing")
-                            description = chunk.get("description") or step_description_map.get(step_num, "")
+                            action_name = action_name or step_action_map.get(step_num, "processing")
+                            description = description or step_description_map.get(step_num, "")
 
                         orchestration_step = OrchestrationStep(
-                            step=step_counter,
+                            step=step_num,
                             action=action_name,
                             description=description,
                             status=status,
@@ -217,8 +232,6 @@ async def ws_query(websocket: WebSocket) -> None:
                         await websocket.send_json(
                             {"type": "step", "data": orchestration_step.model_dump()}
                         )
-                        if event_type in ("step_complete", "step_error"):
-                            step_counter += 1
 
                     elif event_type == "result":
                         result_data = chunk.get("data", {})

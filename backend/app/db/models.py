@@ -81,6 +81,35 @@ class User(Base):
     )
 
 
+class ChatConversation(Base):
+    """A chat conversation (dialog session)."""
+
+    __tablename__ = "chat_conversations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(255), nullable=False, default="New conversation")
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    messages = relationship("ChatMessage", back_populates="conversation", cascade="all, delete-orphan", order_by="ChatMessage.created_at")
+
+
+class ChatMessage(Base):
+    """A single message in a chat conversation."""
+
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    conversation_id = Column(Integer, ForeignKey("chat_conversations.id", ondelete="CASCADE"), nullable=False, index=True)
+    role = Column(String(20), nullable=False)  # user, assistant
+    content = Column(Text, nullable=True)
+    result_data = Column(JSON, nullable=True)  # stored result (table, chart, etc.)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    conversation = relationship("ChatConversation", back_populates="messages")
+
+
 class EntityRelation(Base):
     """Discovered relations between entities across different APIs.
 

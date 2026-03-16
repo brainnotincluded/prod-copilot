@@ -111,7 +111,7 @@ async def seed_users():
         editor_count = sum(1 for u in all_users if u.role == "editor")
         viewer_count = sum(1 for u in all_users if u.role == "viewer")
         
-        logger.info(f"\nRole distribution:")
+        logger.info("\nRole distribution:")
         logger.info(f"  - Admin: {admin_count}")
         logger.info(f"  - Editor: {editor_count}")
         logger.info(f"  - Viewer: {viewer_count}")

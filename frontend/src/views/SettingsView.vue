@@ -50,7 +50,7 @@ function handleLogout() {
                 <i class="pi pi-user"></i>
               </div>
               <div class="profile-info">
-                <div class="profile-name">{{ user?.name || user?.email || 'Unknown User' }}</div>
+                <div class="profile-name">{{ user?.name || user?.username || user?.email || 'Unknown User' }}</div>
                 <div class="profile-role">
                   <span class="role-badge" :class="`role-${role}`">{{ role }}</span>
                 </div>
@@ -105,8 +105,8 @@ function handleLogout() {
         </div>
       </section>
 
-      <!-- User Role -->
-      <section class="settings-section dev-section">
+      <!-- User Role (read-only) -->
+      <section class="settings-section">
         <h2 class="section-title">{{ t('settings.devRole') }}</h2>
         <p class="section-desc">{{ t('settings.devRoleDesc') }}</p>
         <div class="option-cards three">

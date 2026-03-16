@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useChatStore } from '@/stores/chat'
 import { useQueryStore } from '@/stores/query'
 import { useSwaggerStore } from '@/stores/swagger'
@@ -10,12 +11,49 @@ import ChatInput from '@/components/chat/ChatInput.vue'
 const chatStore = useChatStore()
 const queryStore = useQueryStore()
 const swaggerStore = useSwaggerStore()
+const route = useRoute()
 const { t } = useLocale()
 const messagesContainer = ref<HTMLElement | null>(null)
 
-onMounted(() => {
+onMounted(async () => {
   swaggerStore.fetchSwaggers()
+
+  // Load conversation from history if ?conversation=ID is present
+  const convId = route.query.conversation
+  if (convId) {
+    await loadConversation(Number(convId))
+  }
 })
+
+async function loadConversation(id: number) {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+    const resp = await fetch(`/api/v1/history/conversations/${id}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+    if (!resp.ok) return
+    const data = await resp.json()
+
+    // Clear current chat and load saved messages
+    chatStore.clearChat()
+    queryStore.conversationId = id
+
+    for (const msg of data.messages) {
+      const rd = msg.result_data || {}
+      chatStore.addMessage({
+        id: chatStore.generateId(),
+        role: msg.role,
+        content: msg.content || '',
+        result: rd.result || undefined,
+        steps: rd.steps || undefined,
+        timestamp: new Date(msg.created_at),
+      })
+    }
+  } catch {
+    // ignore
+  }
+}
 
 const hasMessages = computed(() => chatStore.messages.length > 0)
 

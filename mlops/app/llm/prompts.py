@@ -35,11 +35,13 @@ Actions:
 
 IMPORTANT RULES:
 1. The LAST step MUST be format_output.
-2. Read the user's question carefully. If they ask "what APIs/endpoints are available" — use a single api_call to list endpoints, or simply format the provided endpoint list as a table.
-3. Use the minimum number of steps needed. Don't fetch data you don't need.
-4. PREFER data_process over execute_code for filtering and sorting.
-5. execute_code MUST NOT make HTTP calls. Use api_call for all data fetching.
-6. When multiple API calls are needed, fetch all data first, then process.
+2. api_call MUST include "endpoint" with "method" and "path" fields. ALWAYS.
+3. data_process MUST include "operations" array in "parameters". ALWAYS.
+4. Use the minimum number of steps. For simple queries use just: api_call → format_output.
+5. PREFER data_process over execute_code for filtering/sorting/aggregation.
+6. execute_code MUST NOT make HTTP calls. MUST include "code" in parameters.
+7. If the user asks "what APIs/endpoints are available" — just use format_output (endpoints are already known).
+8. For aggregations like "average", "count", "sum" — use data_process with {"type":"aggregate","function":"mean","column":"avg_check"} rather than fetching all data.
 
 data_process operations:
 - {"type":"filter","column":"name","operator":"contains","value":"k"}

@@ -25,7 +25,7 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = ''  // Use relative URLs — Vite proxy handles /api/* routing
 
 // Load from localStorage on init
 const savedUser = localStorage.getItem(STORAGE_KEY)

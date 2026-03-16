@@ -14,9 +14,18 @@ export function useWebSocket(url: string) {
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
   function getWsUrl(): string {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host = window.location.host
-    return `${protocol}//${host}${url}`
+    const token = localStorage.getItem('auth_token') || ''
+    let wsUrl: string
+    if (url.startsWith('ws://') || url.startsWith('wss://')) {
+      // Full URL provided — use as-is
+      wsUrl = url
+    } else {
+      // Relative path — build from current host
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      wsUrl = `${protocol}//${window.location.host}${url}`
+    }
+    const separator = wsUrl.includes('?') ? '&' : '?'
+    return token ? `${wsUrl}${separator}token=${token}` : wsUrl
   }
 
   function connect() {
