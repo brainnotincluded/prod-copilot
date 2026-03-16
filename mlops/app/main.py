@@ -17,7 +17,7 @@ from sse_starlette.sse import EventSourceResponse
 from app.config import get_settings
 from app.llm.kimi_client import get_llm_client
 from app.llm.prompts import TRANSLATE_PROMPT
-from app.rag.embeddings import get_embedding, get_embeddings
+from app.rag.embeddings import get_embeddings
 from app.rag.search import (
     index_endpoints as rag_index_endpoints,
     search_endpoints as rag_search_endpoints,
@@ -34,7 +34,6 @@ from app.schemas.models import (
     SearchResponse,
     SearchResult,
     OrchestrationRequest,
-    OrchestrationStep,
     ResultResponse,
 )
 

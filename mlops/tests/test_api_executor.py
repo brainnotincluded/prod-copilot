@@ -1,5 +1,4 @@
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from app.mcp.api_executor import execute_api_call, _validate_url
 
 

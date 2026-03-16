@@ -2,10 +2,9 @@
 
 import json
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 from app.llm.kimi_client import _merge_json_fragments, LLMClient
-from app.schemas.models import OrchestrationStep
 
 
 class TestMergeJsonFragments:

@@ -117,7 +117,8 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     if not os.path.exists(DB_PATH):
-        import subprocess, sys
+        import subprocess
+        import sys
         subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "seed.py")], check=True)
 
 

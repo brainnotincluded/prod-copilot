@@ -3,7 +3,7 @@
 import logging
 from typing import Sequence
 
-from sqlalchemy import select, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import ApiEndpoint

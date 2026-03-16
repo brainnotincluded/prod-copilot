@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from typing import AsyncGenerator
@@ -11,7 +10,7 @@ from app.config import get_settings
 from app.llm.kimi_client import get_llm_client
 from app.mcp.api_executor import execute_api_call
 from app.mcp.data_processor import process_data
-from app.schemas.models import ResultResponse, OrchestrationStep, OrchestrationStreamEvent
+from app.schemas.models import ResultResponse, OrchestrationStreamEvent
 
 logger = logging.getLogger(__name__)
 

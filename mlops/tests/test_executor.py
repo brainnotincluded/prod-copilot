@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import patch
 from app.orchestrator.executor import (
     execute_plan,
     _get_latest_data,

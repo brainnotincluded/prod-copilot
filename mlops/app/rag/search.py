@@ -79,7 +79,7 @@ async def ensure_table() -> None:
         )
         # Create an index for cosine similarity search (HNSW works on empty tables)
         await session.execute(
-            sa_text(f"""
+            sa_text("""
                 CREATE INDEX IF NOT EXISTS idx_endpoint_embeddings_cosine
                 ON endpoint_embeddings
                 USING hnsw (embedding vector_cosine_ops)
