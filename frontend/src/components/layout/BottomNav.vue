@@ -11,7 +11,6 @@ const navItems = computed(() => [
   { path: '/chat', label: t('nav.chat'), icon: 'pi pi-comment' },
   { path: '/swagger', label: t('nav.apiSources'), icon: 'pi pi-file' },
   { path: '/endpoints', label: t('nav.apiMaps'), icon: 'pi pi-sitemap' },
-  { path: '/dashboard', label: t('nav.dashboard'), icon: 'pi pi-chart-bar' },
 ])
 
 function isActive(path: string): boolean {

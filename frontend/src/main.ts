@@ -9,6 +9,8 @@ import router from './router'
 import './style.css'
 import '@/composables/useTheme'
 import '@/composables/useLocale'
+import { autoEnableMocks } from '@/composables/useMockApi'
+import '@/mocks/setup'
 
 const app = createApp(App)
 
@@ -25,3 +27,6 @@ app.use(PrimeVue, {
 })
 
 app.mount('#app')
+
+// Enable API mocks in test mode
+autoEnableMocks()
