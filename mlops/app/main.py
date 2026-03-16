@@ -357,11 +357,17 @@ async def orchestrate_stream(request: OrchestrationRequest):
                 from app.llm.kimi_client import get_llm_client
                 llm = get_llm_client()
 
-                chat_msgs = [
-                    {"role": "system", "content": "You are Prod Copilot — an AI assistant that helps users work with their APIs. "
-                     "Users upload Swagger/OpenAPI specs, and you help them explore endpoints, query data, build audiences, analyze campaigns, etc. "
-                     "Answer in the user's language. Be concise and friendly. Never mention your model name or architecture."},
-                ]
+                system_content = (
+                    "You are Prod Copilot — an AI assistant that helps users work with their APIs. "
+                    "Users upload Swagger/OpenAPI specs, and you help them explore endpoints, query data, build audiences, analyze campaigns, etc. "
+                    "Answer in the user's language. Be concise and friendly. Never mention your model name or architecture."
+                )
+                # Add context about last data result if available
+                last_result_ctx = (request.context or {}).get("last_result_summary")
+                if last_result_ctx:
+                    system_content += f"\n\nThe last data shown to the user was: {last_result_ctx}"
+
+                chat_msgs = [{"role": "system", "content": system_content}]
                 if chat_history:
                     for msg in chat_history[-6:]:
                         if msg.get("role") in ("user", "assistant") and msg.get("content"):

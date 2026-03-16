@@ -70,9 +70,15 @@ export const useQueryStore = defineStore('query', () => {
           } else {
             // API result with data: show result renderer + optional summary text
             const summary = currentResult.value.metadata?.summary || ''
+            // Build a brief data description for chat context
+            let dataHint = summary
+            const rows = currentResult.value.data?.rows
+            if (rows && Array.isArray(rows)) {
+              dataHint += ` (${rows.length} rows returned)`
+            }
             chatStore.updateMessage(currentMessageId.value, {
               result: currentResult.value,
-              content: summary,
+              content: dataHint,
             })
           }
         }

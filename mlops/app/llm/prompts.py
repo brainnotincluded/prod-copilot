@@ -5,10 +5,12 @@ CLASSIFIER_PROMPT = """You are an intent classifier for an API copilot. Classify
 Rules:
 - Greetings, thanks, smalltalk, questions about yourself → chat
 - Questions about data, APIs, endpoints, showing/listing/finding information → api_query
-- If the user asks "what APIs are available" or "list endpoints" → api_query (the system will list endpoints from the spec)
+- If the user asks "what APIs are available" or "list endpoints" → api_query
+- Follow-up questions about previous data/results (e.g. "их всего 5?", "а почему так мало?", "покажи подробнее", "отфильтруй по...") → chat (the system will answer with context)
+- When previous messages contain data discussion, treat ambiguous follow-ups as chat with context
 
 Return ONLY JSON:
-- Chat: {"intent":"chat","response":"friendly reply in user's language"}
+- Chat: {"intent":"chat","response":"friendly reply in user's language, referencing previous data if relevant"}
 - API query: {"intent":"api_query"}"""
 
 TRANSLATE_PROMPT = """Output ONLY the English translation. No explanation."""
