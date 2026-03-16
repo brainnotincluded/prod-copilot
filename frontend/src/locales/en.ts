@@ -125,6 +125,10 @@ export default {
   'settings.themeLight': 'Light',
   'settings.themeDark': 'Dark',
   'settings.themeSystem': 'System',
+  'settings.devRole': 'Dev Mode: User Role',
+  'settings.devRoleDesc': 'Select role for testing permissions (X-User-Role header).',
+  'settings.canUpload': 'Upload APIs',
+  'settings.canDelete': 'Delete APIs',
 
   // Errors (store level)
   'error.noData': 'No data was returned.',

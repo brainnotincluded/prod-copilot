@@ -125,6 +125,10 @@ export default {
   'settings.themeLight': 'Светлая',
   'settings.themeDark': 'Тёмная',
   'settings.themeSystem': 'Системная',
+  'settings.devRole': 'Dev Mode: Роль пользователя',
+  'settings.devRoleDesc': 'Выберите роль для тестирования прав (X-User-Role header).',
+  'settings.canUpload': 'Загрузка API',
+  'settings.canDelete': 'Удаление API',
 
   // Errors (store level)
   'error.noData': 'Данные не были возвращены.',

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQueryStore } from '@/stores/query'
 import { useLocale } from '@/composables/useLocale'
+import { useAuth } from '@/composables/useAuth'
 
 const props = defineProps<{
   sidebarCollapsed: boolean
@@ -15,6 +16,16 @@ const emit = defineEmits<{
 const route = useRoute()
 const queryStore = useQueryStore()
 const { t } = useLocale()
+const { role, isAdmin } = useAuth()
+
+const roleBadgeClass = computed(() => {
+  switch (role.value) {
+    case 'admin': return 'role-admin'
+    case 'editor': return 'role-editor'
+    case 'viewer': return 'role-viewer'
+    default: return ''
+  }
+})
 
 const pageTitle = computed(() => {
   switch (route.path) {
@@ -43,6 +54,10 @@ const pageTitle = computed(() => {
       <h1 class="page-title">{{ pageTitle }}</h1>
     </div>
     <div class="header-right">
+      <div class="role-badge" :class="roleBadgeClass" title="Dev mode: X-User-Role header">
+        <i :class="isAdmin ? 'pi pi-shield' : 'pi pi-user'"></i>
+        <span class="role-text">{{ role }}</span>
+      </div>
       <div class="connection-status" :class="{ connected: queryStore.isConnected }">
         <span class="status-dot"></span>
         <span class="status-text">{{ queryStore.isConnected ? t('common.connected') : t('common.disconnected') }}</span>
@@ -122,6 +137,43 @@ const pageTitle = computed(() => {
   font-weight: 500;
 }
 
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-light);
+}
+
+.role-badge.role-viewer {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.role-badge.role-editor {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.role-badge.role-admin {
+  background: rgba(251, 188, 4, 0.1);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.role-badge i {
+  font-size: 10px;
+}
+
 /* Hide menu button on mobile - bottom nav is used instead */
 @media (max-width: 768px) {
   .menu-btn {
@@ -139,6 +191,10 @@ const pageTitle = computed(() => {
   }
   
   .status-text {
+    display: none;
+  }
+  
+  .role-badge {
     display: none;
   }
 }
