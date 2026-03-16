@@ -252,6 +252,15 @@ function refreshList() {
   .card-title,
   .section-title {
     font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Section header - prevent overlap on mobile */
+  .section-header {
+    gap: 8px;
+    min-height: 44px;
   }
 
   /* Touch-friendly кнопки */

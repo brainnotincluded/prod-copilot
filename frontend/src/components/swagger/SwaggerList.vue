@@ -325,9 +325,15 @@ function handleCardTouchEnd(id: number, name: string) {
   padding: 16px;
   color: var(--color-text-tertiary);
   font-size: 13px;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
   z-index: 1;
   pointer-events: none;
+  opacity: 0;
+}
+
+.pull-indicator.is-pulling,
+.pull-indicator.is-refreshing {
+  opacity: 1;
 }
 
 .pull-indicator i {
@@ -669,6 +675,26 @@ function handleCardTouchEnd(id: number, name: string) {
 
 /* Mobile (max-width: 640px) */
 @media (max-width: 640px) {
+  .swagger-list {
+    margin-top: 0;
+  }
+
+  /* Hide pull-to-refresh text when not active */
+  .pull-indicator:not(.is-pulling):not(.is-refreshing) {
+    display: none;
+  }
+
+  .pull-indicator {
+    position: relative;
+    padding: 8px;
+    font-size: 12px;
+    transform: none !important;
+  }
+
+  .pull-indicator.is-refreshing {
+    margin-bottom: 8px;
+  }
+
   .list-card-wrapper {
     border-radius: var(--radius-md);
   }
