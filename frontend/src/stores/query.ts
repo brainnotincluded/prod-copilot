@@ -61,10 +61,11 @@ export const useQueryStore = defineStore('query', () => {
               content: textContent || t('error.noData'),
             })
           } else {
-            // API result with data: show result renderer, no extra text
+            // API result with data: show result renderer + optional summary text
+            const summary = currentResult.value.metadata?.summary || ''
             chatStore.updateMessage(currentMessageId.value, {
               result: currentResult.value,
-              content: '',
+              content: summary,
             })
           }
         }
