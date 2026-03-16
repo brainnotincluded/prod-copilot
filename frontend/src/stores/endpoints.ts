@@ -29,7 +29,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
       if (filters.value.method) {
         params.method = filters.value.method
       }
-      const response = await api.get<EndpointItem[]>('/api/endpoints/list', { params })
+      const response = await api.get<EndpointItem[]>('/endpoints/list', { params })
       endpoints.value = response.data
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch endpoints'
@@ -40,7 +40,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
 
   async function fetchStats() {
     try {
-      const response = await api.get<EndpointStats>('/api/endpoints/stats')
+      const response = await api.get<EndpointStats>('/endpoints/stats')
       stats.value = response.data
     } catch (err: any) {
       // Stats are optional, don't block on failure
@@ -50,7 +50,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
 
   async function fetchMethods() {
     try {
-      const response = await api.get<string[]>('/api/endpoints/methods')
+      const response = await api.get<string[]>('/endpoints/methods')
       methods.value = response.data
     } catch (err: any) {
       console.error('Failed to fetch methods:', err)

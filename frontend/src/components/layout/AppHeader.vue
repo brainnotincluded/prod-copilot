@@ -6,6 +6,8 @@ import { useLocale } from '@/composables/useLocale'
 import { useAuth } from '@/composables/useAuth'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
+import Avatar from 'primevue/avatar'
+import Badge from 'primevue/badge'
 import type { MenuItem } from 'primevue/menuitem'
 
 const props = defineProps<{
@@ -20,7 +22,7 @@ const route = useRoute()
 const router = useRouter()
 const queryStore = useQueryStore()
 const { t } = useLocale()
-const { user, role, isAdmin, logout } = useAuth()
+const { user, role, isAdmin, logout, userInitials, avatarColor } = useAuth()
 
 const userMenuRef = ref<InstanceType<typeof Menu>>()
 
@@ -30,6 +32,15 @@ const roleBadgeClass = computed(() => {
     case 'editor': return 'role-editor'
     case 'viewer': return 'role-viewer'
     default: return ''
+  }
+})
+
+const roleLabel = computed(() => {
+  switch (role.value) {
+    case 'admin': return 'Administrator'
+    case 'editor': return 'Editor'
+    case 'viewer': return 'Viewer'
+    default: return 'User'
   }
 })
 
@@ -52,8 +63,18 @@ const pageTitle = computed(() => {
 
 const userMenuItems = computed<MenuItem[]>(() => [
   {
-    label: user.value?.username || 'User',
+    label: user.value?.name || user.value?.email || 'User',
     icon: 'pi pi-user',
+    disabled: true,
+  },
+  {
+    label: roleLabel.value,
+    icon: isAdmin.value ? 'pi pi-shield' : 'pi pi-user',
+    disabled: true,
+  },
+  {
+    label: user.value?.email || '',
+    icon: 'pi pi-envelope',
     disabled: true,
   },
   {
@@ -103,14 +124,24 @@ const toggleUserMenu = (event: MouseEvent) => {
       
       <!-- User Menu -->
       <div class="user-menu-wrapper">
-        <Button
-          icon="pi pi-user-circle"
-          class="user-menu-btn"
-          text
-          rounded
+        <button
+          class="user-avatar-btn"
           :aria-label="'User menu'"
           @click="toggleUserMenu"
-        />
+        >
+          <Avatar
+            :label="userInitials"
+            :style="{ background: avatarColor, color: '#fff' }"
+            shape="circle"
+            class="user-avatar"
+          />
+          <Badge 
+            v-if="role"
+            :value="role.charAt(0).toUpperCase()" 
+            :severity="isAdmin ? 'warning' : isEditor ? 'success' : 'info'"
+            class="role-indicator"
+          />
+        </button>
         <Menu
           ref="userMenuRef"
           :model="userMenuItems"
@@ -236,15 +267,38 @@ const toggleUserMenu = (event: MouseEvent) => {
   position: relative;
 }
 
-.user-menu-btn {
-  width: 36px;
-  height: 36px;
-  color: var(--color-text-secondary);
+.user-avatar-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
 }
 
-.user-menu-btn:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
+.user-avatar-btn:hover {
+  transform: scale(1.05);
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.role-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 0.625rem;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
 }
 
 /* Hide menu button on mobile - bottom nav is used instead */

@@ -13,7 +13,8 @@ export const useQueryStore = defineStore('query', () => {
   const currentMessageId = ref<string | null>(null)
   const selectedSourceIds = ref<number[]>([])
 
-  const { send, onMessage, isConnected } = useWebSocket('/api/ws/query')
+  const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
+  const { send, onMessage, isConnected } = useWebSocket(`${WS_BASE_URL}/api/v1/ws/query`)
 
   onMessage((msg: WebSocketMessage) => {
     const chatStore = useChatStore()

@@ -1,3 +1,4 @@
+import secrets
 from pydantic_settings import BaseSettings
 
 
@@ -10,6 +11,10 @@ class Settings(BaseSettings):
 
     mock_mode: bool = False
     mlops_base_url: str = "http://mlops:8001"
+    
+    # Security settings
+    secret_key: str = secrets.token_urlsafe(32)
+    access_token_expire_days: int = 7
 
     @property
     def database_url(self) -> str:

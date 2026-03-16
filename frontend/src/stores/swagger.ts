@@ -13,7 +13,7 @@ export const useSwaggerStore = defineStore('swagger', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.get<SwaggerSource[]>('/api/swagger/list')
+      const response = await api.get<SwaggerSource[]>('/swagger/list')
       swaggers.value = response.data
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch swagger sources'
@@ -28,7 +28,7 @@ export const useSwaggerStore = defineStore('swagger', () => {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const response = await api.post<SwaggerUploadResult>('/api/swagger/upload', formData, {
+      const response = await api.post<SwaggerUploadResult>('/swagger/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       await fetchSwaggers()
@@ -50,7 +50,7 @@ export const useSwaggerStore = defineStore('swagger', () => {
       if (name) {
         formData.append('name', name)
       }
-      const response = await api.post<SwaggerUploadResult>('/api/swagger/upload', formData, {
+      const response = await api.post<SwaggerUploadResult>('/swagger/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       await fetchSwaggers()
@@ -65,7 +65,7 @@ export const useSwaggerStore = defineStore('swagger', () => {
 
   async function deleteSwagger(id: number) {
     try {
-      await api.delete(`/api/swagger/${id}`)
+      await api.delete(`/swagger/${id}`)
       swaggers.value = swaggers.value.filter((s) => s.id !== id)
     } catch (err: any) {
       error.value = err.message || 'Failed to delete swagger source'

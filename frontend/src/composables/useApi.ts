@@ -2,11 +2,13 @@ import axios, { type AxiosInstance } from 'axios'
 import { useAuth } from './useAuth'
 import router from '@/router'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 let instance: AxiosInstance | null = null
 
 function createApiInstance(): AxiosInstance {
   const api = axios.create({
-    baseURL: '',
+    baseURL: `${API_BASE_URL}/api/v1`,
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
@@ -31,12 +33,11 @@ function createApiInstance(): AxiosInstance {
 
   api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
       // Handle authentication errors
       if (error.response?.status === 401) {
         const { logout } = useAuth()
-        logout()
-        router.push('/login')
+        await logout()
         return Promise.reject(new Error('Session expired. Please sign in again.'))
       }
       

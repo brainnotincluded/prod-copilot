@@ -45,7 +45,7 @@ onMounted(() => {
 async function fetchAllStats() {
   for (const swagger of props.swaggers) {
     try {
-      const response = await api.get(`/api/swagger/${swagger.id}/stats`)
+      const response = await api.get(`/swagger/${swagger.id}/stats`)
       sourceStats.value[swagger.id] = response.data
     } catch {
       // Silently skip failed stats

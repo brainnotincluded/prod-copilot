@@ -279,7 +279,7 @@ export const mockEndpoints: MockEndpoint[] = [
 
 // Mock API handlers for testing
 export function mockApiMapsFetch(url: string): Promise<Response> {
-  if (url.includes('/api/endpoints/list')) {
+  if (url.includes('/endpoints/list')) {
     return Promise.resolve(
       new Response(JSON.stringify(mockEndpoints), {
         status: 200,
@@ -288,7 +288,7 @@ export function mockApiMapsFetch(url: string): Promise<Response> {
     )
   }
   
-  if (url.includes('/api/swagger/list')) {
+  if (url.includes('/swagger/list')) {
     return Promise.resolve(
       new Response(JSON.stringify(mockSwaggerSources), {
         status: 200,
@@ -297,7 +297,7 @@ export function mockApiMapsFetch(url: string): Promise<Response> {
     )
   }
   
-  if (url.includes('/api/endpoints/stats')) {
+  if (url.includes('/endpoints/stats')) {
     return Promise.resolve(
       new Response(
         JSON.stringify({

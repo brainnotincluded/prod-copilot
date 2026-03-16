@@ -25,21 +25,21 @@ export function useMockApi() {
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = input.toString()
       
-      if (url.includes('/api/endpoints/list')) {
+      if (url.includes('/endpoints/list')) {
         return new Response(JSON.stringify(mockEndpoints), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         })
       }
       
-      if (url.includes('/api/swagger/list')) {
+      if (url.includes('/swagger/list')) {
         return new Response(JSON.stringify(mockSwaggerSources), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         })
       }
       
-      if (url.includes('/api/endpoints/stats')) {
+      if (url.includes('/endpoints/stats')) {
         return new Response(
           JSON.stringify({
             total: mockEndpoints.length,

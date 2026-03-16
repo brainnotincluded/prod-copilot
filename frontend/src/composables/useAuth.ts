@@ -4,34 +4,77 @@ import { useRouter } from 'vue-router'
 export type UserRole = 'viewer' | 'editor' | 'admin'
 
 export interface User {
-  id: string
-  username: string
+  id: number
+  email: string
+  name: string | null
   role: UserRole
-  token: string
+}
+
+export interface AuthTokens {
+  access_token: string
+  token_type: string
+  expires_in: number
 }
 
 const STORAGE_KEY = 'auth_user'
+const TOKEN_KEY = 'auth_token'
 
 const user = ref<User | null>(null)
+const token = ref<string | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
+// API base URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 // Load from localStorage on init
 const savedUser = localStorage.getItem(STORAGE_KEY)
-if (savedUser) {
+const savedToken = localStorage.getItem(TOKEN_KEY)
+if (savedUser && savedToken) {
   try {
     user.value = JSON.parse(savedUser)
+    token.value = savedToken
   } catch {
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(TOKEN_KEY)
   }
+}
+
+// Helper function for API calls
+async function apiCall<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options.headers as Record<string, string>,
+  }
+  
+  if (token.value) {
+    headers['Authorization'] = `Bearer ${token.value}`
+  }
+  
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
+  }
+  
+  return response.json()
 }
 
 export function useAuth() {
   const router = useRouter()
 
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!user.value && !!token.value)
   const currentUser = computed(() => user.value)
-  const role = computed(() => user.value?.role ?? null)
+  const currentToken = computed(() => token.value)
   
   const isViewer = computed(() => user.value?.role === 'viewer')
   const isEditor = computed(() => user.value?.role === 'editor')
@@ -44,43 +87,27 @@ export function useAuth() {
   const canApprove = computed(() => user.value?.role === 'admin')
 
   /**
-   * Login user with credentials
-   * In production, this would call the backend API
-   * For now, simulating authentication with role-based access
+   * Login user with email and password
    */
-  const login = async (username: string, password: string, selectedRole: UserRole = 'editor'): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     isLoading.value = true
     error.value = null
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const data = await apiCall<AuthTokens & { user: User }>('/api/v1/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      })
 
-      // Simple validation (in production, this would be a real API call)
-      if (!username || !password) {
-        error.value = 'Username and password are required'
-        return false
-      }
-
-      if (password.length < 3) {
-        error.value = 'Invalid credentials'
-        return false
-      }
-
-      // Create user session
-      const newUser: User = {
-        id: `user_${Date.now()}`,
-        username: username.trim(),
-        role: selectedRole,
-        token: `mock_token_${Date.now()}_${selectedRole}`,
-      }
-
-      user.value = newUser
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
+      user.value = data.user
+      token.value = data.access_token
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data.user))
+      localStorage.setItem(TOKEN_KEY, data.access_token)
       
       return true
-    } catch (err) {
-      error.value = 'Login failed. Please try again.'
+    } catch (err: any) {
+      error.value = err.message || 'Login failed. Please try again.'
       return false
     } finally {
       isLoading.value = false
@@ -88,12 +115,99 @@ export function useAuth() {
   }
 
   /**
+   * Register a new user
+   */
+  const register = async (
+    email: string,
+    password: string,
+    name: string
+  ): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const data = await apiCall<AuthTokens & { user: User }>('/api/v1/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, name }),
+      })
+
+      user.value = data.user
+      token.value = data.access_token
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data.user))
+      localStorage.setItem(TOKEN_KEY, data.access_token)
+      
+      return true
+    } catch (err: any) {
+      error.value = err.message || 'Registration failed. Please try again.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Fetch current user info
+   */
+  const fetchCurrentUser = async (): Promise<boolean> => {
+    if (!token.value) return false
+    
+    try {
+      const data = await apiCall<User>('/api/v1/auth/me')
+      user.value = data
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+      return true
+    } catch (err) {
+      // Token might be invalid, clear it
+      logout()
+      return false
+    }
+  }
+
+  /**
    * Logout user and clear session
    */
-  const logout = () => {
-    user.value = null
-    localStorage.removeItem(STORAGE_KEY)
-    router.push('/login')
+  const logout = async () => {
+    try {
+      if (token.value) {
+        await apiCall('/api/v1/auth/logout', { method: 'POST' })
+      }
+    } catch {
+      // Ignore errors on logout
+    } finally {
+      user.value = null
+      token.value = null
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(TOKEN_KEY)
+      router.push('/login')
+    }
+  }
+
+  /**
+   * Change password
+   */
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await apiCall('/api/v1/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      })
+      return true
+    } catch (err: any) {
+      error.value = err.message || 'Failed to change password'
+      return false
+    } finally {
+      isLoading.value = false
+    }
   }
 
   /**
@@ -102,10 +216,13 @@ export function useAuth() {
   const getAuthHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = {}
     
+    if (token.value) {
+      headers['Authorization'] = `Bearer ${token.value}`
+    }
+    
+    // Also send role header for backward compatibility
     if (user.value) {
-      // Send role header for backend authorization
       headers['X-User-Role'] = user.value.role
-      // In production, you'd also send: Authorization: `Bearer ${user.value.token}`
     }
     
     return headers
@@ -127,37 +244,57 @@ export function useAuth() {
   }
 
   /**
-   * Update user role (for role switching in settings)
+   * Get user initials for avatar
    */
-  const updateRole = (newRole: UserRole) => {
-    if (user.value) {
-      user.value.role = newRole
-      user.value.token = `mock_token_${Date.now()}_${newRole}`
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user.value))
-    }
-  }
+  const userInitials = computed(() => {
+    if (!user.value?.name) return '?'
+    return user.value.name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  })
+
+  /**
+   * Get avatar background color based on user id
+   */
+  const avatarColor = computed(() => {
+    if (!user.value) return '#6366f1'
+    const colors = [
+      '#ef4444', '#f97316', '#f59e0b', '#84cc16',
+      '#10b981', '#06b6d4', '#3b82f6', '#6366f1',
+      '#8b5cf6', '#d946ef', '#f43f5e',
+    ]
+    return colors[(user.value.id || 0) % colors.length]
+  })
 
   return {
     // State
     user: currentUser,
+    token: currentToken,
     isLoading,
     error,
     
     // Computed
     isAuthenticated,
-    role,
+    role: computed(() => user.value?.role ?? null),
     isViewer,
     isEditor,
     isAdmin,
     canUpload,
     canDelete,
     canApprove,
+    userInitials,
+    avatarColor,
     
     // Methods
     login,
+    register,
     logout,
+    fetchCurrentUser,
+    changePassword,
     getAuthHeaders,
     hasRole,
-    updateRole,
   }
 }
