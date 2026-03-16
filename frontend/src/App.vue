@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import Toast from '@/components/ui/Toast.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 
+const route = useRoute()
 const sidebarCollapsed = ref(false)
 const isMobile = ref(false)
 const mobileMenuOpen = ref(false)
+
+// Hide sidebar and header on public pages (login/register)
+const isPublicPage = computed(() => route.meta.public === true)
 
 function checkMobile() {
   isMobile.value = window.innerWidth <= 768
@@ -39,9 +44,10 @@ function toggleSidebar() {
 </script>
 
 <template>
-  <div class="app-layout">
+  <div class="app-layout" :class="{ 'public-page': isPublicPage }">
     <!-- Mobile Overlay -->
     <div 
+      v-if="!isPublicPage"
       class="mobile-overlay" 
       :class="{ active: isMobile && mobileMenuOpen }"
       @click="closeMobileMenu"
@@ -49,6 +55,7 @@ function toggleSidebar() {
     ></div>
     
     <AppSidebar 
+      v-if="!isPublicPage"
       :collapsed="sidebarCollapsed" 
       :is-mobile="isMobile"
       :mobile-open="mobileMenuOpen"
@@ -56,15 +63,17 @@ function toggleSidebar() {
     />
     
     <div class="app-main" :class="{ 
-      'sidebar-collapsed': sidebarCollapsed && !isMobile,
-      'is-mobile': isMobile 
+      'sidebar-collapsed': sidebarCollapsed && !isMobile && !isPublicPage,
+      'is-mobile': isMobile,
+      'no-sidebar': isPublicPage
     }">
       <AppHeader 
+        v-if="!isPublicPage"
         @toggle-sidebar="isMobile ? toggleMobileMenu() : toggleSidebar()" 
         :sidebar-collapsed="sidebarCollapsed"
         :is-mobile="isMobile"
       />
-      <main class="app-content">
+      <main class="app-content" :class="{ 'auth-content': isPublicPage }">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -74,7 +83,7 @@ function toggleSidebar() {
     </div>
     
     <!-- Bottom Navigation for Mobile -->
-    <BottomNav v-if="isMobile" />
+    <BottomNav v-if="isMobile && !isPublicPage" />
     
     <Toast />
   </div>
@@ -101,6 +110,15 @@ function toggleSidebar() {
 
 .app-main.sidebar-collapsed {
   margin-left: var(--sidebar-collapsed-width);
+}
+
+.app-main.no-sidebar {
+  margin-left: 0;
+}
+
+.app-content.auth-content {
+  padding: 0;
+  overflow: auto;
 }
 
 .app-content {
