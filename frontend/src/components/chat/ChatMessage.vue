@@ -350,4 +350,105 @@ watch(
 .message-result {
   margin-top: 12px;
 }
+
+/* Mobile adaptations (< 640px) */
+@media (max-width: 640px) {
+  .chat-message {
+    padding: 4px 12px;
+  }
+
+  .message-container {
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  .message-avatar {
+    padding-top: 1px;
+  }
+
+  .avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  .user-avatar i {
+    font-size: 10px;
+  }
+
+  .message-header {
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+
+  .message-role {
+    font-size: 12px;
+  }
+
+  .message-time {
+    font-size: 10px;
+  }
+
+  .message-content {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .message-content :deep(pre) {
+    padding: 10px;
+    border-radius: 4px;
+  }
+
+  .message-content :deep(ul), .message-content :deep(ol) {
+    padding-left: 16px;
+  }
+
+  /* Larger touch target for steps toggle */
+  .steps-toggle {
+    padding: 6px 12px;
+    min-height: 36px;
+  }
+
+  .steps-toggle i {
+    font-size: 10px;
+  }
+
+  .step-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .message-result {
+    margin-top: 10px;
+  }
+
+  .message-result :deep(.result-container) {
+    border-radius: 8px;
+  }
+
+  .thinking-text {
+    font-size: 12px;
+  }
+}
+
+/* Tablet adaptations (641px - 768px) */
+@media (max-width: 768px) and (min-width: 641px) {
+  .chat-message {
+    padding: 4px 16px;
+  }
+
+  .message-container {
+    padding: 14px 0;
+  }
+
+  .avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  .user-avatar i {
+    font-size: 11px;
+  }
+}
 </style>

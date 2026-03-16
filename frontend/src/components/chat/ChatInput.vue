@@ -27,7 +27,30 @@ onMounted(() => {
   if (swaggerStore.swaggers.length === 0) {
     swaggerStore.fetchSwaggers()
   }
+  
+  // Handle mobile keyboard appearance
+  setupViewportHandler()
 })
+
+function setupViewportHandler() {
+  // Check if it's a touch device
+  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
+  
+  if (isTouchDevice && 'visualViewport' in window) {
+    const viewport = window.visualViewport
+    
+    if (viewport) {
+      viewport.addEventListener('resize', () => {
+        // Scroll to keep input visible when keyboard appears
+        if (document.activeElement === textareaRef.value) {
+          setTimeout(() => {
+            textareaRef.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          }, 100)
+        }
+      })
+    }
+  }
+}
 
 watch(
   () => swaggerStore.swaggers,
@@ -97,24 +120,29 @@ function handleInput() {
   <div class="chat-input-wrapper">
     <!-- API source selector chips -->
     <div v-if="hasSources" class="source-selector">
-      <button
-        class="source-chip"
-        :class="{ selected: allSelected }"
-        @click="toggleAll"
-      >
-        <span class="source-dot" :class="{ active: allSelected }"></span>
-        <span class="source-name">{{ t('chat.allApis') }}</span>
-      </button>
-      <button
-        v-for="source in sources"
-        :key="source.id"
-        class="source-chip"
-        :class="{ selected: isSourceSelected(source.id) && !allSelected }"
-        @click="toggleSource(source.id)"
-      >
-        <span class="source-dot" :class="{ active: isSourceSelected(source.id) }"></span>
-        <span class="source-name">{{ source.name }}</span>
-      </button>
+      <div class="source-selector-scroll">
+        <button
+          class="source-chip"
+          :class="{ selected: allSelected }"
+          @click="toggleAll"
+        >
+          <span class="source-dot" :class="{ active: allSelected }"></span>
+          <span class="source-name">{{ t('chat.allApis') }}</span>
+        </button>
+        <button
+          v-for="source in sources"
+          :key="source.id"
+          class="source-chip"
+          :class="{ selected: isSourceSelected(source.id) && !allSelected }"
+          @click="toggleSource(source.id)"
+        >
+          <span class="source-dot" :class="{ active: isSourceSelected(source.id) }"></span>
+          <span class="source-name">{{ source.name }}</span>
+        </button>
+      </div>
+      <!-- Fade effects for scroll -->
+      <div class="source-selector-fade source-selector-fade-left"></div>
+      <div class="source-selector-fade source-selector-fade-right"></div>
     </div>
 
     <div class="chat-input-container">
@@ -127,6 +155,7 @@ function handleInput() {
         :disabled="disabled"
         @keydown="handleKeydown"
         @input="handleInput"
+        enterkeyhint="send"
       ></textarea>
       <button
         class="send-btn"
@@ -152,11 +181,19 @@ function handleInput() {
 
 /* Source selector */
 .source-selector {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.source-selector-scroll {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 10px;
   padding: 0 4px;
+}
+
+.source-selector-fade {
+  display: none;
 }
 
 .source-chip {
@@ -173,6 +210,7 @@ function handleInput() {
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .source-chip:hover {
@@ -233,6 +271,7 @@ function handleInput() {
   color: var(--color-text-primary);
   padding: 6px 0;
   max-height: 200px;
+  min-height: 20px;
 }
 
 .chat-textarea::placeholder {
@@ -279,5 +318,125 @@ function handleInput() {
   font-size: 11px;
   color: var(--color-text-tertiary);
   margin-top: 4px;
+}
+
+/* Mobile adaptations (< 640px) */
+@media (max-width: 640px) {
+  .chat-input-wrapper {
+    padding: 8px 12px 8px;
+    max-width: 100%;
+  }
+
+  /* Source selector - horizontal scroll with fade */
+  .source-selector {
+    position: relative;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+
+  .source-selector-scroll {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px 4px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .source-selector-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .source-selector-fade {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .source-selector-fade-left {
+    left: 0;
+    background: linear-gradient(to right, var(--color-bg) 0%, transparent 100%);
+  }
+
+  .source-selector-fade-right {
+    right: 0;
+    background: linear-gradient(to left, var(--color-bg) 0%, transparent 100%);
+  }
+
+  .source-chip {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .source-name {
+    max-width: 120px;
+  }
+
+  /* Input container - full width */
+  .chat-input-container {
+    padding: 8px 10px 8px 16px;
+    border-radius: 22px;
+    gap: 6px;
+  }
+
+  /* Textarea - larger touch target */
+  .chat-textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    min-height: 44px;
+    padding: 8px 0;
+    line-height: 1.4;
+  }
+
+  /* Send button - larger for touch */
+  .send-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .send-btn i {
+    font-size: 16px;
+  }
+
+  /* Hide hint on very small screens */
+  .input-hint {
+    display: none;
+  }
+}
+
+/* Extra small screens (< 380px) */
+@media (max-width: 380px) {
+  .chat-input-wrapper {
+    padding: 6px 8px 6px;
+  }
+
+  .chat-input-container {
+    padding: 6px 8px 6px 12px;
+  }
+
+  .chat-textarea {
+    font-size: 16px;
+    min-height: 40px;
+  }
+
+  .send-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+/* Tablet adaptations (641px - 768px) */
+@media (max-width: 768px) and (min-width: 641px) {
+  .chat-input-wrapper {
+    padding: 10px 16px 8px;
+  }
 }
 </style>

@@ -42,11 +42,16 @@ const methodChartOption = computed(() => {
   const entries = Object.entries(byMethod).sort((a, b) => b[1] - a[1])
   return {
     tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-    legend: { bottom: 0, textStyle: { fontSize: 12, color: '#5f6368' } },
+    legend: { 
+      bottom: 0, 
+      textStyle: { fontSize: 11, color: '#5f6368' },
+      itemWidth: 10,
+      itemHeight: 10,
+    },
     series: [
       {
         type: 'pie',
-        radius: ['42%', '70%'],
+        radius: ['40%', '65%'],
         center: ['50%', '45%'],
         avoidLabelOverlap: true,
         itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
@@ -75,13 +80,13 @@ const sourceChartOption = computed(() => {
     grid: { left: 12, right: 20, top: 12, bottom: 4, containLabel: true },
     xAxis: {
       type: 'value',
-      axisLabel: { fontSize: 11, color: '#5f6368' },
+      axisLabel: { fontSize: 10, color: '#5f6368' },
       splitLine: { lineStyle: { color: '#f1f3f4' } },
     },
     yAxis: {
       type: 'category',
       data: names.reverse(),
-      axisLabel: { fontSize: 11, color: '#5f6368' },
+      axisLabel: { fontSize: 10, color: '#5f6368' },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -89,7 +94,7 @@ const sourceChartOption = computed(() => {
       {
         type: 'bar',
         data: values.reverse(),
-        barMaxWidth: 28,
+        barMaxWidth: 24,
         itemStyle: { color: '#1a73e8', borderRadius: [0, 4, 4, 0] },
         emphasis: { itemStyle: { color: '#1557b0' } },
       },
@@ -164,24 +169,26 @@ function formatDate(dateStr: string): string {
       <!-- Sources table -->
       <div class="table-card" v-if="sortedSources.length > 0">
         <h3 class="card-title">{{ t('dash.sourcesTable') }}</h3>
-        <table class="sources-table">
-          <thead>
-            <tr>
-              <th>{{ t('dash.name') }}</th>
-              <th>{{ t('dash.baseUrl') }}</th>
-              <th>{{ t('dash.endpointsCol') }}</th>
-              <th>{{ t('dash.added') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="src in sortedSources" :key="src.id">
-              <td class="source-name">{{ src.name }}</td>
-              <td class="source-url">{{ src.base_url || '\u2014' }}</td>
-              <td class="source-count">{{ src.endpoint_count }}</td>
-              <td class="source-date">{{ formatDate(src.created_at) }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-scroll-wrapper">
+          <table class="sources-table">
+            <thead>
+              <tr>
+                <th>{{ t('dash.name') }}</th>
+                <th>{{ t('dash.baseUrl') }}</th>
+                <th>{{ t('dash.endpointsCol') }}</th>
+                <th>{{ t('dash.added') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="src in sortedSources" :key="src.id">
+                <td class="source-name">{{ src.name }}</td>
+                <td class="source-url">{{ src.base_url || '\u2014' }}</td>
+                <td class="source-count">{{ src.endpoint_count }}</td>
+                <td class="source-date">{{ formatDate(src.created_at) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Method breakdown -->
@@ -292,10 +299,31 @@ function formatDate(dateStr: string): string {
   box-shadow: var(--shadow-sm);
 }
 
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
 .sources-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  min-width: 500px;
 }
 
 .sources-table th {
@@ -307,6 +335,7 @@ function formatDate(dateStr: string): string {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
+  white-space: nowrap;
 }
 
 .sources-table td {
@@ -325,6 +354,7 @@ function formatDate(dateStr: string): string {
 
 .source-name {
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .source-url {
@@ -340,6 +370,7 @@ function formatDate(dateStr: string): string {
 .source-count {
   font-weight: 600;
   text-align: center;
+  white-space: nowrap;
 }
 
 .source-date {
@@ -410,14 +441,19 @@ function formatDate(dateStr: string): string {
 
 .empty-action {
   margin-top: 8px;
-  padding: 10px 24px;
+  padding: 12px 28px;
   background: var(--color-accent);
   color: white;
   border-radius: var(--radius-lg);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   text-decoration: none;
   transition: background var(--transition-fast);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 
 .empty-action:hover {
@@ -425,13 +461,297 @@ function formatDate(dateStr: string): string {
   text-decoration: none;
 }
 
+.empty-action:active {
+  transform: scale(0.98);
+}
+
+/* ---- Skeleton ---- */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border-light) 50%, var(--color-bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* ---- Responsive ---- */
-@media (max-width: 768px) {
+
+/* Tablet (< 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-view {
+    padding: 24px 20px;
+  }
+
   .stats-row {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .stat-card {
+    padding: 18px 20px;
+  }
+
+  .stat-value {
+    font-size: 26px;
+  }
+}
+
+/* Tablet (< 768px) */
+@media (max-width: 768px) {
+  .dashboard-view {
+    padding: 20px 16px;
+  }
+
+  .dashboard-container {
+    gap: 20px;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
   .charts-row {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .chart-card {
+    padding: 16px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .table-card {
+    padding: 16px;
+  }
+
+  .sources-table {
+    font-size: 12px;
+  }
+
+  .sources-table th,
+  .sources-table td {
+    padding: 8px 10px;
+  }
+
+  .source-url {
+    max-width: 150px;
+  }
+
+  .method-cards {
+    gap: 8px;
+  }
+
+  .method-badge {
+    padding: 6px 12px;
+  }
+
+  .method-name {
+    font-size: 11px;
+  }
+
+  .method-count {
+    font-size: 13px;
+  }
+
+  .dashboard-empty {
+    padding: 60px 20px;
+  }
+
+  .empty-icon {
+    font-size: 40px;
+  }
+
+  .empty-title {
+    font-size: 18px;
+  }
+
+  .empty-action {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile (< 640px) */
+@media (max-width: 640px) {
+  .dashboard-view {
+    padding: 16px 12px;
+  }
+
+  .dashboard-container {
+    gap: 16px;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .chart-card {
+    padding: 14px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .card-title {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .table-card {
+    padding: 14px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .sources-table th {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+
+  .sources-table td {
+    padding: 8px;
+  }
+
+  .source-name {
+    font-size: 12px;
+  }
+
+  .source-url {
+    font-size: 11px;
+    max-width: 100px;
+  }
+
+  .source-date {
+    font-size: 11px;
+  }
+
+  .method-cards {
+    gap: 6px;
+  }
+
+  .method-badge {
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+  }
+
+  .method-name {
+    font-size: 11px;
+  }
+
+  .method-count {
+    font-size: 12px;
+  }
+
+  .dashboard-empty {
+    padding: 48px 16px;
+    gap: 12px;
+  }
+
+  .empty-icon {
+    font-size: 36px;
+  }
+
+  .empty-title {
+    font-size: 17px;
+  }
+
+  .empty-description {
+    font-size: 13px;
+  }
+
+  .empty-action {
+    padding: 14px 24px;
+    font-size: 14px;
+    min-height: 48px;
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* Small mobile (< 480px) - 1 колонка для статов */
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* Small mobile (< 375px) */
+@media (max-width: 375px) {
+  .dashboard-view {
+    padding: 12px 10px;
+  }
+
+  .stat-card {
+    padding: 12px 14px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .chart-card,
+  .table-card {
+    padding: 12px;
+  }
+
+  .sources-table th,
+  .sources-table td {
+    padding: 6px;
+  }
+
+  .method-badge {
+    padding: 5px 8px;
   }
 }
 </style>

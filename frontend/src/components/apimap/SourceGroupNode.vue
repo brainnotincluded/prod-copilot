@@ -45,4 +45,46 @@ defineProps<{
   border-radius: 10px;
   font-weight: 500;
 }
+
+/* Mobile adaptations */
+@media (max-width: 640px) {
+  .source-group-label {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .source-icon {
+    font-size: 16px;
+  }
+
+  .source-name {
+    font-size: 15px;
+  }
+
+  .source-count {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .source-group-label {
+    padding: 10px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .source-icon {
+    font-size: 14px;
+  }
+
+  .source-name {
+    font-size: 13px;
+  }
+
+  .source-count {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+}
 </style>

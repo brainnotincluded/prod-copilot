@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useLocale } from '@/composables/useLocale'
 
 const { t } = useLocale()
@@ -36,6 +36,50 @@ const isArrayRows = computed(() => {
 const sortColumn = ref<string | null>(null)
 const sortDirection = ref<'asc' | 'desc'>('asc')
 const filterText = ref('')
+const filterExpanded = ref(false)
+const viewMode = ref<'table' | 'cards'>('table')
+
+// Responsive detection
+const isMobile = ref(false)
+const isTablet = ref(false)
+const isManyColumns = computed(() => columns.value.length > 3)
+
+function updateBreakpoint() {
+  const width = window.innerWidth
+  isMobile.value = width <= 640
+  isTablet.value = width > 640 && width <= 768
+}
+
+onMounted(() => {
+  updateBreakpoint()
+  window.addEventListener('resize', updateBreakpoint)
+  setupScrollShadows()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateBreakpoint)
+})
+
+// Scroll shadows for horizontal scroll
+const tableWrapperRef = ref<HTMLElement | null>(null)
+
+function setupScrollShadows() {
+  const wrapper = tableWrapperRef.value
+  if (!wrapper) return
+
+  const updateShadows = () => {
+    const hasScrollLeft = wrapper.scrollLeft > 0
+    const hasScrollRight = wrapper.scrollLeft < wrapper.scrollWidth - wrapper.clientWidth - 1
+    wrapper.classList.toggle('scroll-left', hasScrollLeft)
+    wrapper.classList.toggle('scroll-right', hasScrollRight)
+  }
+
+  wrapper.addEventListener('scroll', updateShadows, { passive: true })
+  // Initial check
+  setTimeout(updateShadows, 0)
+  // Update on resize
+  window.addEventListener('resize', updateShadows)
+}
 
 function toggleSort(col: string) {
   if (sortColumn.value === col) {
@@ -97,6 +141,17 @@ function formatCell(value: any): string {
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
 }
+
+function toggleFilter() {
+  filterExpanded.value = !filterExpanded.value
+  if (!filterExpanded.value) {
+    filterText.value = ''
+  }
+}
+
+function toggleViewMode() {
+  viewMode.value = viewMode.value === 'table' ? 'cards' : 'table'
+}
 </script>
 
 <template>
@@ -104,19 +159,33 @@ function formatCell(value: any): string {
     <div class="table-header">
       <span v-if="title" class="result-title">{{ title }}</span>
       <div class="table-controls">
-        <div class="filter-input-container">
-          <i class="pi pi-search filter-icon"></i>
+        <div class="filter-input-container" :class="{ 'filter-expanded': filterExpanded }">
+          <button class="filter-toggle-btn" @click="toggleFilter" :title="t('results.filter')">
+            <i class="pi pi-search"></i>
+          </button>
           <input
             v-model="filterText"
             type="text"
             class="filter-input"
             :placeholder="t('results.filter')"
+            :class="{ 'filter-visible': filterExpanded }"
           />
         </div>
+        <!-- View mode toggle for mobile with many columns -->
+        <button
+          v-if="isMobile && isManyColumns"
+          class="view-mode-toggle"
+          @click="toggleViewMode"
+          :title="viewMode === 'table' ? t('results.cardsView') : t('results.tableView')"
+        >
+          <i class="pi" :class="viewMode === 'table' ? 'pi-th-large' : 'pi-table'"></i>
+        </button>
         <span class="row-count">{{ t('results.rows', filteredRows.length) }}</span>
       </div>
     </div>
-    <div class="table-wrapper">
+    
+    <!-- Table View -->
+    <div v-if="viewMode === 'table'" ref="tableWrapperRef" class="table-wrapper">
       <table class="data-table">
         <thead>
           <tr>
@@ -124,6 +193,7 @@ function formatCell(value: any): string {
               v-for="(col, colIdx) in columns"
               :key="col"
               class="table-th"
+              :class="{ 'mobile-hidden': isMobile && colIdx >= 3 && isManyColumns }"
               @click="toggleSort(col)"
             >
               <span class="th-content">
@@ -142,12 +212,42 @@ function formatCell(value: any): string {
             <td :colspan="columns.length" class="table-empty">{{ t('results.noData') }}</td>
           </tr>
           <tr v-for="(row, idx) in filteredRows" :key="idx" class="table-row">
-            <td v-for="(col, colIdx) in columns" :key="col" class="table-td">
+            <td
+              v-for="(col, colIdx) in columns"
+              :key="col"
+              class="table-td"
+              :class="{ 'mobile-hidden': isMobile && colIdx >= 3 && isManyColumns }"
+            >
               {{ formatCell(getCellValue(row, col, colIdx)) }}
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Cards View (Mobile alternative) -->
+    <div v-else class="cards-wrapper">
+      <div v-if="filteredRows.length === 0" class="cards-empty">
+        {{ t('results.noData') }}
+      </div>
+      <div
+        v-for="(row, idx) in filteredRows"
+        :key="idx"
+        class="data-card"
+      >
+        <div
+          v-for="(col, colIdx) in columns"
+          :key="col"
+          class="data-card-row"
+        >
+          <span class="data-card-label">
+            {{ isArrayRows ? t('results.column', colIdx + 1) : formatHeader(col) }}
+          </span>
+          <span class="data-card-value">
+            {{ formatCell(getCellValue(row, col, colIdx)) }}
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -181,6 +281,46 @@ function formatCell(value: any): string {
 
 .filter-input-container {
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-toggle-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-toggle-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.view-mode-toggle {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.view-mode-toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .filter-icon {
@@ -201,7 +341,7 @@ function formatCell(value: any): string {
   color: var(--color-text-primary);
   outline: none;
   width: 180px;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), width var(--transition-fast);
 }
 
 .filter-input:focus {
@@ -216,6 +356,36 @@ function formatCell(value: any): string {
 
 .table-wrapper {
   overflow-x: auto;
+  position: relative;
+}
+
+/* Shadow indicators for horizontal scroll */
+.table-wrapper::before,
+.table-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  z-index: 1;
+}
+
+.table-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+}
+
+.table-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.1), transparent);
+}
+
+.table-wrapper.scroll-left::before,
+.table-wrapper.scroll-right::after {
+  opacity: 1;
 }
 
 .data-table {
@@ -234,6 +404,9 @@ function formatCell(value: any): string {
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
+  min-height: 44px;
+  height: 44px;
+  box-sizing: border-box;
 }
 
 .table-th:hover {
@@ -244,6 +417,7 @@ function formatCell(value: any): string {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-height: 44px;
 }
 
 .sort-icon {
@@ -269,5 +443,233 @@ function formatCell(value: any): string {
   padding: 24px;
   text-align: center;
   color: var(--color-text-tertiary);
+}
+
+/* Cards view styles */
+.cards-wrapper {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cards-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+}
+
+.data-card {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: var(--color-bg);
+}
+
+.data-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border-lightest);
+}
+
+.data-card-row:last-child {
+  border-bottom: none;
+}
+
+.data-card-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  text-transform: capitalize;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.data-card-value {
+  font-size: 12px;
+  color: var(--color-text-primary);
+  text-align: right;
+  word-break: break-word;
+  max-width: 60%;
+}
+
+/* Tablet styles (641-768px) */
+@media (max-width: 768px) {
+  .table-header {
+    padding: 10px 12px;
+  }
+
+  .result-title {
+    font-size: 13px;
+  }
+
+  .table-th,
+  .table-td {
+    padding: 9px 14px;
+  }
+
+  .filter-input {
+    width: 160px;
+  }
+
+  .data-table {
+    font-size: 12px;
+  }
+
+  .table-td {
+    max-width: 200px;
+  }
+
+  .cards-wrapper {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .data-card {
+    padding: 10px;
+  }
+
+  .data-card-label {
+    font-size: 10px;
+  }
+
+  .data-card-value {
+    font-size: 11px;
+  }
+}
+
+/* Mobile styles (< 640px) */
+@media (max-width: 640px) {
+  .table-header {
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .table-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .result-title {
+    font-size: 13px;
+  }
+
+  /* Compact filter - only icon, expandable */
+  .filter-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .filter-toggle-btn {
+    padding: 6px 8px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .view-mode-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .filter-input {
+    width: 0;
+    padding: 0;
+    border: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: all var(--transition-fast);
+  }
+
+  .filter-input.filter-visible {
+    width: 140px;
+    padding: 6px 10px 6px 28px;
+    border: 1px solid var(--color-border);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .row-count {
+    font-size: 11px;
+    width: 100%;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  .data-table {
+    font-size: 12px;
+  }
+
+  .table-th,
+  .table-td {
+    padding: 8px 12px;
+  }
+
+  /* Larger touch target for sorting on mobile */
+  .table-th {
+    min-height: 44px;
+    height: auto;
+    padding: 12px;
+  }
+
+  .th-content {
+    min-height: 44px;
+  }
+
+  .table-td {
+    max-width: 120px;
+  }
+
+  .table-empty {
+    padding: 16px;
+    font-size: 12px;
+  }
+
+  /* Enhanced horizontal scroll shadows */
+  .table-wrapper::before,
+  .table-wrapper::after {
+    width: 30px;
+  }
+
+  .table-wrapper::before {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  }
+
+  .table-wrapper::after {
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.15), transparent);
+  }
+
+  /* Hide columns beyond first 3 on mobile with many columns */
+  .mobile-hidden {
+    display: none;
+  }
+
+  .cards-wrapper {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .data-card {
+    padding: 10px;
+    border-radius: var(--radius-sm);
+  }
+
+  .data-card-row {
+    padding: 5px 0;
+  }
+
+  .data-card-label {
+    font-size: 10px;
+  }
+
+  .data-card-value {
+    font-size: 11px;
+  }
 }
 </style>

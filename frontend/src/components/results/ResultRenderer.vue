@@ -85,4 +85,38 @@ const dashboardItems = computed(() => {
   border-radius: var(--radius-md);
   overflow: hidden;
 }
+
+/* Tablet styles (641-768px) */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .dashboard-item {
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* Mobile styles (< 640px) */
+@media (max-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .dashboard-item {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .result-renderer {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
 </style>

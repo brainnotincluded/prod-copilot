@@ -161,6 +161,7 @@ watch(
   color: var(--color-text-secondary);
   font-size: 13px;
   transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .suggestion-chip:hover {
@@ -179,5 +180,80 @@ watch(
   flex-shrink: 0;
   background: var(--color-bg);
   border-top: 1px solid var(--color-border-light);
+}
+
+/* Mobile adaptations */
+@media (max-width: 640px) {
+  .chat-empty {
+    padding: 20px 12px;
+  }
+
+  .empty-content {
+    gap: 16px;
+  }
+
+  .empty-logo {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+    border-radius: var(--radius-lg);
+  }
+
+  .empty-title {
+    font-size: 24px;
+    letter-spacing: -0.3px;
+  }
+
+  .empty-subtitle {
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0 8px;
+  }
+
+  .empty-suggestions {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 4px 12px;
+    margin: 8px -12px 0;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .empty-suggestions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .suggestion-chip {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .chat-messages {
+    padding: 4px 0;
+  }
+}
+
+/* Tablet adaptations */
+@media (max-width: 768px) and (min-width: 641px) {
+  .chat-empty {
+    padding: 30px 16px;
+  }
+
+  .empty-logo {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+  }
+
+  .empty-title {
+    font-size: 28px;
+  }
+
+  .empty-suggestions {
+    gap: 8px;
+  }
 }
 </style>

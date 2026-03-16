@@ -13,6 +13,7 @@ const { t } = useLocale()
 
 const activeTab = ref<'file' | 'url'>('file')
 const isDragging = ref(false)
+const isTouchDragging = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 // URL import fields
@@ -88,6 +89,15 @@ function handleDrop(event: DragEvent) {
   if (files && files.length > 0) {
     uploadFile(files[0])
   }
+}
+
+// Touch events for mobile drag & drop indication
+function handleTouchStart(event: TouchEvent) {
+  isTouchDragging.value = true
+}
+
+function handleTouchEnd(event: TouchEvent) {
+  isTouchDragging.value = false
 }
 
 function handleFileSelect(event: Event) {
@@ -210,7 +220,7 @@ function dismissResult() {
         @click="activeTab = 'file'; resetProgress()"
       >
         <i class="pi pi-upload"></i>
-        {{ t('swagger.fileUpload') }}
+        <span class="tab-text">{{ t('swagger.fileUpload') }}</span>
       </button>
       <button
         class="tab-btn"
@@ -218,7 +228,7 @@ function dismissResult() {
         @click="activeTab = 'url'; resetProgress()"
       >
         <i class="pi pi-link"></i>
-        {{ t('swagger.urlImport') }}
+        <span class="tab-text">{{ t('swagger.urlImport') }}</span>
       </button>
     </div>
 
@@ -228,12 +238,15 @@ function dismissResult() {
         class="upload-zone"
         :class="{
           dragging: isDragging,
+          'touch-dragging': isTouchDragging,
           uploading: isUploading,
         }"
         @dragover="handleDragOver"
         @dragleave="handleDragLeave"
         @drop="handleDrop"
         @click="triggerFileInput"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
       >
         <input
           ref="fileInput"
@@ -382,6 +395,9 @@ function dismissResult() {
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  min-height: 48px;
+  min-width: 44px;
+  touch-action: manipulation;
 }
 
 .tab-btn:first-child {
@@ -396,6 +412,10 @@ function dismissResult() {
 
 .tab-btn:hover:not(.active) {
   color: var(--color-text-primary);
+}
+
+.tab-btn:active {
+  transform: scale(0.98);
 }
 
 .tab-btn i {
@@ -421,14 +441,20 @@ function dismissResult() {
 .upload-zone {
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 36px 20px;
+  padding: 40px 24px;
   text-align: center;
   cursor: pointer;
   transition: border-color var(--transition-fast), background var(--transition-fast);
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 
 .upload-zone:hover,
-.upload-zone.dragging {
+.upload-zone.dragging,
+.upload-zone.touch-dragging {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
 }
@@ -436,6 +462,10 @@ function dismissResult() {
 .upload-zone.uploading {
   opacity: 0.7;
   pointer-events: none;
+}
+
+.upload-zone:active {
+  transform: scale(0.99);
 }
 
 .file-input {
@@ -446,27 +476,28 @@ function dismissResult() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .upload-icon {
-  font-size: 28px;
+  font-size: 32px;
   color: var(--color-text-tertiary);
 }
 
 .upload-zone:hover .upload-icon,
-.upload-zone.dragging .upload-icon {
+.upload-zone.dragging .upload-icon,
+.upload-zone.touch-dragging .upload-icon {
   color: var(--color-accent);
 }
 
 .upload-text {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .upload-hint {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-text-tertiary);
 }
 
@@ -474,13 +505,13 @@ function dismissResult() {
 .url-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .form-label {
@@ -499,14 +530,17 @@ function dismissResult() {
 }
 
 .form-input {
-  padding: 9px 12px;
+  padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-primary);
   background: var(--color-bg);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
 }
 
 .form-input::placeholder {
@@ -527,20 +561,26 @@ function dismissResult() {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 20px;
+  gap: 8px;
+  padding: 14px 24px;
   background: var(--color-accent);
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), transform 0.1s ease;
+  min-height: 48px;
+  touch-action: manipulation;
 }
 
 .import-btn:hover:not(:disabled) {
   background: var(--color-accent-hover);
+}
+
+.import-btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .import-btn:disabled {
@@ -552,10 +592,10 @@ function dismissResult() {
 .upload-error {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: 10px;
+  padding: 14px 16px;
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: 14px;
   background: #fde7e7;
   color: var(--color-error);
   border: 1px solid #f5c6cb;
@@ -568,12 +608,20 @@ function dismissResult() {
   color: inherit;
   opacity: 0.6;
   cursor: pointer;
-  padding: 0;
+  padding: 10px;
   font-size: 12px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  border-radius: var(--radius-sm);
 }
 
 .error-dismiss:hover {
   opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* Progress Stepper */
@@ -581,7 +629,7 @@ function dismissResult() {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 14px 16px;
+  padding: 16px 18px;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-light);
@@ -666,23 +714,23 @@ function dismissResult() {
 
 /* Success Result */
 .upload-result {
-  padding: 16px;
+  padding: 18px;
   background: #f0faf3;
   border: 1px solid #c3e6cb;
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .result-header {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
 }
 
 .result-icon {
-  font-size: 20px;
+  font-size: 22px;
   color: var(--color-success);
   flex-shrink: 0;
   margin-top: 1px;
@@ -691,17 +739,17 @@ function dismissResult() {
 .result-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .result-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .result-count {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-success);
   font-weight: 500;
 }
@@ -714,20 +762,27 @@ function dismissResult() {
 
 .result-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .result-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 7px 14px;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 18px;
   border-radius: var(--radius-md);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), transform 0.1s ease;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+
+.result-btn:active {
+  transform: scale(0.98);
 }
 
 .result-btn.primary {
@@ -749,13 +804,232 @@ function dismissResult() {
   background: var(--color-bg-secondary);
 }
 
-@media (max-width: 640px) {
-  .upload-zone {
-    padding: 28px 16px;
+/* Tablet (< 768px) */
+@media (max-width: 768px) {
+  .swagger-upload {
+    gap: 10px;
   }
 
+  .tab-btn {
+    padding: 12px 14px;
+    min-height: 48px;
+  }
+
+  .upload-zone {
+    padding: 32px 20px;
+    min-height: 150px;
+  }
+
+  .upload-icon {
+    font-size: 28px;
+  }
+
+  .url-form {
+    gap: 14px;
+  }
+
+  .progress-stepper {
+    padding: 14px 16px;
+  }
+}
+
+/* Tablet (641px - 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .upload-zone {
+    min-height: 180px;
+    padding: 48px 32px;
+  }
+
+  .upload-icon {
+    font-size: 36px;
+  }
+
+  .url-form {
+    gap: 18px;
+  }
+}
+
+/* Mobile (max-width: 640px) */
+@media (max-width: 640px) {
+  .swagger-upload {
+    gap: 10px;
+  }
+
+  .tab-toggle {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-radius: var(--radius-md);
+  }
+
+  .tab-toggle::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    min-width: 120px;
+    min-height: 48px;
+    font-size: 13px;
+  }
+
+  .tab-btn i {
+    font-size: 15px;
+  }
+
+  .tab-text {
+    white-space: nowrap;
+  }
+
+  /* Drag & drop зона - адаптивная высота */
+  .upload-zone {
+    padding: 24px 16px;
+    min-height: 120px;
+    border-radius: var(--radius-md);
+  }
+
+  .upload-icon {
+    font-size: 24px;
+  }
+
+  .upload-text {
+    font-size: 14px;
+  }
+
+  .upload-hint {
+    font-size: 12px;
+  }
+
+  .upload-content {
+    gap: 8px;
+  }
+
+  .url-form {
+    gap: 12px;
+  }
+
+  .form-field {
+    gap: 4px;
+  }
+
+  .form-label {
+    font-size: 11px;
+  }
+
+  /* Input поля - 100% ширины на мобильных */
+  .form-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 12px;
+    min-height: 48px;
+  }
+
+  .import-btn {
+    padding: 14px 20px;
+    font-size: 15px;
+    min-height: 52px;
+    width: 100%;
+  }
+
+  /* Кнопки - full width stack на мобильных */
   .result-actions {
     flex-direction: column;
+    gap: 8px;
+  }
+
+  .result-btn {
+    width: 100%;
+    min-height: 52px;
+    font-size: 15px;
+    padding: 14px 18px;
+  }
+
+  .upload-error {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .error-dismiss {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .progress-stepper {
+    padding: 12px 14px;
+  }
+
+  .step-label {
+    font-size: 13px;
+  }
+
+  .upload-result {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .result-icon {
+    font-size: 20px;
+  }
+
+  .result-name {
+    font-size: 14px;
+  }
+}
+
+/* Small mobile (max-width: 375px) */
+@media (max-width: 375px) {
+  .upload-zone {
+    padding: 20px 12px;
+    min-height: 100px;
+  }
+
+  .upload-icon {
+    font-size: 22px;
+  }
+
+  .upload-text {
+    font-size: 13px;
+  }
+
+  .upload-hint {
+    font-size: 11px;
+  }
+
+  .tab-btn {
+    min-width: 100px;
+    padding: 10px 12px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  .tab-btn i {
+    font-size: 14px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .import-btn {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .result-btn {
+    min-height: 48px;
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  .step-label {
+    font-size: 12px;
+  }
+
+  .progress-stepper {
+    padding: 10px 12px;
   }
 }
 </style>

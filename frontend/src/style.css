@@ -33,6 +33,7 @@
   --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-input: 0 1px 6px rgba(0, 0, 0, 0.06), 0 2px 32px rgba(0, 0, 0, 0.04);
+  --shadow-mobile-nav: 0 -2px 10px rgba(0, 0, 0, 0.1);
 
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -40,6 +41,18 @@
 
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Mobile CSS Variables */
+  --mobile-header-height: 48px;
+  --mobile-nav-height: 64px;
+  --mobile-sidebar-width: 280px;
+  
+  /* Safe Area Variables for Notch Devices */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -204,4 +217,302 @@ textarea {
 .steps-expand-leave-to {
   max-height: 0;
   opacity: 0;
+}
+
+/* ============================================
+   UTILITY CLASSES FOR RESPONSIVENESS
+   ============================================ */
+
+/* Hide on mobile screens (<= 768px) */
+.hide-on-mobile {
+  display: inherit;
+}
+
+/* Hide on desktop screens (> 768px) */
+.hide-on-desktop {
+  display: none;
+}
+
+/* Full width on mobile */
+.full-width-mobile {
+  width: auto;
+}
+
+/* Mobile overlay base styles */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.mobile-overlay.active {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Bottom navigation for mobile */
+.bottom-nav {
+  display: none;
+}
+
+/* Touch-friendly base styles */
+.touch-friendly {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ============================================
+   MEDIA QUERIES - BREAKPOINTS
+   ============================================ */
+
+/* Tablet and smaller (<= 1024px) */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 200px;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+}
+
+/* Mobile Landscape (<= 768px) */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+    --header-height: var(--mobile-header-height);
+  }
+  
+  html {
+    font-size: 15px;
+  }
+  
+  body {
+    font-size: 15px;
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Utility classes */
+  .hide-on-mobile {
+    display: none !important;
+  }
+  
+  .hide-on-desktop {
+    display: inherit;
+  }
+  
+  .full-width-mobile {
+    width: 100% !important;
+  }
+  
+  /* App layout adjustments */
+  .app-main {
+    margin-left: 0 !important;
+  }
+  
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    width: var(--mobile-sidebar-width);
+  }
+  
+  /* Bottom nav visible on mobile */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--mobile-nav-height) + var(--safe-area-bottom));
+    padding-bottom: var(--safe-area-bottom);
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border-light);
+    box-shadow: var(--shadow-mobile-nav);
+    z-index: 999;
+  }
+  
+  /* Content padding for bottom nav */
+  .app-content {
+    padding-bottom: calc(var(--mobile-nav-height) + var(--safe-area-bottom));
+  }
+  
+  /* Mobile overlay always available on mobile */
+  .mobile-overlay {
+    display: block;
+  }
+  
+  /* Container adjustments */
+  .container {
+    padding: 0 12px;
+  }
+}
+
+/* Mobile Portrait (<= 640px) */
+@media (max-width: 640px) {
+  :root {
+    --radius-pill: 20px;
+  }
+  
+  html {
+    font-size: 16px; /* Prevent zoom on iOS input focus */
+  }
+  
+  body {
+    font-size: 16px;
+  }
+  
+  /* Compact spacing for chat */
+  .chat-message {
+    padding: 8px 12px !important;
+  }
+  
+  .message-container {
+    padding: 12px 0 !important;
+  }
+  
+  .message-avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  
+  /* Smaller header */
+  .app-header {
+    height: var(--mobile-header-height);
+    padding: 0 12px;
+  }
+  
+  /* Full-width buttons on mobile */
+  .btn-mobile-full {
+    width: 100%;
+  }
+}
+
+/* Small Mobile (<= 480px) */
+@media (max-width: 480px) {
+  :root {
+    --radius-lg: 10px;
+    --radius-xl: 14px;
+    --mobile-sidebar-width: 260px;
+  }
+  
+  .container {
+    padding: 0 8px;
+  }
+  
+  /* Compact cards */
+  .card {
+    border-radius: var(--radius-md);
+  }
+  
+  /* Smaller gaps */
+  .gap-mobile-sm {
+    gap: 8px !important;
+  }
+  
+  /* Stack elements on very small screens */
+  .stack-mobile {
+    flex-direction: column !important;
+  }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+/* Touch device specific styles */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets */
+  button,
+  .btn,
+  .nav-item,
+  .source-chip,
+  .suggestion-chip,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better spacing for touch */
+  .touch-spacing > * + * {
+    margin-top: 8px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  button:hover,
+  .btn:hover,
+  .nav-item:hover,
+  .source-chip:hover,
+  .suggestion-chip:hover {
+    background: inherit;
+    transform: none;
+  }
+  
+  /* Add active state feedback */
+  button:active,
+  .btn:active,
+  .nav-item:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+  
+  /* Disable text selection on interactive elements */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Smooth scrolling */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS only */
+  input,
+  textarea {
+    font-size: 16px; /* Prevent zoom on focus */
+  }
+  
+  /* Fix for iOS 100vh issue */
+  .app-layout {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Desktop specific - hide mobile overlay */
+@media (min-width: 769px) {
+  .mobile-overlay {
+    display: none !important;
+  }
+  
+  .hide-on-desktop {
+    display: none !important;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

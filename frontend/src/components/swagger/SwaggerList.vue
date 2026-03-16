@@ -22,6 +22,13 @@ const { showToast } = useToast()
 const { t } = useLocale()
 
 const sourceStats = ref<Record<number, { total_endpoints: number; by_method: Record<string, number>; base_url?: string }>>({})
+const refreshing = ref(false)
+const touchStartY = ref(0)
+const touchEndY = ref(0)
+const isPulling = ref(false)
+const pullProgress = ref(0)
+const swipedItemId = ref<number | null>(null)
+const touchStartX = ref(0)
 
 const methodColors: Record<string, string> = {
   GET: '#34a853',
@@ -102,10 +109,93 @@ function isValidUrl(str: string): boolean {
     return false
   }
 }
+
+// Pull to refresh handlers
+function handleTouchStart(event: TouchEvent) {
+  touchStartY.value = event.touches[0].clientY
+  touchStartX.value = event.touches[0].clientX
+}
+
+function handleTouchMove(event: TouchEvent) {
+  // Check if it's a horizontal swipe for delete
+  const touchX = event.touches[0].clientX
+  const diffX = touchStartX.value - touchX
+  
+  // If horizontal swipe detected, don't handle pull to refresh
+  if (Math.abs(diffX) > 20) {
+    return
+  }
+  
+  // Pull to refresh logic
+  if (window.scrollY === 0 && !refreshing.value) {
+    touchEndY.value = event.touches[0].clientY
+    const diff = touchEndY.value - touchStartY.value
+    if (diff > 0) {
+      isPulling.value = true
+      pullProgress.value = Math.min(diff / 80, 1)
+      event.preventDefault()
+    }
+  }
+}
+
+function handleTouchEnd() {
+  if (isPulling.value && pullProgress.value >= 1) {
+    triggerRefresh()
+  }
+  isPulling.value = false
+  pullProgress.value = 0
+}
+
+async function triggerRefresh() {
+  if (refreshing.value) return
+  refreshing.value = true
+  await fetchAllStats()
+  emit('refresh')
+  setTimeout(() => {
+    refreshing.value = false
+  }, 500)
+}
+
+// Swipe to delete handlers
+function handleCardTouchStart(event: TouchEvent, id: number) {
+  touchStartX.value = event.touches[0].clientX
+}
+
+function handleCardTouchMove(event: TouchEvent, id: number) {
+  const touchX = event.touches[0].clientX
+  const diff = touchStartX.value - touchX
+  
+  if (diff > 50) {
+    swipedItemId.value = id
+  } else if (diff < -30) {
+    swipedItemId.value = null
+  }
+}
+
+function handleCardTouchEnd(id: number, name: string) {
+  if (swipedItemId.value === id) {
+    // Keep it swiped, wait for delete action
+  }
+}
 </script>
 
 <template>
-  <div class="swagger-list">
+  <div 
+    class="swagger-list"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+  >
+    <!-- Pull to refresh indicator -->
+    <div 
+      class="pull-indicator"
+      :class="{ 'is-pulling': isPulling, 'is-refreshing': refreshing }"
+      :style="{ transform: `translateY(${(isPulling ? Math.min(pullProgress * 60, 60) : 0) - 60}px)` }"
+    >
+      <i class="pi" :class="refreshing ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
+      <span>{{ refreshing ? t('swagger.refreshing') : t('swagger.pullToRefresh') }}</span>
+    </div>
+
     <div v-if="loading && swaggers.length === 0" class="list-loading">
       <i class="pi pi-spin pi-spinner"></i>
       <span>{{ t('swagger.loading') }}</span>
@@ -121,78 +211,95 @@ function isValidUrl(str: string): boolean {
       <div
         v-for="swagger in swaggers"
         :key="swagger.id"
-        class="list-card"
+        class="list-card-wrapper"
+        :class="{ 'is-swiped': swipedItemId === swagger.id }"
+        @touchstart="handleCardTouchStart($event, swagger.id)"
+        @touchmove="handleCardTouchMove($event, swagger.id)"
+        @touchend="handleCardTouchEnd(swagger.id, swagger.name)"
       >
-        <div class="card-top">
-          <div class="card-status">
-            <span
-              class="status-dot"
-              :class="getBaseUrl(swagger) ? 'green' : 'yellow'"
-              :title="getBaseUrl(swagger) ? t('swagger.baseUrlDetected') : t('swagger.noBaseUrl')"
-            ></span>
-          </div>
-          <div class="card-info">
-            <div class="card-name">{{ swagger.name }}</div>
-            <div v-if="getBaseUrl(swagger)" class="card-base-url">
-              <a
-                v-if="isValidUrl(getBaseUrl(swagger)!)"
-                :href="getBaseUrl(swagger)"
-                target="_blank"
-                rel="noopener"
-                class="base-url-link"
-              >{{ getBaseUrl(swagger) }}</a>
-              <span v-else class="base-url-text">{{ getBaseUrl(swagger) }}</span>
-            </div>
-            <div class="card-meta">
-              <span class="endpoint-badge">
-                {{ getEndpointCount(swagger) }} {{ t('common.endpoints') }}
-              </span>
-              <span class="meta-dot"></span>
-              <span class="import-date">
-                <i class="pi pi-calendar meta-icon"></i>
-                {{ formatDate(swagger.created_at) }}
-              </span>
-              <template v-if="swagger.url">
-                <span class="meta-dot"></span>
-                <a :href="swagger.url" target="_blank" rel="noopener" class="source-url">
-                  <i class="pi pi-external-link meta-icon"></i>
-                  {{ t('swagger.source') }}
-                </a>
-              </template>
-            </div>
-          </div>
-          <div class="card-actions">
-            <button
-              class="action-btn view-btn"
-              @click="viewEndpoints(swagger.id)"
-              :title="t('swagger.viewInMaps')"
-            >
-              <i class="pi pi-map"></i>
-            </button>
-            <button
-              class="action-btn delete-btn"
-              @click="confirmDelete(swagger.id, swagger.name)"
-              :title="t('swagger.deleteSource')"
-            >
-              <i class="pi pi-trash"></i>
-            </button>
-          </div>
+        <!-- Swipe delete action -->
+        <div class="swipe-actions">
+          <button
+            class="swipe-delete-btn"
+            @click="confirmDelete(swagger.id, swagger.name)"
+          >
+            <i class="pi pi-trash"></i>
+            <span>{{ t('common.delete') }}</span>
+          </button>
         </div>
 
-        <!-- Method breakdown -->
-        <div v-if="getStats(swagger.id)?.by_method" class="method-breakdown">
-          <span
-            v-for="(count, method) in getStats(swagger.id)!.by_method"
-            :key="method"
-            class="method-pill"
-            :style="{
-              background: (methodColors[method as string] || '#9e9e9e') + '18',
-              color: methodColors[method as string] || '#9e9e9e',
-              borderColor: (methodColors[method as string] || '#9e9e9e') + '40',
-            }"
-          >
-            {{ method }} {{ count }}
-          </span>
+        <div class="list-card">
+          <div class="card-top">
+            <div class="card-status">
+              <span
+                class="status-dot"
+                :class="getBaseUrl(swagger) ? 'green' : 'yellow'"
+                :title="getBaseUrl(swagger) ? t('swagger.baseUrlDetected') : t('swagger.noBaseUrl')"
+              ></span>
+            </div>
+            <div class="card-info">
+              <div class="card-name">{{ swagger.name }}</div>
+              <div v-if="getBaseUrl(swagger)" class="card-base-url mobile-hidden">
+                <a
+                  v-if="isValidUrl(getBaseUrl(swagger)!)"
+                  :href="getBaseUrl(swagger)"
+                  target="_blank"
+                  rel="noopener"
+                  class="base-url-link"
+                >{{ getBaseUrl(swagger) }}</a>
+                <span v-else class="base-url-text">{{ getBaseUrl(swagger) }}</span>
+              </div>
+              <div class="card-meta">
+                <span class="endpoint-badge">
+                  {{ getEndpointCount(swagger) }} {{ t('common.endpoints') }}
+                </span>
+                <span class="meta-dot mobile-hidden"></span>
+                <span class="import-date mobile-hidden">
+                  <i class="pi pi-calendar meta-icon"></i>
+                  {{ formatDate(swagger.created_at) }}
+                </span>
+                <template v-if="swagger.url">
+                  <span class="meta-dot mobile-hidden"></span>
+                  <a :href="swagger.url" target="_blank" rel="noopener" class="source-url mobile-hidden">
+                    <i class="pi pi-external-link meta-icon"></i>
+                    {{ t('swagger.source') }}
+                  </a>
+                </template>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button
+                class="action-btn view-btn"
+                @click="viewEndpoints(swagger.id)"
+                :title="t('swagger.viewInMaps')"
+              >
+                <i class="pi pi-map"></i>
+              </button>
+              <button
+                class="action-btn delete-btn"
+                @click="confirmDelete(swagger.id, swagger.name)"
+                :title="t('swagger.deleteSource')"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Method breakdown -->
+          <div v-if="getStats(swagger.id)?.by_method" class="method-breakdown">
+            <span
+              v-for="(count, method) in getStats(swagger.id)!.by_method"
+              :key="method"
+              class="method-pill"
+              :style="{
+                background: (methodColors[method as string] || '#9e9e9e') + '18',
+                color: methodColors[method as string] || '#9e9e9e',
+                borderColor: (methodColors[method as string] || '#9e9e9e') + '40',
+              }"
+            >
+              {{ method }} {{ count }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -202,6 +309,34 @@ function isValidUrl(str: string): boolean {
 <style scoped>
 .swagger-list {
   margin-top: 4px;
+  position: relative;
+}
+
+/* Pull to refresh indicator */
+.pull-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  color: var(--color-text-tertiary);
+  font-size: 13px;
+  transition: transform 0.2s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pull-indicator i {
+  font-size: 16px;
+}
+
+.pull-indicator.is-refreshing {
+  position: relative;
+  transform: translateY(0) !important;
 }
 
 .list-loading,
@@ -243,12 +378,62 @@ function isValidUrl(str: string): boolean {
   gap: 10px;
 }
 
+.list-card-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.swipe-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 16px;
+  background: var(--color-error);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.list-card-wrapper.is-swiped .swipe-actions {
+  opacity: 1;
+}
+
+.swipe-delete-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  min-height: 60px;
+  min-width: 60px;
+  touch-action: manipulation;
+}
+
+.swipe-delete-btn i {
+  font-size: 20px;
+}
+
 .list-card {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   padding: 16px;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform 0.2s ease;
   background: var(--color-bg);
+  position: relative;
+  z-index: 2;
+}
+
+.list-card-wrapper.is-swiped .list-card {
+  transform: translateX(-80px);
 }
 
 .list-card:hover {
@@ -375,8 +560,8 @@ function isValidUrl(str: string): boolean {
 }
 
 .action-btn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: none;
   border-radius: var(--radius-md);
@@ -417,19 +602,191 @@ function isValidUrl(str: string): boolean {
   letter-spacing: 0.3px;
 }
 
-/* Responsive */
-@media (max-width: 640px) {
+/* Tablet (< 768px) */
+@media (max-width: 768px) {
+  .list-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .list-card {
-    padding: 12px;
+    padding: 14px;
+  }
+
+  .card-name {
+    font-size: 14px;
+  }
+
+  .action-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
+
+  .endpoint-badge {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+
+  .method-pill {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+}
+
+/* Tablet (641px - 1024px) - 2 колонки */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .list-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .list-card {
+    padding: 14px;
+    height: 100%;
+  }
+
+  .card-top {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card-status {
+    margin-top: 0;
+  }
+
+  .card-actions {
+    align-self: flex-end;
+    margin-top: auto;
+  }
+
+  .method-breakdown {
+    margin-top: 12px;
+  }
+}
+
+/* Mobile (max-width: 640px) */
+@media (max-width: 640px) {
+  .list-card-wrapper {
+    border-radius: var(--radius-md);
+  }
+
+  .list-card {
+    padding: 14px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .list-card-wrapper.is-swiped .list-card {
+    transform: translateX(-90px);
+  }
+
+  .card-top {
+    gap: 10px;
+  }
+
+  .card-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* Увеличенные кнопки действий - min 44px touch target */
+  .card-actions {
+    gap: 8px;
+  }
+
+  .action-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 17px;
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  .action-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-hidden {
+    display: none !important;
   }
 
   .card-meta {
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
+    gap: 6px;
+    margin-top: 8px;
   }
 
-  .meta-dot {
+  .endpoint-badge {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .method-breakdown {
+    margin-top: 12px;
+    padding-top: 12px;
+    gap: 6px;
+  }
+
+  .method-pill {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .pull-indicator {
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  .list-loading,
+  .list-empty {
+    padding: 32px 20px;
+  }
+
+  /* Увеличенная swipe delete кнопка */
+  .swipe-actions {
+    padding-right: 12px;
+  }
+
+  .swipe-delete-btn {
+    min-height: 72px;
+    min-width: 72px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .swipe-delete-btn i {
+    font-size: 24px;
+  }
+}
+
+/* Small mobile (max-width: 375px) */
+@media (max-width: 375px) {
+  .list-card {
+    padding: 12px 10px;
+  }
+
+  .card-name {
+    font-size: 13px;
+  }
+
+  .action-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .endpoint-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+}
+
+@media (min-width: 641px) {
+  .swipe-actions {
     display: none;
   }
 }

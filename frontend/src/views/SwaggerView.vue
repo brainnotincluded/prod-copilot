@@ -121,6 +121,7 @@ function refreshList() {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-x: auto;
 }
 
 .card-header {
@@ -156,8 +157,8 @@ function refreshList() {
 }
 
 .refresh-btn {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--color-border-light);
   background: var(--color-bg);
   border-radius: var(--radius-md);
@@ -168,6 +169,9 @@ function refreshList() {
   cursor: pointer;
   flex-shrink: 0;
   transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
 }
 
 .refresh-btn:hover {
@@ -176,21 +180,104 @@ function refreshList() {
   color: var(--color-text-primary);
 }
 
-@media (max-width: 640px) {
+.refresh-btn:active {
+  transform: scale(0.96);
+}
+
+/* Tablet (< 768px) */
+@media (max-width: 768px) {
   .swagger-view {
-    padding: 20px 12px;
+    padding: 24px 16px;
   }
 
   .swagger-container {
-    gap: 20px;
-  }
-
-  .section-card {
-    padding: 16px;
+    max-width: 100%;
+    gap: 22px;
   }
 
   .page-title {
     font-size: 20px;
+  }
+
+  .page-description {
+    font-size: 13px;
+  }
+
+  .section-card {
+    padding: 18px 16px;
+  }
+
+  .card-title,
+  .section-title {
+    font-size: 14px;
+  }
+}
+
+/* Mobile (< 640px) */
+@media (max-width: 640px) {
+  .swagger-view {
+    padding: 16px 12px;
+  }
+
+  .swagger-container {
+    gap: 20px;
+    max-width: 100%;
+  }
+
+  /* Section cards - full width на мобильных */
+  .section-card {
+    padding: 16px 12px;
+    border-radius: var(--radius-lg);
+  }
+
+  .page-header {
+    gap: 4px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .page-count {
+    min-width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  /* Скрываем description на маленьких экранах для экономии места */
+  .page-description {
+    display: none;
+  }
+
+  .card-title,
+  .section-title {
+    font-size: 14px;
+  }
+
+  /* Touch-friendly кнопки */
+  .refresh-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 16px;
+  }
+}
+
+/* Small mobile (< 375px) */
+@media (max-width: 375px) {
+  .swagger-view {
+    padding: 12px 10px;
+  }
+
+  .section-card {
+    padding: 14px 10px;
+  }
+
+  .page-title {
+    font-size: 17px;
+  }
+
+  .swagger-container {
+    gap: 16px;
   }
 }
 </style>

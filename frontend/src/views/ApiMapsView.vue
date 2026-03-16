@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import { VueFlow, useVueFlow, Position } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
@@ -25,6 +25,70 @@ interface SelectedEndpoint extends EndpointItem {
 }
 
 const selectedEndpoint = ref<SelectedEndpoint | null>(null)
+const showLegendModal = ref(false)
+const isMobile = ref(false)
+
+// Mobile detection
+function checkMobile() {
+  isMobile.value = window.innerWidth < 640
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+})
+
+// Swipe to close handling for detail panel
+const detailPanelRef = ref<HTMLElement | null>(null)
+const touchStartX = ref(0)
+const touchCurrentX = ref(0)
+const isSwiping = ref(false)
+
+function onTouchStart(e: TouchEvent) {
+  touchStartX.value = e.touches[0].clientX
+  touchCurrentX.value = touchStartX.value
+  isSwiping.value = true
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (!isSwiping.value) return
+  touchCurrentX.value = e.touches[0].clientX
+  const diff = touchCurrentX.value - touchStartX.value
+  
+  // Only allow right swipe (positive diff)
+  if (diff > 0 && detailPanelRef.value) {
+    detailPanelRef.value.style.transform = `translateX(${diff}px)`
+  }
+}
+
+function onTouchEnd() {
+  if (!isSwiping.value) return
+  isSwiping.value = false
+  
+  const diff = touchCurrentX.value - touchStartX.value
+  const threshold = 100 // pixels to trigger close
+  
+  if (diff > threshold) {
+    closePanel()
+  } else if (detailPanelRef.value) {
+    // Reset position with animation
+    detailPanelRef.value.style.transition = 'transform 0.2s ease'
+    detailPanelRef.value.style.transform = 'translateX(0)'
+    setTimeout(() => {
+      if (detailPanelRef.value) {
+        detailPanelRef.value.style.transition = ''
+      }
+    }, 200)
+  }
+}
+
+function closePanel() {
+  selectedEndpoint.value = null
+}
 
 const METHOD_COLORS: Record<string, string> = {
   GET: '#34a853',
@@ -94,9 +158,10 @@ function detectFKFromParam(paramName: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Layout constants
+// Layout constants - Responsive
 // ---------------------------------------------------------------------------
 
+// Base sizes (will be overridden by CSS variables on mobile)
 const ENDPOINT_NODE_W = 240
 const ENDPOINT_NODE_H = 58
 const CLUSTER_GAP_X = 80 // gap between collection/detail columns
@@ -344,11 +409,11 @@ const graphElements = computed(() => {
           targetHandle: 'left',
           type: 'smoothstep',
           animated: false,
-          style: { stroke: '#a1a1aa', strokeWidth: 1.5 },
           label: '/{id}',
           labelStyle: { fontSize: '9px', fill: '#71717a', fontWeight: 500 },
           labelBgStyle: { fill: '#fff', fillOpacity: 0.9 },
           labelBgPadding: [3, 5] as [number, number],
+          style: { stroke: '#a1a1aa', strokeWidth: 1.5 },
         })
       }
     }
@@ -512,14 +577,16 @@ function onNodeClick({ node }: { node: any }) {
   }
 }
 
-function closePanel() {
-  selectedEndpoint.value = null
-}
-
 function formatJson(obj: any): string {
   if (!obj) return ''
   return JSON.stringify(obj, null, 2)
 }
+
+// VueFlow touch options
+const panOnScroll = computed(() => !isMobile.value)
+const zoomOnPinch = computed(() => true)
+const zoomOnDoubleClick = computed(() => false)
+const preventScrolling = computed(() => true)
 
 onMounted(async () => {
   await Promise.all([
@@ -539,7 +606,15 @@ onMounted(async () => {
         <span class="endpoint-count">{{ endpointsStore.endpoints.length }} {{ t('common.endpoints') }}</span>
       </div>
       <div class="header-actions">
-        <button class="fit-btn" @click="fitView({ padding: 0.15 })" :title="t('maps.fitView')">
+        <button 
+          class="header-btn legend-btn" 
+          @click="showLegendModal = true" 
+          :title="t('maps.legend')"
+          v-if="isMobile"
+        >
+          <i class="pi pi-question-circle"></i>
+        </button>
+        <button class="header-btn fit-btn" @click="fitView({ padding: 0.15 })" :title="t('maps.fitView')">
           <i class="pi pi-expand"></i>
         </button>
       </div>
@@ -563,6 +638,10 @@ onMounted(async () => {
         :default-viewport="{ zoom: 0.7, x: 50, y: 50 }"
         :min-zoom="0.1"
         :max-zoom="2"
+        :pan-on-scroll="panOnScroll"
+        :zoom-on-pinch="zoomOnPinch"
+        :zoom-on-double-click="zoomOnDoubleClick"
+        :prevent-scrolling="preventScrolling"
         @node-click="onNodeClick"
         fit-view-on-init
       >
@@ -575,14 +654,15 @@ onMounted(async () => {
         <Background :gap="20" :size="1" />
         <Controls :show-interactive="false" />
         <MiniMap
+          v-if="!isMobile"
           :node-stroke-width="3"
           :pannable="true"
           :zoomable="true"
         />
       </VueFlow>
 
-      <!-- Legend -->
-      <div class="map-legend">
+      <!-- Desktop Legend -->
+      <div class="map-legend" v-if="!isMobile">
         <div class="legend-title">{{ t('maps.legend') }}</div>
         <div class="legend-section">
           <div class="legend-item">
@@ -625,7 +705,14 @@ onMounted(async () => {
 
     <!-- Detail panel -->
     <transition name="panel-slide">
-      <div v-if="selectedEndpoint" class="detail-panel">
+      <div 
+        v-if="selectedEndpoint" 
+        ref="detailPanelRef"
+        class="detail-panel"
+        @touchstart.passive="onTouchStart"
+        @touchmove.passive="onTouchMove"
+        @touchend="onTouchEnd"
+      >
         <div class="detail-header">
           <div class="detail-title-row">
             <span
@@ -685,10 +772,71 @@ onMounted(async () => {
         </div>
       </div>
     </transition>
+
+    <!-- Legend Modal for Mobile -->
+    <transition name="modal-fade">
+      <div v-if="showLegendModal" class="legend-modal-overlay" @click="showLegendModal = false">
+        <div class="legend-modal" @click.stop>
+          <div class="legend-modal-header">
+            <h3>{{ t('maps.legend') }}</h3>
+            <button class="close-btn" @click="showLegendModal = false">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+          <div class="legend-modal-body">
+            <div class="legend-section">
+              <div class="legend-section-title">HTTP Methods</div>
+              <div class="legend-item">
+                <span class="legend-swatch" style="background: #34a853"></span>
+                <span>GET</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch" style="background: #1a73e8"></span>
+                <span>POST</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch" style="background: #f59e0b"></span>
+                <span>PUT</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch" style="background: #ea4335"></span>
+                <span>DELETE</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch" style="background: #673ab7"></span>
+                <span>PATCH</span>
+              </div>
+            </div>
+            <div class="legend-section">
+              <div class="legend-section-title">Relationships</div>
+              <div class="legend-item">
+                <span class="legend-line legend-solid"></span>
+                <span>{{ t('maps.hierarchy') }}</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-line legend-dashed-blue"></span>
+                <span>{{ t('maps.fkReference') }}</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-line legend-dashed-purple"></span>
+                <span>{{ t('maps.parentResource') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <style scoped>
+/* CSS Variables for responsive sizing */
+:root {
+  --node-min-height: 44px;
+  --control-btn-size: 44px;
+  --touch-target-size: 44px;
+}
+
 .api-maps {
   flex: 1;
   display: flex;
@@ -734,7 +882,7 @@ onMounted(async () => {
   gap: 8px;
 }
 
-.fit-btn {
+.header-btn {
   width: 34px;
   height: 34px;
   border: 1px solid var(--color-border-light, #e0e0e0);
@@ -748,7 +896,7 @@ onMounted(async () => {
   transition: background 0.15s, color 0.15s;
 }
 
-.fit-btn:hover {
+.header-btn:hover {
   background: var(--color-bg-tertiary, #f5f5f5);
   color: var(--color-text-primary, #1a1a1a);
 }
@@ -797,6 +945,11 @@ onMounted(async () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.maps-container :deep(.vue-flow__controls-button) {
+  width: 34px;
+  height: 34px;
+}
+
 /* Source group node styling */
 .maps-container :deep(.vue-flow__node-sourceGroup) {
   font-size: 14px;
@@ -807,6 +960,18 @@ onMounted(async () => {
 
 .maps-container :deep(.vue-flow__node-sourceGroup > div) {
   pointer-events: none;
+}
+
+/* Endpoint node touch improvements */
+.maps-container :deep(.vue-flow__node-endpoint) {
+  touch-action: manipulation;
+}
+
+.maps-container :deep(.endpoint-node) {
+  min-height: var(--node-min-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Legend */
@@ -903,6 +1068,10 @@ onMounted(async () => {
   padding: 16px 20px;
   border-bottom: 1px solid var(--color-border-light, #eee);
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  background: var(--color-bg, #fff);
+  z-index: 1;
 }
 
 .detail-title-row {
@@ -1062,9 +1231,258 @@ onMounted(async () => {
   opacity: 0;
 }
 
-@media (max-width: 768px) {
+/* Legend Modal */
+.legend-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.legend-modal {
+  background: var(--color-bg, #fff);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 320px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.legend-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-light, #eee);
+}
+
+.legend-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+.legend-modal-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.legend-modal-body .legend-section {
+  margin-bottom: 16px;
+}
+
+.legend-modal-body .legend-section:last-child {
+  margin-bottom: 0;
+}
+
+.legend-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.legend-modal-body .legend-item {
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 640px) {
+  :root {
+    --node-min-height: 52px;
+    --control-btn-size: 48px;
+    --touch-target-size: 48px;
+  }
+
+  .maps-header {
+    padding: 12px 16px;
+  }
+
+  .header-title {
+    font-size: 18px;
+  }
+
+  .header-btn {
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
+    min-width: var(--touch-target-size);
+    min-height: var(--touch-target-size);
+  }
+
+  .header-btn i {
+    font-size: 18px;
+  }
+
+  /* Larger controls for touch */
+  .maps-container :deep(.vue-flow__controls-button) {
+    width: var(--control-btn-size);
+    height: var(--control-btn-size);
+  }
+
+  .maps-container :deep(.vue-flow__controls-button svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Larger endpoint nodes for touch */
+  .maps-container :deep(.endpoint-node) {
+    min-height: var(--node-min-height);
+    padding: 12px 16px;
+  }
+
+  .maps-container :deep(.ep-method) {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .maps-container :deep(.ep-path) {
+    font-size: 13px;
+  }
+
+  .maps-container :deep(.ep-summary) {
+    font-size: 11px;
+    margin-top: 4px;
+  }
+
+  /* Detail panel full width on mobile */
   .detail-panel {
     width: 100%;
+    top: auto;
+    bottom: 0;
+    height: 85vh;
+    border-left: none;
+    border-top: 1px solid var(--color-border-light, #eee);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Swipe handle indicator */
+  .detail-panel::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: var(--color-border, #ddd);
+    border-radius: 2px;
+  }
+
+  .detail-header {
+    padding-top: 24px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .detail-body {
+    padding: 16px;
+  }
+
+  /* Larger fonts for mobile readability */
+  .detail-path {
+    font-size: 15px;
+  }
+
+  .detail-summary {
+    font-size: 15px;
+  }
+
+  .detail-description {
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 13px;
+  }
+
+  .param-row {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .param-name {
+    font-size: 13px;
+  }
+
+  .param-in,
+  .param-type {
+    font-size: 12px;
+  }
+
+  .detail-code {
+    font-size: 13px;
+    padding: 14px;
+  }
+
+  /* Larger close button for touch */
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .close-btn i {
+    font-size: 18px;
+  }
+
+  /* Panel slide from bottom on mobile */
+  .panel-slide-enter-active,
+  .panel-slide-leave-active {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  }
+
+  .panel-slide-enter-from,
+  .panel-slide-leave-to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 768px) {
+  .detail-panel {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+/* Larger touch targets for all buttons */
+@media (pointer: coarse) {
+  .header-btn,
+  .fit-btn,
+  .legend-btn,
+  .close-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .maps-container :deep(.vue-flow__controls-button) {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 </style>
