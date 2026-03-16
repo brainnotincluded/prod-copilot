@@ -117,6 +117,15 @@ export default {
   'results.locations': '{0} locations',
   'results.generatedImage': 'Generated image',
 
+  // Settings
+  'settings.language': 'Language',
+  'settings.languageDesc': 'Select the interface language.',
+  'settings.theme': 'Theme',
+  'settings.themeDesc': 'Choose the appearance of the application.',
+  'settings.themeLight': 'Light',
+  'settings.themeDark': 'Dark',
+  'settings.themeSystem': 'System',
+
   // Errors (store level)
   'error.noData': 'No data was returned.',
   'error.generic': 'An error occurred',

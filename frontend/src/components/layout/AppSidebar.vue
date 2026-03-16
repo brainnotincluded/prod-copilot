@@ -20,7 +20,6 @@ const navItems = computed(() => [
   { path: '/chat', label: t('nav.chat'), icon: 'pi pi-comment' },
   { path: '/swagger', label: t('nav.apiSources'), icon: 'pi pi-file' },
   { path: '/endpoints', label: t('nav.apiMaps'), icon: 'pi pi-sitemap' },
-  { path: '/dashboard', label: t('nav.dashboard'), icon: 'pi pi-chart-bar' },
 ])
 
 function isActive(path: string): boolean {
@@ -130,13 +129,15 @@ onUnmounted(() => {
     </nav>
 
     <div class="sidebar-footer">
-      <div 
-        class="nav-item touch-friendly" 
+      <router-link
+        to="/settings"
+        class="nav-item touch-friendly"
+        :class="{ active: isActive('/settings') }"
         :title="collapsed && !isMobile ? t('common.settings') : undefined"
       >
         <i class="pi pi-cog nav-icon"></i>
         <span v-if="!collapsed || isMobile" class="nav-label">{{ t('common.settings') }}</span>
-      </div>
+      </router-link>
     </div>
   </aside>
 </template>

@@ -13,7 +13,7 @@ export const useSwaggerStore = defineStore('swagger', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.get<SwaggerSource[]>('/api/swagger/')
+      const response = await api.get<SwaggerSource[]>('/api/swagger/list')
       swaggers.value = response.data
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch swagger sources'

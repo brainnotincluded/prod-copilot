@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const queryStore = useQueryStore()
-const { t, locale, toggleLocale } = useLocale()
+const { t } = useLocale()
 
 const pageTitle = computed(() => {
   switch (route.path) {
@@ -26,6 +26,8 @@ const pageTitle = computed(() => {
       return t('nav.dashboard')
     case '/endpoints':
       return t('nav.apiMaps')
+    case '/settings':
+      return t('common.settings')
     default:
       return t('nav.appName')
   }
@@ -41,9 +43,6 @@ const pageTitle = computed(() => {
       <h1 class="page-title">{{ pageTitle }}</h1>
     </div>
     <div class="header-right">
-      <button class="lang-toggle" @click="toggleLocale" :title="locale === 'en' ? 'Русский' : 'English'">
-        {{ locale === 'en' ? 'RU' : 'EN' }}
-      </button>
       <div class="connection-status" :class="{ connected: queryStore.isConnected }">
         <span class="status-dot"></span>
         <span class="status-text">{{ queryStore.isConnected ? t('common.connected') : t('common.disconnected') }}</span>
@@ -97,25 +96,6 @@ const pageTitle = computed(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.lang-toggle {
-  padding: 4px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  color: var(--color-text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.lang-toggle:hover {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-  border-color: var(--color-accent);
 }
 
 .connection-status {
