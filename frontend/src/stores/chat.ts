@@ -16,6 +16,13 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  function appendToMessage(id: string, text: string) {
+    const msg = messages.value.find((m) => m.id === id)
+    if (msg) {
+      msg.content += text
+    }
+  }
+
   function clearChat() {
     messages.value = []
   }
@@ -28,6 +35,7 @@ export const useChatStore = defineStore('chat', () => {
     messages,
     addMessage,
     updateMessage,
+    appendToMessage,
     clearChat,
     generateId,
   }

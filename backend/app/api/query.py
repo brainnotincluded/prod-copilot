@@ -181,7 +181,13 @@ async def ws_query(websocket: WebSocket) -> None:
                 ):
                     event_type = chunk.pop("event_type", "")
 
-                    if event_type in ("step_start", "step_complete", "step_error"):
+                    if event_type == "chat_token":
+                        await websocket.send_json({
+                            "type": "chat_token",
+                            "data": {"token": chunk.get("token", "")}
+                        })
+
+                    elif event_type in ("step_start", "step_complete", "step_error"):
                         step_num = chunk.get("step", step_counter)
 
                         if event_type == "step_start":

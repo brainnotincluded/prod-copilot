@@ -353,12 +353,33 @@ async def orchestrate_stream(request: OrchestrationRequest):
             classification = await _classify_intent(query, history=chat_history)
 
             if classification.get("intent") == "chat":
-                chat_resp = classification.get("response", "Hello! How can I help you with your APIs today?")
+                # Stream chat response token-by-token
+                from app.llm.kimi_client import get_llm_client
+                llm = get_llm_client()
+
+                chat_msgs = [
+                    {"role": "system", "content": "You are a helpful API copilot assistant. Answer in the user's language. Be concise and friendly."},
+                ]
+                if chat_history:
+                    for msg in chat_history[-6:]:
+                        if msg.get("role") in ("user", "assistant") and msg.get("content"):
+                            chat_msgs.append({"role": msg["role"], "content": msg["content"]})
+                chat_msgs.append({"role": "user", "content": query})
+
+                full_response = ""
+                async for token in llm.chat_stream(chat_msgs, temperature=0.3, max_tokens=1024):
+                    full_response += token
+                    yield {
+                        "event": "chat_token",
+                        "data": json.dumps({"token": token}, ensure_ascii=False),
+                    }
+
+                # Final result event (signals completion)
                 yield {
                     "event": "result",
                     "data": json.dumps({
                         "type": "text",
-                        "data": {"content": chat_resp},
+                        "data": {"content": full_response},
                         "metadata": {"status": "completed", "mode": "chat"},
                     }, ensure_ascii=False),
                 }

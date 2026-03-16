@@ -19,6 +19,13 @@ export const useQueryStore = defineStore('query', () => {
     const chatStore = useChatStore()
 
     switch (msg.type) {
+      case 'chat_token': {
+        const token = msg.data.token as string
+        if (currentMessageId.value && token) {
+          chatStore.appendToMessage(currentMessageId.value, token)
+        }
+        break
+      }
       case 'step': {
         const step = msg.data as OrchestrationStep
         const existingIdx = orchestrationSteps.value.findIndex(
