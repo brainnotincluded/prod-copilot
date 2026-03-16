@@ -60,6 +60,7 @@ async def query(
             "parameters": ep.parameters,
             "request_body": ep.request_body,
             "response_schema": ep.response_schema,
+            "base_url": source_cache.get(ep.swagger_source_id, None) and source_cache[ep.swagger_source_id].base_url,
         }
         for ep in relevant_endpoints
     ]
@@ -170,6 +171,7 @@ async def ws_query(websocket: WebSocket) -> None:
                         "parameters": ep.parameters,
                         "request_body": ep.request_body,
                         "response_schema": ep.response_schema,
+                        "base_url": source_cache.get(ep.swagger_source_id, None) and source_cache[ep.swagger_source_id].base_url,
                     }
                     for ep in relevant_endpoints
                 ]

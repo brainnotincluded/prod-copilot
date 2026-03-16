@@ -85,7 +85,7 @@ onMounted(async () => {
     <div v-if="title" class="result-title">{{ title }}</div>
     <div ref="mapContainer" class="map-container"></div>
     <div v-if="markers.length > 0" class="map-info">
-      {{ markers.length }} location{{ markers.length !== 1 ? 's' : '' }}
+      {{ markers.length }} {{ markers.length === 1 ? 'локация' : 'локаций' }}
     </div>
   </div>
 </template>

@@ -23,7 +23,7 @@ function statusIcon(status: string): string {
 <template>
   <div class="orchestration-flow">
     <div v-if="steps.length === 0" class="flow-empty">
-      No orchestration steps
+      Нет шагов оркестрации
     </div>
     <div v-else class="timeline">
       <div

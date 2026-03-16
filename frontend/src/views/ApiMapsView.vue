@@ -533,11 +533,11 @@ onMounted(async () => {
   <div class="api-maps">
     <div class="maps-header">
       <div class="header-left">
-        <h2 class="header-title">API Maps</h2>
-        <span class="endpoint-count">{{ endpointsStore.endpoints.length }} endpoints</span>
+        <h2 class="header-title">Карта API</h2>
+        <span class="endpoint-count">{{ endpointsStore.endpoints.length }} эндпоинтов</span>
       </div>
       <div class="header-actions">
-        <button class="fit-btn" @click="fitView({ padding: 0.15 })" title="Fit to view">
+        <button class="fit-btn" @click="fitView({ padding: 0.15 })" title="Вписать в экран">
           <i class="pi pi-expand"></i>
         </button>
       </div>
@@ -545,13 +545,13 @@ onMounted(async () => {
 
     <div v-if="endpointsStore.isLoading" class="maps-loading">
       <i class="pi pi-spin pi-spinner"></i>
-      <span>Loading API map...</span>
+      <span>Загрузка карты API...</span>
     </div>
 
     <div v-else-if="endpointsStore.endpoints.length === 0" class="maps-empty">
       <i class="pi pi-sitemap maps-empty-icon"></i>
-      <p>No endpoints to visualize.</p>
-      <p class="maps-empty-hint">Upload a Swagger spec to see your API map.</p>
+      <p>Нет эндпоинтов для визуализации.</p>
+      <p class="maps-empty-hint">Загрузите Swagger спецификацию, чтобы увидеть карту API.</p>
     </div>
 
     <div v-else class="maps-container">
@@ -581,7 +581,7 @@ onMounted(async () => {
 
       <!-- Legend -->
       <div class="map-legend">
-        <div class="legend-title">Legend</div>
+        <div class="legend-title">Легенда</div>
         <div class="legend-section">
           <div class="legend-item">
             <span class="legend-swatch" style="background: #34a853"></span>
@@ -607,15 +607,15 @@ onMounted(async () => {
         <div class="legend-section">
           <div class="legend-item">
             <span class="legend-line legend-solid"></span>
-            <span>Hierarchy</span>
+            <span>Иерархия</span>
           </div>
           <div class="legend-item">
             <span class="legend-line legend-dashed-blue"></span>
-            <span>FK reference</span>
+            <span>FK ссылка</span>
           </div>
           <div class="legend-item">
             <span class="legend-line legend-dashed-purple"></span>
-            <span>Parent resource</span>
+            <span>Родительский ресурс</span>
           </div>
         </div>
       </div>
@@ -637,7 +637,7 @@ onMounted(async () => {
             </span>
             <span class="detail-path">{{ selectedEndpoint.path }}</span>
           </div>
-          <button class="close-btn" @click="closePanel" title="Close">
+          <button class="close-btn" @click="closePanel" title="Закрыть">
             <i class="pi pi-times"></i>
           </button>
         </div>
@@ -654,7 +654,7 @@ onMounted(async () => {
             v-if="selectedEndpoint.parameters && selectedEndpoint.parameters.length"
             class="detail-section"
           >
-            <h4 class="section-title">Parameters</h4>
+            <h4 class="section-title">Параметры</h4>
             <div class="params-list">
               <div
                 v-for="p in selectedEndpoint.parameters"
@@ -666,18 +666,18 @@ onMounted(async () => {
                 <span v-if="p.schema?.type || p.type" class="param-type">{{
                   p.schema?.type || p.type
                 }}</span>
-                <span v-if="p.required" class="param-required">required</span>
+                <span v-if="p.required" class="param-required">обязательный</span>
               </div>
             </div>
           </div>
 
           <div v-if="selectedEndpoint.request_body" class="detail-section">
-            <h4 class="section-title">Request Body</h4>
+            <h4 class="section-title">Тело запроса</h4>
             <pre class="detail-code">{{ formatJson(selectedEndpoint.request_body) }}</pre>
           </div>
 
           <div v-if="selectedEndpoint.response_schema" class="detail-section">
-            <h4 class="section-title">Response Schema</h4>
+            <h4 class="section-title">Схема ответа</h4>
             <pre class="detail-code">{{ formatJson(selectedEndpoint.response_schema) }}</pre>
           </div>
         </div>

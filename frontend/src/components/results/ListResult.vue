@@ -29,7 +29,7 @@ function getItemDescription(item: any): string {
 <template>
   <div class="list-result result-fade-in">
     <div v-if="title" class="result-title">{{ title }}</div>
-    <div v-if="items.length === 0" class="result-empty">No matching results found.</div>
+    <div v-if="items.length === 0" class="result-empty">Совпадений не найдено.</div>
     <ul v-else class="result-list">
       <li v-for="(item, index) in items" :key="index" class="list-item">
         <span class="item-index">{{ index + 1 }}</span>

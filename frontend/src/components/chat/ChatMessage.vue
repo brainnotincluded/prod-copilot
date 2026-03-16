@@ -44,12 +44,12 @@ const stepsLabel = computed(() => {
   const allDone = steps.every(s => s.status === 'completed' || s.status === 'error')
 
   if (!allDone) {
-    return `Running... (${total} steps)`
+    return `Выполняется... (${total} шагов)`
   }
   if (errors > 0) {
-    return `${total} steps (${errors} failed)`
+    return `${total} шагов (${errors} с ошибкой)`
   }
-  return `${total} steps completed`
+  return `${total} шагов выполнено`
 })
 const formattedTime = computed(() => {
   const date = new Date(props.message.timestamp)
@@ -80,7 +80,7 @@ watch(
 
       <div class="message-body">
         <div class="message-header">
-          <span class="message-role">{{ isUser ? 'You' : 'Copilot' }}</span>
+          <span class="message-role">{{ isUser ? 'Вы' : 'Copilot' }}</span>
           <span class="message-time">{{ formattedTime }}</span>
         </div>
 
@@ -93,7 +93,7 @@ watch(
             <span></span>
             <span></span>
           </div>
-          <span class="thinking-text">Thinking...</span>
+          <span class="thinking-text">Обработка...</span>
         </div>
 
         <div v-if="hasSteps" class="message-steps">

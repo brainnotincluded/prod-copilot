@@ -9,10 +9,10 @@ const props = defineProps<{
 const route = useRoute()
 
 const navItems = [
-  { path: '/chat', label: 'Chat', icon: 'pi pi-comment' },
-  { path: '/swagger', label: 'API Sources', icon: 'pi pi-file' },
-  { path: '/endpoints', label: 'API Maps', icon: 'pi pi-sitemap' },
-  { path: '/dashboard', label: 'Dashboard', icon: 'pi pi-chart-bar' },
+  { path: '/chat', label: 'Чат', icon: 'pi pi-comment' },
+  { path: '/swagger', label: 'API Источники', icon: 'pi pi-file' },
+  { path: '/endpoints', label: 'Карта API', icon: 'pi pi-sitemap' },
+  { path: '/dashboard', label: 'Панель', icon: 'pi pi-chart-bar' },
 ]
 
 function isActive(path: string): boolean {
@@ -44,9 +44,9 @@ function isActive(path: string): boolean {
     </nav>
 
     <div class="sidebar-footer">
-      <div class="nav-item" :title="collapsed ? 'Settings' : undefined">
+      <div class="nav-item" :title="collapsed ? 'Настройки' : undefined">
         <i class="pi pi-cog nav-icon"></i>
-        <span v-if="!collapsed" class="nav-label">Settings</span>
+        <span v-if="!collapsed" class="nav-label">Настройки</span>
       </div>
     </div>
   </aside>

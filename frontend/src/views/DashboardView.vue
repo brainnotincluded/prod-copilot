@@ -6,13 +6,13 @@
     <div class="dashboard-container">
       <div class="dashboard-empty">
         <i class="pi pi-chart-bar empty-icon"></i>
-        <h2 class="empty-title">Dashboard</h2>
+        <h2 class="empty-title">Панель</h2>
         <p class="empty-description">
-          Saved results and custom dashboards will appear here. Start by running queries in the Chat
-          view and saving the results you want to track.
+          Сохранённые результаты и пользовательские панели появятся здесь. Начните с выполнения запросов в Чате
+          и сохранения результатов, которые хотите отслеживать.
         </p>
         <router-link to="/chat" class="empty-action">
-          Go to Chat
+          Перейти в Чат
         </router-link>
       </div>
     </div>

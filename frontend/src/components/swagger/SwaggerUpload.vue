@@ -39,11 +39,11 @@ function resetProgress() {
 
 function initProgressSteps(mode: 'file' | 'url') {
   progressSteps.value = [
-    { label: mode === 'url' ? 'Fetching spec...' : 'Reading file...', status: 'active' },
-    { label: 'Parsing endpoints...', status: 'pending' },
-    { label: 'Generating embeddings...', status: 'pending' },
-    { label: 'Indexing in RAG...', status: 'pending' },
-    { label: 'Done!', status: 'pending' },
+    { label: mode === 'url' ? 'Загрузка спецификации...' : 'Чтение файла...', status: 'active' },
+    { label: 'Парсинг эндпоинтов...', status: 'pending' },
+    { label: 'Генерация эмбеддингов...', status: 'pending' },
+    { label: 'Индексация в RAG...', status: 'pending' },
+    { label: 'Готово!', status: 'pending' },
   ]
 }
 
@@ -66,7 +66,7 @@ function completeProgress(result: SwaggerUploadResult) {
   }
   const last = progressSteps.value[progressSteps.value.length - 1]
   last.status = 'done'
-  last.detail = `${result.endpoints_count} endpoints indexed`
+  last.detail = `${result.endpoints_count} эндпоинтов проиндексировано`
 }
 
 // --- File Upload ---
@@ -106,8 +106,8 @@ async function uploadFile(file: File) {
   const ext = '.' + file.name.split('.').pop()?.toLowerCase()
 
   if (!validExtensions.includes(ext)) {
-    uploadError.value = 'Please upload a JSON or YAML file.'
-    showToast('Please upload a JSON or YAML file.', 'error')
+    uploadError.value = 'Пожалуйста, загрузите файл JSON или YAML.'
+    showToast('Пожалуйста, загрузите файл JSON или YAML.', 'error')
     return
   }
 
@@ -118,7 +118,7 @@ async function uploadFile(file: File) {
   try {
     // Simulate progress steps while waiting for response
     setTimeout(() => {
-      if (isUploading.value) advanceProgress(1, 'Analyzing spec...')
+      if (isUploading.value) advanceProgress(1, 'Анализ спецификации...')
     }, 800)
     setTimeout(() => {
       if (isUploading.value) advanceProgress(2)
@@ -132,13 +132,13 @@ async function uploadFile(file: File) {
     completeProgress(result)
 
     showToast(
-      `Successfully imported ${result.name} -- ${result.endpoints_count} endpoints indexed`,
+      `Успешно импортировано ${result.name} -- ${result.endpoints_count} эндпоинтов проиндексировано`,
       'success',
     )
   } catch {
-    uploadError.value = swaggerStore.error || 'Upload failed. Please try again.'
+    uploadError.value = swaggerStore.error || 'Загрузка не удалась. Попробуйте снова.'
     progressSteps.value = []
-    showToast(swaggerStore.error || 'Upload failed. Please try again.', 'error')
+    showToast(swaggerStore.error || 'Загрузка не удалась. Попробуйте снова.', 'error')
   } finally {
     isUploading.value = false
   }
@@ -148,15 +148,15 @@ async function uploadFile(file: File) {
 async function importFromUrl() {
   const url = importUrl.value.trim()
   if (!url) {
-    uploadError.value = 'Please enter a URL.'
+    uploadError.value = 'Пожалуйста, введите URL.'
     return
   }
 
   try {
     new URL(url)
   } catch {
-    uploadError.value = 'Please enter a valid URL.'
-    showToast('Please enter a valid URL.', 'error')
+    uploadError.value = 'Пожалуйста, введите корректный URL.'
+    showToast('Пожалуйста, введите корректный URL.', 'error')
     return
   }
 
@@ -166,7 +166,7 @@ async function importFromUrl() {
 
   try {
     setTimeout(() => {
-      if (isUploading.value) advanceProgress(1, 'Parsing spec...')
+      if (isUploading.value) advanceProgress(1, 'Парсинг спецификации...')
     }, 1200)
     setTimeout(() => {
       if (isUploading.value) advanceProgress(2)
@@ -181,17 +181,17 @@ async function importFromUrl() {
     completeProgress(result)
 
     showToast(
-      `Successfully imported ${result.name} -- ${result.endpoints_count} endpoints indexed`,
+      `Успешно импортировано ${result.name} -- ${result.endpoints_count} эндпоинтов проиндексировано`,
       'success',
     )
 
     importUrl.value = ''
     importName.value = ''
   } catch {
-    uploadError.value = swaggerStore.error || 'Import failed. Please check the URL and try again.'
+    uploadError.value = swaggerStore.error || 'Импорт не удался. Проверьте URL и попробуйте снова.'
     progressSteps.value = []
     showToast(
-      swaggerStore.error || 'Import failed. Please check the URL and try again.',
+      swaggerStore.error || 'Импорт не удался. Проверьте URL и попробуйте снова.',
       'error',
     )
   } finally {
@@ -218,7 +218,7 @@ function dismissResult() {
         @click="activeTab = 'file'; resetProgress()"
       >
         <i class="pi pi-upload"></i>
-        File Upload
+        Загрузка файла
       </button>
       <button
         class="tab-btn"
@@ -226,7 +226,7 @@ function dismissResult() {
         @click="activeTab = 'url'; resetProgress()"
       >
         <i class="pi pi-link"></i>
-        URL Import
+        Импорт по URL
       </button>
     </div>
 
@@ -254,9 +254,9 @@ function dismissResult() {
         <div class="upload-content">
           <i class="pi pi-cloud-upload upload-icon"></i>
           <p class="upload-text">
-            Drop a Swagger/OpenAPI file here, or click to browse
+            Перетащите файл Swagger/OpenAPI сюда или нажмите для выбора
           </p>
-          <p class="upload-hint">Supports JSON and YAML formats</p>
+          <p class="upload-hint">Поддерживаются форматы JSON и YAML</p>
         </div>
       </div>
     </div>
@@ -265,7 +265,7 @@ function dismissResult() {
     <div v-if="activeTab === 'url'" class="tab-content">
       <div class="url-form">
         <div class="form-field">
-          <label class="form-label" for="swagger-url">Spec URL</label>
+          <label class="form-label" for="swagger-url">URL спецификации</label>
           <input
             id="swagger-url"
             v-model="importUrl"
@@ -278,15 +278,15 @@ function dismissResult() {
         </div>
         <div class="form-field">
           <label class="form-label" for="swagger-name">
-            API Name
-            <span class="form-label-hint">(optional)</span>
+            Название API
+            <span class="form-label-hint">(необязательно)</span>
           </label>
           <input
             id="swagger-name"
             v-model="importName"
             type="text"
             class="form-input"
-            placeholder="My API"
+            placeholder="Мой API"
             :disabled="isUploading"
             @keyup.enter="importFromUrl"
           />
@@ -297,7 +297,7 @@ function dismissResult() {
           @click="importFromUrl"
         >
           <i class="pi" :class="isUploading ? 'pi-spin pi-spinner' : 'pi-download'"></i>
-          {{ isUploading ? 'Importing...' : 'Import' }}
+          {{ isUploading ? 'Импортирую...' : 'Импортировать' }}
         </button>
       </div>
     </div>
@@ -343,7 +343,7 @@ function dismissResult() {
         <i class="pi pi-check-circle result-icon"></i>
         <div class="result-info">
           <span class="result-name">{{ uploadResult.name }}</span>
-          <span class="result-count">{{ uploadResult.endpoints_count }} endpoints indexed</span>
+          <span class="result-count">{{ uploadResult.endpoints_count }} эндпоинтов проиндексировано</span>
           <span v-if="uploadResult.base_url" class="result-base-url">
             {{ uploadResult.base_url }}
           </span>
@@ -352,10 +352,10 @@ function dismissResult() {
       <div class="result-actions">
         <button class="result-btn primary" @click="goToApiMaps">
           <i class="pi pi-map"></i>
-          View in API Maps
+          Открыть на Карте API
         </button>
         <button class="result-btn secondary" @click="dismissResult">
-          Dismiss
+          Закрыть
         </button>
       </div>
     </div>

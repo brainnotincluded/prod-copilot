@@ -9,6 +9,7 @@ export const useQueryStore = defineStore('query', () => {
   const currentResult = ref<QueryResult | null>(null)
   const isLoading = ref(false)
   const currentMessageId = ref<string | null>(null)
+  const selectedSourceIds = ref<number[]>([])
 
   const { send, onMessage, isConnected } = useWebSocket('/api/ws/query')
 
@@ -55,7 +56,7 @@ export const useQueryStore = defineStore('query', () => {
             // Empty result: show error text
             chatStore.updateMessage(currentMessageId.value, {
               result: undefined,
-              content: textContent || 'No data was returned.',
+              content: textContent || 'Данные не были получены.',
             })
           } else {
             // API result with data: show result renderer, no extra text
@@ -71,7 +72,7 @@ export const useQueryStore = defineStore('query', () => {
       case 'error': {
         if (currentMessageId.value) {
           chatStore.updateMessage(currentMessageId.value, {
-            content: `Error: ${msg.data.message || 'An error occurred'}`,
+            content: `Ошибка: ${msg.data.message || 'Произошла ошибка'}`,
           })
         }
         isLoading.value = false
@@ -85,8 +86,13 @@ export const useQueryStore = defineStore('query', () => {
     }
   })
 
-  function sendQuery(text: string) {
+  function sendQuery(text: string, sourceIds?: number[]) {
     const chatStore = useChatStore()
+
+    // Persist selected source IDs
+    if (sourceIds !== undefined) {
+      selectedSourceIds.value = sourceIds
+    }
 
     const userMessage = {
       id: chatStore.generateId(),
@@ -117,7 +123,13 @@ export const useQueryStore = defineStore('query', () => {
       .filter(m => m.content)
       .map(m => ({ role: m.role, content: m.content }))
 
-    send({ query: text, history: recentMessages })
+    const payload: Record<string, any> = { query: text, history: recentMessages }
+    const ids = sourceIds !== undefined ? sourceIds : selectedSourceIds.value
+    if (ids.length > 0) {
+      payload.swagger_source_ids = ids
+    }
+
+    send(payload)
   }
 
   return {
@@ -125,6 +137,7 @@ export const useQueryStore = defineStore('query', () => {
     currentResult,
     isLoading,
     isConnected,
+    selectedSourceIds,
     sendQuery,
   }
 })

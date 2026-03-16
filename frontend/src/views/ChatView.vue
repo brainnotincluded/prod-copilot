@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useQueryStore } from '@/stores/query'
+import { useSwaggerStore } from '@/stores/swagger'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 
 const chatStore = useChatStore()
 const queryStore = useQueryStore()
+const swaggerStore = useSwaggerStore()
 const messagesContainer = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  swaggerStore.fetchSwaggers()
+})
 
 const hasMessages = computed(() => chatStore.messages.length > 0)
 
-function handleSend(text: string) {
-  queryStore.sendQuery(text)
+function handleSend(text: string, sourceIds: number[] = []) {
+  queryStore.sendQuery(text, sourceIds)
   scrollToBottom()
 }
 
@@ -46,28 +52,28 @@ watch(
     <div v-if="!hasMessages" class="chat-empty">
       <div class="empty-content">
         <div class="empty-logo">P</div>
-        <h2 class="empty-title">What can I help you with?</h2>
+        <h2 class="empty-title">Чем могу помочь?</h2>
         <p class="empty-subtitle">
-          Ask anything about your APIs. I'll orchestrate requests and return structured results.
+          Задайте вопрос о ваших API. Я выполню запросы и верну структурированные результаты.
         </p>
         <div class="empty-suggestions">
           <button
             class="suggestion-chip"
-            @click="handleSend('List all available API endpoints')"
+            @click="handleSend('Покажи все доступные API эндпоинты')"
           >
-            List all available API endpoints
+            Покажи все доступные API эндпоинты
           </button>
           <button
             class="suggestion-chip"
-            @click="handleSend('Show me the most used endpoints this week')"
+            @click="handleSend('Покажи самые используемые эндпоинты за неделю')"
           >
-            Show me the most used endpoints this week
+            Покажи самые используемые эндпоинты за неделю
           </button>
           <button
             class="suggestion-chip"
-            @click="handleSend('Find users created in the last 24 hours')"
+            @click="handleSend('Найди пользователей, созданных за последние 24 часа')"
           >
-            Find users created in the last 24 hours
+            Найди пользователей, созданных за последние 24 часа
           </button>
         </div>
       </div>
