@@ -391,7 +391,7 @@ class TestDeduplication:
             fake_db.set_execute_result(make_result(scalars=[existing]))
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
 
@@ -412,7 +412,7 @@ class TestDeduplication:
             fake_db.set_execute_result(make_result(scalars=[]))
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
 

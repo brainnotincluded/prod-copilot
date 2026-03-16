@@ -24,7 +24,7 @@ class TestQueryEndpoint:
                 metadata={"status": "completed", "correlation_id": "abc"},
             ))
 
-            resp = await client.post("/api/query", json={"query": "show users"})
+            resp = await client.post("/api/v1/query", json={"query": "show users"})
 
         assert resp.status_code == 200
         body = resp.json()
@@ -40,7 +40,7 @@ class TestQueryEndpoint:
                 data={"columns": ["id"], "rows": [[1]]},
             ))
 
-            resp = await client.post("/api/query", json={"query": "list users"})
+            resp = await client.post("/api/v1/query", json={"query": "list users"})
 
         assert resp.status_code == 200
         assert resp.json()["type"] == "table"
@@ -54,19 +54,19 @@ class TestQueryEndpoint:
                 data={"chart_type": "bar"},
             ))
 
-            resp = await client.post("/api/query", json={"query": "chart"})
+            resp = await client.post("/api/v1/query", json={"query": "chart"})
 
         assert resp.status_code == 200
         assert resp.json()["type"] == "chart"
 
     @pytest.mark.asyncio
     async def test_empty_query_rejected(self, client):
-        resp = await client.post("/api/query", json={"query": ""})
+        resp = await client.post("/api/v1/query", json={"query": ""})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_missing_query_rejected(self, client):
-        resp = await client.post("/api/query", json={})
+        resp = await client.post("/api/v1/query", json={})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
@@ -78,7 +78,7 @@ class TestQueryEndpoint:
             ))
 
             await client.post(
-                "/api/query",
+                "/api/v1/query",
                 json={"query": "test", "swagger_source_ids": [1, 2]},
             )
 
@@ -97,7 +97,7 @@ class TestQueryEndpoint:
                 metadata={"status": "error"},
             ))
 
-            resp = await client.post("/api/query", json={"query": "test"})
+            resp = await client.post("/api/v1/query", json={"query": "test"})
 
         assert resp.status_code == 200
         assert "error" in resp.json()["metadata"]["status"]

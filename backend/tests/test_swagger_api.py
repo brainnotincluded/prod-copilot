@@ -36,7 +36,7 @@ class TestUploadSwagger:
             instance.index_endpoints = AsyncMock(return_value=4)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
 
@@ -70,7 +70,7 @@ paths:
             instance.index_endpoints = AsyncMock(return_value=1)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("spec.yaml", io.BytesIO(yaml_content), "application/x-yaml")},
             )
 
@@ -86,7 +86,7 @@ paths:
             instance.index_endpoints = AsyncMock(return_value=4)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
                 data={"name": "My Custom Name"},
             )
@@ -96,7 +96,7 @@ paths:
 
     @pytest.mark.asyncio
     async def test_upload_no_file_no_url_400(self, client):
-        resp = await client.post("/api/swagger/upload")
+        resp = await client.post("/api/v1/swagger/upload")
         assert resp.status_code == 400
 
     @pytest.mark.asyncio
@@ -106,7 +106,7 @@ paths:
         # Use truly broken YAML: tabs in wrong places cause YAMLError
         broken = b"\t\t:\n\t-\t:\n\x00"
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("bad.json", io.BytesIO(broken), "application/json")},
         )
         assert resp.status_code == 400
@@ -115,7 +115,7 @@ paths:
     async def test_upload_empty_spec_no_endpoints_400(self, client, fake_db):
         spec = {"openapi": "3.0.0", "info": {"title": "Empty", "version": "1"}, "paths": {}}
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("empty.json", io.BytesIO(json.dumps(spec).encode()), "application/json")},
         )
         assert resp.status_code == 400
@@ -132,7 +132,7 @@ paths:
             MockClient.return_value.__aexit__ = AsyncMock(return_value=False)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 data={"url": "http://nonexistent.local/spec.json"},
             )
 
@@ -149,7 +149,7 @@ class TestListSwaggerSources:
     @pytest.mark.asyncio
     async def test_empty_list(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/swagger/list")
+        resp = await client.get("/api/v1/swagger/list")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -161,7 +161,7 @@ class TestListSwaggerSources:
         )
         fake_db.set_execute_result(make_result(scalars=[src]))
 
-        resp = await client.get("/api/swagger/list")
+        resp = await client.get("/api/v1/swagger/list")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -178,7 +178,7 @@ class TestGetSourceEndpoints:
     @pytest.mark.asyncio
     async def test_source_not_found_404(self, client, fake_db):
         # db.get returns None → 404
-        resp = await client.get("/api/swagger/999/endpoints")
+        resp = await client.get("/api/v1/swagger/999/endpoints")
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -194,7 +194,7 @@ class TestGetSourceEndpoints:
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
-        resp = await client.get("/api/swagger/1/endpoints")
+        resp = await client.get("/api/v1/swagger/1/endpoints")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -210,7 +210,7 @@ class TestSourceStats:
 
     @pytest.mark.asyncio
     async def test_not_found_404(self, client, fake_db):
-        resp = await client.get("/api/swagger/999/stats")
+        resp = await client.get("/api/v1/swagger/999/stats")
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -222,7 +222,7 @@ class TestSourceStats:
         # method_counts: [("GET", 3), ("POST", 1)]
         fake_db.set_execute_result(make_result(rows=[("GET", 3), ("POST", 1)]))
 
-        resp = await client.get("/api/swagger/1/stats")
+        resp = await client.get("/api/v1/swagger/1/stats")
         assert resp.status_code == 200
         body = resp.json()
         assert body["total_endpoints"] == 4
@@ -239,7 +239,7 @@ class TestDeleteSource:
     @pytest.mark.asyncio
     async def test_not_found_404(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.delete("/api/swagger/999")
+        resp = await client.delete("/api/v1/swagger/999")
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -248,7 +248,7 @@ class TestDeleteSource:
         src = SwaggerSource(id=1, name="OldAPI", raw_json="{}", created_at=now)
         fake_db.set_execute_result(make_result(scalars=[src]))
 
-        resp = await client.delete("/api/swagger/1")
+        resp = await client.delete("/api/v1/swagger/1")
         assert resp.status_code == 200
         assert "OldAPI" in resp.json()["message"]
         assert src in fake_db.deleted

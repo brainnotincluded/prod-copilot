@@ -162,7 +162,7 @@ class TestCreateScenario:
         fake_db.refresh = _fake_refresh
 
         resp = await client.post(
-            "/api/scenarios",
+            "/api/v1/scenarios",
             json={"query": "List all pets", "swagger_source_ids": [1, 2]},
         )
         assert resp.status_code == 201
@@ -196,7 +196,7 @@ class TestCreateScenario:
         fake_db.refresh = _fake_refresh
 
         resp = await client.post(
-            "/api/scenarios",
+            "/api/v1/scenarios",
             json={"query": "Show me metrics"},
         )
         assert resp.status_code == 201
@@ -207,7 +207,7 @@ class TestCreateScenario:
     async def test_create_scenario_empty_query_rejected(self, client, fake_db):
         """Empty query must be rejected (min_length=1)."""
         resp = await client.post(
-            "/api/scenarios",
+            "/api/v1/scenarios",
             json={"query": ""},
         )
         assert resp.status_code == 422
@@ -215,7 +215,7 @@ class TestCreateScenario:
     @pytest.mark.asyncio
     async def test_create_scenario_missing_query_rejected(self, client, fake_db):
         """Missing query field must be rejected."""
-        resp = await client.post("/api/scenarios", json={})
+        resp = await client.post("/api/v1/scenarios", json={})
         assert resp.status_code == 422
 
 
@@ -232,7 +232,7 @@ class TestListScenarios:
         s2 = _scenario(id=2, query="q2", status="completed", correlation_id="corr-002")
         fake_db.set_execute_result(make_result(scalars=[s1, s2]))
 
-        resp = await client.get("/api/scenarios")
+        resp = await client.get("/api/v1/scenarios")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 2
@@ -242,7 +242,7 @@ class TestListScenarios:
     @pytest.mark.asyncio
     async def test_list_empty(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/scenarios")
+        resp = await client.get("/api/v1/scenarios")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -251,7 +251,7 @@ class TestListScenarios:
         s = _scenario(id=3, status="completed", correlation_id="corr-003")
         fake_db.set_execute_result(make_result(scalars=[s]))
 
-        resp = await client.get("/api/scenarios?status=completed")
+        resp = await client.get("/api/v1/scenarios?status=completed")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -260,7 +260,7 @@ class TestListScenarios:
     @pytest.mark.asyncio
     async def test_list_invalid_status_rejected(self, client, fake_db):
         """A status value outside the allowed set must be rejected (422)."""
-        resp = await client.get("/api/scenarios?status=banana")
+        resp = await client.get("/api/v1/scenarios?status=banana")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
@@ -268,7 +268,7 @@ class TestListScenarios:
         s = _scenario(id=5, correlation_id="corr-005")
         fake_db.set_execute_result(make_result(scalars=[s]))
 
-        resp = await client.get("/api/scenarios?limit=10&offset=5")
+        resp = await client.get("/api/v1/scenarios?limit=10&offset=5")
         assert resp.status_code == 200
         # Just verify the request was accepted and returned data
         assert isinstance(resp.json(), list)
@@ -276,13 +276,13 @@ class TestListScenarios:
     @pytest.mark.asyncio
     async def test_list_limit_out_of_range(self, client, fake_db):
         """limit > 100 should be rejected."""
-        resp = await client.get("/api/scenarios?limit=200")
+        resp = await client.get("/api/v1/scenarios?limit=200")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_list_negative_offset(self, client, fake_db):
         """offset < 0 should be rejected."""
-        resp = await client.get("/api/scenarios?offset=-1")
+        resp = await client.get("/api/v1/scenarios?offset=-1")
         assert resp.status_code == 422
 
 
@@ -298,7 +298,7 @@ class TestGetScenario:
         s = _scenario(id=7, query="Fetch orders", correlation_id="corr-007")
         fake_db.register_get(ScenarioRun, 7, s)
 
-        resp = await client.get("/api/scenarios/7")
+        resp = await client.get("/api/v1/scenarios/7")
         assert resp.status_code == 200
         body = resp.json()
         assert body["id"] == 7
@@ -307,7 +307,7 @@ class TestGetScenario:
 
     @pytest.mark.asyncio
     async def test_get_nonexistent_scenario_returns_404(self, client, fake_db):
-        resp = await client.get("/api/scenarios/999")
+        resp = await client.get("/api/v1/scenarios/999")
         assert resp.status_code == 404
         assert "not found" in resp.json()["detail"].lower()
 
@@ -316,7 +316,7 @@ class TestGetScenario:
         s = _scenario(id=8, status="completed", finished_at=NOW, correlation_id="corr-008")
         fake_db.register_get(ScenarioRun, 8, s)
 
-        resp = await client.get("/api/scenarios/8")
+        resp = await client.get("/api/v1/scenarios/8")
         assert resp.status_code == 200
         assert resp.json()["finished_at"] is not None
 
@@ -337,7 +337,7 @@ class TestGetScenarioSteps:
         step = _step(id=10, scenario_id=1, action="transform", endpoint_id=None)
         fake_db.set_execute_result(make_result(scalars=[step]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -358,7 +358,7 @@ class TestGetScenarioSteps:
         step = _step(id=11, scenario_id=1, endpoint_id=100)
         fake_db.set_execute_result(make_result(scalars=[step]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         assert resp.status_code == 200
         data = resp.json()
         assert data[0]["endpoint_method"] == "GET"
@@ -377,7 +377,7 @@ class TestGetScenarioSteps:
         # Second execute call will return the confirmation
         fake_db.set_execute_result(make_result(scalars=[conf]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         assert resp.status_code == 200
         data = resp.json()
         assert data[0]["confirmation_status"] == "pending"
@@ -393,7 +393,7 @@ class TestGetScenarioSteps:
         # Second execute returns empty
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         assert resp.status_code == 200
         assert resp.json()[0]["confirmation_status"] is None
 
@@ -404,13 +404,13 @@ class TestGetScenarioSteps:
         fake_db.register_get(ScenarioRun, 1, scenario)
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         assert resp.status_code == 200
         assert resp.json() == []
 
     @pytest.mark.asyncio
     async def test_steps_scenario_not_found(self, client, fake_db):
-        resp = await client.get("/api/scenarios/999/steps")
+        resp = await client.get("/api/v1/scenarios/999/steps")
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -425,7 +425,7 @@ class TestGetScenarioSteps:
                     description="Step B")
         fake_db.set_execute_result(make_result(scalars=[s1, s2]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 2
@@ -447,7 +447,7 @@ class TestGetScenarioSteps:
         conf = _confirmation(id=60, scenario_step_id=30, status="approved")
         fake_db.set_execute_result(make_result(scalars=[conf]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         assert resp.status_code == 200
         data = resp.json()
         assert data[0]["endpoint_method"] == "POST"
@@ -469,7 +469,7 @@ class TestCancelScenario:
         scenario = _scenario(id=1, status="running", steps=[pending_step, running_step])
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.post("/api/scenarios/1/cancel")
+        resp = await client.post("/api/v1/scenarios/1/cancel")
         assert resp.status_code == 200
         body = resp.json()
         assert body["message"] == "Scenario cancelled"
@@ -484,7 +484,7 @@ class TestCancelScenario:
         scenario.steps = []
         fake_db.register_get(ScenarioRun, 2, scenario)
 
-        resp = await client.post("/api/scenarios/2/cancel")
+        resp = await client.post("/api/v1/scenarios/2/cancel")
         assert resp.status_code == 200
         assert scenario.status == "cancelled"
 
@@ -493,7 +493,7 @@ class TestCancelScenario:
         scenario = _scenario(id=3, status="completed", correlation_id="corr-003")
         fake_db.register_get(ScenarioRun, 3, scenario)
 
-        resp = await client.post("/api/scenarios/3/cancel")
+        resp = await client.post("/api/v1/scenarios/3/cancel")
         assert resp.status_code == 409
         assert "Cannot cancel" in resp.json()["detail"]
 
@@ -502,7 +502,7 @@ class TestCancelScenario:
         scenario = _scenario(id=4, status="error", correlation_id="corr-004")
         fake_db.register_get(ScenarioRun, 4, scenario)
 
-        resp = await client.post("/api/scenarios/4/cancel")
+        resp = await client.post("/api/v1/scenarios/4/cancel")
         assert resp.status_code == 409
 
     @pytest.mark.asyncio
@@ -510,12 +510,12 @@ class TestCancelScenario:
         scenario = _scenario(id=5, status="cancelled", correlation_id="corr-005")
         fake_db.register_get(ScenarioRun, 5, scenario)
 
-        resp = await client.post("/api/scenarios/5/cancel")
+        resp = await client.post("/api/v1/scenarios/5/cancel")
         assert resp.status_code == 409
 
     @pytest.mark.asyncio
     async def test_cancel_nonexistent_scenario_returns_404(self, client, fake_db):
-        resp = await client.post("/api/scenarios/999/cancel")
+        resp = await client.post("/api/v1/scenarios/999/cancel")
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -532,7 +532,7 @@ class TestCancelScenario:
         )
         fake_db.register_get(ScenarioRun, 6, scenario)
 
-        resp = await client.post("/api/scenarios/6/cancel")
+        resp = await client.post("/api/v1/scenarios/6/cancel")
         assert resp.status_code == 200
         assert completed_step.status == "completed"  # unchanged
         assert error_step.status == "error"  # unchanged
@@ -555,7 +555,7 @@ class TestGetScenarioGraph:
         scenario.steps = []
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/scenarios/1/graph")
+        resp = await client.get("/api/v1/scenarios/1/graph")
         assert resp.status_code == 200
         body = resp.json()
         assert body["nodes"] == nodes
@@ -580,7 +580,7 @@ class TestGetScenarioGraph:
         ep = _endpoint(id=100, method="GET", path="/users", swagger_source=source)
         fake_db.register_get(ApiEndpoint, 100, ep)
 
-        resp = await client.get("/api/scenarios/2/graph")
+        resp = await client.get("/api/v1/scenarios/2/graph")
         assert resp.status_code == 200
         body = resp.json()
 
@@ -612,7 +612,7 @@ class TestGetScenarioGraph:
         scenario.steps = []
         fake_db.register_get(ScenarioRun, 3, scenario)
 
-        resp = await client.get("/api/scenarios/3/graph")
+        resp = await client.get("/api/v1/scenarios/3/graph")
         assert resp.status_code == 200
         body = resp.json()
         assert body["nodes"] == []
@@ -620,7 +620,7 @@ class TestGetScenarioGraph:
 
     @pytest.mark.asyncio
     async def test_graph_nonexistent_scenario_returns_404(self, client, fake_db):
-        resp = await client.get("/api/scenarios/999/graph")
+        resp = await client.get("/api/v1/scenarios/999/graph")
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -632,7 +632,7 @@ class TestGetScenarioGraph:
                              correlation_id="corr-004", steps=[step])
         fake_db.register_get(ScenarioRun, 4, scenario)
 
-        resp = await client.get("/api/scenarios/4/graph")
+        resp = await client.get("/api/v1/scenarios/4/graph")
         assert resp.status_code == 200
         body = resp.json()
         assert len(body["nodes"]) == 1
@@ -652,7 +652,7 @@ class TestGetScenarioGraph:
         ep = _endpoint(id=300, method="DELETE", path="/items/1", swagger_source=None)
         fake_db.register_get(ApiEndpoint, 300, ep)
 
-        resp = await client.get("/api/scenarios/5/graph")
+        resp = await client.get("/api/v1/scenarios/5/graph")
         assert resp.status_code == 200
         node = resp.json()["nodes"][0]
         assert node["endpoint"] == "DELETE /items/1"
@@ -683,7 +683,7 @@ class TestConfirmScenarioStep:
         fake_db.set_execute_result(make_result(scalars=[conf]))
 
         resp = await client.post(
-            "/api/scenarios/1/confirm/10?resolver=admin@example.com"
+            "/api/v1/scenarios/1/confirm/10?resolver=admin@example.com"
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -701,7 +701,7 @@ class TestConfirmScenarioStep:
     @pytest.mark.asyncio
     async def test_confirm_scenario_not_found(self, client, fake_db):
         resp = await client.post(
-            "/api/scenarios/999/confirm/10?resolver=admin@example.com"
+            "/api/v1/scenarios/999/confirm/10?resolver=admin@example.com"
         )
         assert resp.status_code == 404
         assert "Scenario not found" in resp.json()["detail"]
@@ -713,7 +713,7 @@ class TestConfirmScenarioStep:
         # Step 999 not registered -> returns None from db.get
 
         resp = await client.post(
-            "/api/scenarios/1/confirm/999?resolver=admin@example.com"
+            "/api/v1/scenarios/1/confirm/999?resolver=admin@example.com"
         )
         assert resp.status_code == 404
         assert "Step not found" in resp.json()["detail"]
@@ -727,7 +727,7 @@ class TestConfirmScenarioStep:
         fake_db.register_get(ScenarioStep, 10, step)
 
         resp = await client.post(
-            "/api/scenarios/1/confirm/10?resolver=admin@example.com"
+            "/api/v1/scenarios/1/confirm/10?resolver=admin@example.com"
         )
         assert resp.status_code == 404
         assert "Step not found" in resp.json()["detail"]
@@ -742,7 +742,7 @@ class TestConfirmScenarioStep:
         fake_db.set_execute_result(make_result(scalars=[]))  # no confirmation
 
         resp = await client.post(
-            "/api/scenarios/1/confirm/10?resolver=admin@example.com"
+            "/api/v1/scenarios/1/confirm/10?resolver=admin@example.com"
         )
         assert resp.status_code == 404
         assert "No confirmation required" in resp.json()["detail"]
@@ -757,7 +757,7 @@ class TestConfirmScenarioStep:
         fake_db.set_execute_result(make_result(scalars=[conf]))
 
         resp = await client.post(
-            "/api/scenarios/1/confirm/10?resolver=admin@example.com"
+            "/api/v1/scenarios/1/confirm/10?resolver=admin@example.com"
         )
         assert resp.status_code == 409
         assert "already approved" in resp.json()["detail"]
@@ -772,7 +772,7 @@ class TestConfirmScenarioStep:
         fake_db.set_execute_result(make_result(scalars=[conf]))
 
         resp = await client.post(
-            "/api/scenarios/1/confirm/10?resolver=admin@example.com"
+            "/api/v1/scenarios/1/confirm/10?resolver=admin@example.com"
         )
         assert resp.status_code == 409
         assert "already rejected" in resp.json()["detail"]
@@ -790,7 +790,7 @@ class TestResponseShape:
         s = _scenario(id=1, finished_at=NOW)
         fake_db.register_get(ScenarioRun, 1, s)
 
-        resp = await client.get("/api/scenarios/1")
+        resp = await client.get("/api/v1/scenarios/1")
         body = resp.json()
         expected_keys = {
             "id", "correlation_id", "query", "status",
@@ -807,7 +807,7 @@ class TestResponseShape:
         step = _step(id=10, scenario_id=1, action="transform", endpoint_id=None)
         fake_db.set_execute_result(make_result(scalars=[step]))
 
-        resp = await client.get("/api/scenarios/1/steps")
+        resp = await client.get("/api/v1/scenarios/1/steps")
         body = resp.json()[0]
         expected_keys = {
             "id", "step_number", "action", "description", "status",
@@ -824,7 +824,7 @@ class TestResponseShape:
         scenario.steps = []
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/scenarios/1/graph")
+        resp = await client.get("/api/v1/scenarios/1/graph")
         body = resp.json()
         assert "layout" in body
         assert "direction" in body

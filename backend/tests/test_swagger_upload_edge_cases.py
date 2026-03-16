@@ -18,7 +18,7 @@ class TestMalformedSpecs:
     async def test_json_array_instead_of_object(self, client):
         """JSON array should be rejected (not a dict)."""
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("array.json", io.BytesIO(b'[{"key": "value"}]'), "application/json")},
         )
         assert resp.status_code == 400
@@ -27,7 +27,7 @@ class TestMalformedSpecs:
     async def test_json_string_instead_of_object(self, client):
         """JSON string should be rejected."""
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("string.json", io.BytesIO(b'"just a string"'), "application/json")},
         )
         assert resp.status_code == 400
@@ -55,7 +55,7 @@ servers:
             instance.index_endpoints = AsyncMock(return_value=1)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("anchors.yaml", io.BytesIO(yaml_content), "application/x-yaml")},
             )
 
@@ -79,7 +79,7 @@ paths: {}
 """
         # Multiple documents may parse as first doc or fail
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("multi.yaml", io.BytesIO(yaml_content), "application/x-yaml")},
         )
         # Should either succeed with first doc or fail gracefully
@@ -111,7 +111,7 @@ class TestOpenAPIVersions:
             instance.index_endpoints = AsyncMock(return_value=1)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("openapi31.json", io.BytesIO(json.dumps(spec).encode()), "application/json")},
             )
 
@@ -139,7 +139,7 @@ class TestOpenAPIVersions:
             instance.index_endpoints = AsyncMock(return_value=1)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("nohost.json", io.BytesIO(json.dumps(spec).encode()), "application/json")},
             )
 
@@ -167,7 +167,7 @@ class TestDuplicatePrevention:
             # First upload
             fake_db.set_execute_result(make_result(scalars=[]))
             resp1 = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("api.json", io.BytesIO(json.dumps(spec1).encode()), "application/json")},
             )
             assert resp1.status_code == 200
@@ -233,7 +233,7 @@ class TestUploadParameters:
             fake_db.set_execute_result(make_result(scalars=[]))
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
                 data={"url": "http://example.com/spec.json", "name": "Custom"},
             )

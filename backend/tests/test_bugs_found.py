@@ -73,7 +73,7 @@ class TestBug2_YamlNonDictValueError:
         """Upload a file that is valid YAML but not a dict (plain string).
         Must return 400, not 500."""
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("str.yaml", io.BytesIO(b"just a plain string"), "application/x-yaml")},
         )
         assert resp.status_code == 400
@@ -83,7 +83,7 @@ class TestBug2_YamlNonDictValueError:
     async def test_yaml_list_returns_400(self, client, fake_db):
         """YAML that parses to a list is also not a dict → 400."""
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("list.yaml", io.BytesIO(b"- item1\n- item2\n"), "application/x-yaml")},
         )
         assert resp.status_code == 400
@@ -91,7 +91,7 @@ class TestBug2_YamlNonDictValueError:
     @pytest.mark.asyncio
     async def test_yaml_number_returns_400(self, client, fake_db):
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("num.yaml", io.BytesIO(b"42"), "application/x-yaml")},
         )
         assert resp.status_code == 400
@@ -109,7 +109,7 @@ class TestBug3_DeadTagParam:
     @pytest.mark.asyncio
     async def test_list_endpoints_works_without_tag(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list")
+        resp = await client.get("/api/v1/endpoints/list")
         assert resp.status_code == 200
 
 
@@ -119,23 +119,23 @@ class TestBug3_Pagination:
     @pytest.mark.asyncio
     async def test_accepts_limit_offset(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"limit": 10, "offset": 20})
+        resp = await client.get("/api/v1/endpoints/list", params={"limit": 10, "offset": 20})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_limit_too_high_rejected(self, client, fake_db):
-        resp = await client.get("/api/endpoints/list", params={"limit": 9999})
+        resp = await client.get("/api/v1/endpoints/list", params={"limit": 9999})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_negative_offset_rejected(self, client, fake_db):
-        resp = await client.get("/api/endpoints/list", params={"offset": -1})
+        resp = await client.get("/api/v1/endpoints/list", params={"offset": -1})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_swagger_list_accepts_pagination(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/swagger/list", params={"limit": 10, "offset": 0})
+        resp = await client.get("/api/v1/swagger/list", params={"limit": 10, "offset": 0})
         assert resp.status_code == 200
 
 
@@ -150,7 +150,7 @@ class TestBug4_LikeWildcardEscape:
     async def test_percent_in_path_contains_doesnt_match_all(self, client, fake_db):
         """Searching for literal '%' must not act as a SQL wildcard."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"path_contains": "%"})
+        resp = await client.get("/api/v1/endpoints/list", params={"path_contains": "%"})
         assert resp.status_code == 200
         # The query was executed — the important thing is it didn't crash
         # and the % was escaped (we can't verify the SQL from here,
@@ -159,7 +159,7 @@ class TestBug4_LikeWildcardEscape:
     @pytest.mark.asyncio
     async def test_underscore_in_search_escaped(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"search": "get_user"})
+        resp = await client.get("/api/v1/endpoints/list", params={"search": "get_user"})
         assert resp.status_code == 200
 
 
@@ -220,13 +220,13 @@ class TestBug7_PathTraversal:
 
     @pytest.mark.asyncio
     async def test_traversal_in_filename_rejected(self, client):
-        resp = await client.get("/api/sandbox/files/session123/../../etc/passwd")
+        resp = await client.get("/api/v1/sandbox/files/session123/../../etc/passwd")
         # FastAPI may return 404 for path mismatch or 400 for our validation
         assert resp.status_code in (400, 404)
 
     @pytest.mark.asyncio
     async def test_traversal_in_session_id_rejected(self, client):
-        resp = await client.get("/api/sandbox/files/../../../etc/passwd/file.txt")
+        resp = await client.get("/api/v1/sandbox/files/../../../etc/passwd/file.txt")
         assert resp.status_code in (400, 404)
 
     @pytest.mark.asyncio
@@ -246,7 +246,7 @@ class TestBug7_PathTraversal:
         mock_client_instance.__aexit__ = AsyncMock(return_value=False)
 
         with patch("httpx.AsyncClient", return_value=mock_client_instance):
-            resp = await client.get("/api/sandbox/files/abc123/chart.png")
+            resp = await client.get("/api/v1/sandbox/files/abc123/chart.png")
 
         assert resp.status_code == 200
 
@@ -303,7 +303,7 @@ class TestUniversality_MultiSpec:
         assert eps1[0].path == "/v1/users"
 
         assert len(eps2) == 1
-        assert eps2[0].path == "/api/charge"
+        assert eps2[0].path == "/api/v1/charge"
 
         # Different base URLs extracted
         url1 = SwaggerParser.extract_base_url(spec_users)

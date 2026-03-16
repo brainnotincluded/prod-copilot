@@ -19,7 +19,7 @@ class TestWebSocketQuery:
     async def test_invalid_json_returns_error(self, app):
         from starlette.testclient import TestClient
         with TestClient(app) as tc:
-            with tc.websocket_connect("/api/ws/query") as ws:
+            with tc.websocket_connect("/api/v1/ws/query") as ws:
                 ws.send_text("not json at all")
                 data = ws.receive_json()
                 assert "error" in data
@@ -29,7 +29,7 @@ class TestWebSocketQuery:
     async def test_missing_query_field_returns_error(self, app):
         from starlette.testclient import TestClient
         with TestClient(app) as tc:
-            with tc.websocket_connect("/api/ws/query") as ws:
+            with tc.websocket_connect("/api/v1/ws/query") as ws:
                 ws.send_json({"not_query": "oops"})
                 data = ws.receive_json()
                 assert "error" in data
@@ -55,7 +55,7 @@ class TestWebSocketQuery:
 
             from starlette.testclient import TestClient
             with TestClient(app) as tc:
-                with tc.websocket_connect("/api/ws/query") as ws:
+                with tc.websocket_connect("/api/v1/ws/query") as ws:
                     ws.send_json({"query": "test"})
 
                     msg1 = ws.receive_json()
@@ -88,7 +88,7 @@ class TestWebSocketQuery:
 
             from starlette.testclient import TestClient
             with TestClient(app) as tc:
-                with tc.websocket_connect("/api/ws/query") as ws:
+                with tc.websocket_connect("/api/v1/ws/query") as ws:
                     ws.send_json({
                         "query": "q",
                         "history": [{"role": "user", "content": "hi"}],
@@ -119,7 +119,7 @@ class TestWebSocketQuery:
 
             from starlette.testclient import TestClient
             with TestClient(app) as tc:
-                with tc.websocket_connect("/api/ws/query") as ws:
+                with tc.websocket_connect("/api/v1/ws/query") as ws:
                     ws.send_json({"query": "q", "swagger_source_ids": [1, 3]})
                     ws.receive_json()
                     ws.receive_json()

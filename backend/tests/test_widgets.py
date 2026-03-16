@@ -585,7 +585,7 @@ class TestGetScenarioDashboard:
                       position={"x": 6, "y": 0, "w": 6, "h": 4})
         fake_db.set_execute_result(make_result(scalars=[w1, w2]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         assert resp.status_code == 200
         body = resp.json()
 
@@ -616,7 +616,7 @@ class TestGetScenarioDashboard:
         # First execute returns empty (no stored widgets)
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         assert resp.status_code == 200
         body = resp.json()
 
@@ -633,7 +633,7 @@ class TestGetScenarioDashboard:
     @pytest.mark.asyncio
     async def test_dashboard_scenario_not_found(self, client, fake_db):
         """Non-existent scenario returns 404."""
-        resp = await client.get("/api/dashboards/scenario/999")
+        resp = await client.get("/api/v1/dashboards/scenario/999")
         assert resp.status_code == 404
         assert "Scenario not found" in resp.json()["detail"]
 
@@ -646,7 +646,7 @@ class TestGetScenarioDashboard:
         w = _widget(id=10, scenario_id=1, position=None)
         fake_db.set_execute_result(make_result(scalars=[w]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         assert resp.status_code == 200
         widget = resp.json()["widgets"][0]
         # Default position for index 0
@@ -659,7 +659,7 @@ class TestGetScenarioDashboard:
         fake_db.register_get(ScenarioRun, 1, scenario)
         fake_db.set_execute_result(make_result(scalars=[_widget(id=1)]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         layout = resp.json()["layout"]
         assert layout["cols"] == 12
         assert layout["row_height"] == 80
@@ -675,7 +675,7 @@ class TestGetScenarioDashboard:
         fake_db.register_get(ScenarioRun, 1, scenario)
         fake_db.set_execute_result(make_result(scalars=[_widget(id=1)]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         desc = resp.json()["description"]
         assert "Analyze retention metrics" in desc
 
@@ -687,7 +687,7 @@ class TestGetScenarioDashboard:
         fake_db.register_get(ScenarioRun, 1, scenario)
         fake_db.set_execute_result(make_result(scalars=[_widget(id=1)]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         filters = resp.json()["filters"]
         field_names = {f["field"] for f in filters}
         assert "status" in field_names
@@ -701,7 +701,7 @@ class TestGetScenarioDashboard:
         fake_db.register_get(ScenarioRun, 1, scenario)
         fake_db.set_execute_result(make_result(scalars=[_widget(id=1)]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         title = resp.json()["title"]
         # Title format: "{dashboard_type}: {query[:50]}..."
         assert title.endswith("...")
@@ -718,7 +718,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_kpi_widget(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "Total Revenue",
             "data_source": {"endpoint_id": 100, "field_mapping": {"value": "total"}},
@@ -737,7 +737,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_chart_widget(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "chart",
             "title": "Revenue Over Time",
             "data_source": {"endpoint_id": 200},
@@ -748,7 +748,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_table_widget(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "table",
             "title": "User List",
             "data_source": {"endpoint_id": 100},
@@ -758,7 +758,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_card_widget(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "card",
             "title": "Summary",
             "data_source": {"endpoint_id": 100},
@@ -768,7 +768,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_timeline_widget(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "timeline",
             "title": "Execution Log",
             "data_source": {"type": "scenario_steps"},
@@ -778,7 +778,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_list_widget(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "list",
             "title": "Recent Items",
             "data_source": {"endpoint_id": 100},
@@ -788,7 +788,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_widget_with_scenario_id(self, client, fake_db):
-        resp = await client.post("/api/widgets?scenario_id=5", json={
+        resp = await client.post("/api/v1/widgets?scenario_id=5", json={
             "widget_type": "kpi",
             "title": "Metric",
             "data_source": {"endpoint_id": 1},
@@ -798,7 +798,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_widget_without_scenario_id(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "Standalone Widget",
             "data_source": {"endpoint_id": 1},
@@ -808,7 +808,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_widget_optional_config_defaults_to_empty(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "Simple KPI",
             "data_source": {"endpoint_id": 1},
@@ -818,7 +818,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_widget_optional_position_defaults_to_none(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "No Position",
             "data_source": {"endpoint_id": 1},
@@ -829,7 +829,7 @@ class TestCreateWidget:
     @pytest.mark.asyncio
     async def test_create_widget_invalid_type_rejected(self, client, fake_db):
         """Widget type not in allowed set is rejected with 422."""
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "invalid",
             "title": "Bad Widget",
             "data_source": {"endpoint_id": 1},
@@ -839,7 +839,7 @@ class TestCreateWidget:
     @pytest.mark.asyncio
     async def test_create_widget_empty_title_rejected(self, client, fake_db):
         """Empty title is rejected (min_length=1)."""
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "",
             "data_source": {"endpoint_id": 1},
@@ -849,7 +849,7 @@ class TestCreateWidget:
     @pytest.mark.asyncio
     async def test_create_widget_missing_title_rejected(self, client, fake_db):
         """Missing required field 'title' returns 422."""
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "data_source": {"endpoint_id": 1},
         })
@@ -857,7 +857,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_widget_missing_widget_type_rejected(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "title": "No Type",
             "data_source": {"endpoint_id": 1},
         })
@@ -865,7 +865,7 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_widget_missing_data_source_rejected(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "No Source",
         })
@@ -873,13 +873,13 @@ class TestCreateWidget:
 
     @pytest.mark.asyncio
     async def test_create_widget_empty_body_rejected(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={})
+        resp = await client.post("/api/v1/widgets", json={})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_create_widget_assigns_id(self, client, fake_db):
         """FakeAsyncSession assigns auto-increment IDs."""
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "Widget A",
             "data_source": {"endpoint_id": 1},
@@ -890,7 +890,7 @@ class TestCreateWidget:
     @pytest.mark.asyncio
     async def test_create_widget_db_add_and_flush_called(self, client, fake_db):
         """Verify the handler adds the widget to the session and flushes."""
-        await client.post("/api/widgets", json={
+        await client.post("/api/v1/widgets", json={
             "widget_type": "table",
             "title": "Test",
             "data_source": {"endpoint_id": 1},
@@ -914,7 +914,7 @@ class TestGetWidgetData:
         fake_db.register_get(WidgetConfig, 1, widget)
         fake_db.register_get(ApiEndpoint, 100, ep)
 
-        resp = await client.get("/api/widgets/1/data")
+        resp = await client.get("/api/v1/widgets/1/data")
         assert resp.status_code == 200
         data = resp.json()
         assert "value" in data
@@ -929,7 +929,7 @@ class TestGetWidgetData:
         fake_db.register_get(WidgetConfig, 2, widget)
         fake_db.register_get(ApiEndpoint, 100, ep)
 
-        resp = await client.get("/api/widgets/2/data")
+        resp = await client.get("/api/v1/widgets/2/data")
         assert resp.status_code == 200
         data = resp.json()
         assert data["chart_type"] == "pie"
@@ -943,7 +943,7 @@ class TestGetWidgetData:
         fake_db.register_get(WidgetConfig, 3, widget)
         fake_db.register_get(ApiEndpoint, 100, ep)
 
-        resp = await client.get("/api/widgets/3/data")
+        resp = await client.get("/api/v1/widgets/3/data")
         assert resp.status_code == 200
         data = resp.json()
         assert "columns" in data
@@ -958,7 +958,7 @@ class TestGetWidgetData:
         fake_db.register_get(WidgetConfig, 4, widget)
         fake_db.register_get(ApiEndpoint, 100, ep)
 
-        resp = await client.get("/api/widgets/4/data")
+        resp = await client.get("/api/v1/widgets/4/data")
         assert resp.status_code == 200
         data = resp.json()
         assert data["title"] == "API Card"
@@ -972,13 +972,13 @@ class TestGetWidgetData:
         fake_db.register_get(WidgetConfig, 5, widget)
         fake_db.register_get(ApiEndpoint, 100, ep)
 
-        resp = await client.get("/api/widgets/5/data")
+        resp = await client.get("/api/v1/widgets/5/data")
         assert resp.status_code == 200
         assert resp.json() == {"data": "Widget data placeholder"}
 
     @pytest.mark.asyncio
     async def test_widget_not_found(self, client, fake_db):
-        resp = await client.get("/api/widgets/999/data")
+        resp = await client.get("/api/v1/widgets/999/data")
         assert resp.status_code == 404
         assert "Widget not found" in resp.json()["detail"]
 
@@ -988,7 +988,7 @@ class TestGetWidgetData:
         widget = _widget(id=6, data_source={"type": "scenario_steps"})
         fake_db.register_get(WidgetConfig, 6, widget)
 
-        resp = await client.get("/api/widgets/6/data")
+        resp = await client.get("/api/v1/widgets/6/data")
         assert resp.status_code == 200
         assert resp.json()["error"] == "No data source configured"
 
@@ -999,7 +999,7 @@ class TestGetWidgetData:
         fake_db.register_get(WidgetConfig, 7, widget)
         # ApiEndpoint 999 not registered -> db.get returns None
 
-        resp = await client.get("/api/widgets/7/data")
+        resp = await client.get("/api/v1/widgets/7/data")
         assert resp.status_code == 200
         assert resp.json()["error"] == "Endpoint not found"
 
@@ -1039,7 +1039,7 @@ class TestSuggestWidgets:
         )
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         suggestions = resp.json()
 
@@ -1060,7 +1060,7 @@ class TestSuggestWidgets:
         scenario = _scenario(id=1, query="Fetch all pets", steps=[step])
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         suggestions = resp.json()
 
@@ -1073,7 +1073,7 @@ class TestSuggestWidgets:
 
     @pytest.mark.asyncio
     async def test_suggest_scenario_not_found(self, client, fake_db):
-        resp = await client.get("/api/widgets/suggest?scenario_id=999")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=999")
         assert resp.status_code == 404
         assert "Scenario not found" in resp.json()["detail"]
 
@@ -1083,7 +1083,7 @@ class TestSuggestWidgets:
         scenario = _scenario(id=1, query="Empty scenario", steps=[])
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -1094,7 +1094,7 @@ class TestSuggestWidgets:
         scenario = _scenario(id=1, query="No endpoint steps", steps=[step])
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -1105,7 +1105,7 @@ class TestSuggestWidgets:
         scenario = _scenario(id=1, query="No response", steps=[step])
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -1117,7 +1117,7 @@ class TestSuggestWidgets:
         fake_db.register_get(ScenarioRun, 1, scenario)
         # ApiEndpoint 999 not registered
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -1136,14 +1136,14 @@ class TestSuggestWidgets:
         scenario = _scenario(id=1, query="Build audience segment", steps=steps)
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         assert len(resp.json()) <= 8
 
     @pytest.mark.asyncio
     async def test_suggest_missing_scenario_id_param(self, client, fake_db):
         """Missing scenario_id query param returns 422."""
-        resp = await client.get("/api/widgets/suggest")
+        resp = await client.get("/api/v1/widgets/suggest")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
@@ -1152,7 +1152,7 @@ class TestSuggestWidgets:
         scenario = _scenario(id=1, query="email campaign performance", steps=[])
         fake_db.register_get(ScenarioRun, 1, scenario)
 
-        resp = await client.get("/api/widgets/suggest?scenario_id=1")
+        resp = await client.get("/api/v1/widgets/suggest?scenario_id=1")
         assert resp.status_code == 200
         suggestions = resp.json()
 
@@ -1181,7 +1181,7 @@ class TestDeleteWidget:
         widget = _widget(id=1)
         fake_db.register_get(WidgetConfig, 1, widget)
 
-        resp = await client.delete("/api/widgets/1")
+        resp = await client.delete("/api/v1/widgets/1")
         assert resp.status_code == 200
         body = resp.json()
         assert body["message"] == "Widget deleted"
@@ -1192,7 +1192,7 @@ class TestDeleteWidget:
 
     @pytest.mark.asyncio
     async def test_delete_widget_not_found(self, client, fake_db):
-        resp = await client.delete("/api/widgets/999")
+        resp = await client.delete("/api/v1/widgets/999")
         assert resp.status_code == 404
         assert "Widget not found" in resp.json()["detail"]
 
@@ -1204,7 +1204,7 @@ class TestDeleteWidget:
         fake_db.register_get(WidgetConfig, 1, w1)
         fake_db.register_get(WidgetConfig, 2, w2)
 
-        resp = await client.delete("/api/widgets/1")
+        resp = await client.delete("/api/v1/widgets/1")
         assert resp.status_code == 200
 
         # w2 should still be retrievable
@@ -1220,7 +1220,7 @@ class TestWidgetResponseShape:
 
     @pytest.mark.asyncio
     async def test_widget_response_has_all_fields(self, client, fake_db):
-        resp = await client.post("/api/widgets", json={
+        resp = await client.post("/api/v1/widgets", json={
             "widget_type": "kpi",
             "title": "Test Widget",
             "data_source": {"endpoint_id": 1},
@@ -1241,7 +1241,7 @@ class TestWidgetResponseShape:
         fake_db.register_get(ScenarioRun, 1, scenario)
         fake_db.set_execute_result(make_result(scalars=[_widget(id=1)]))
 
-        resp = await client.get("/api/dashboards/scenario/1")
+        resp = await client.get("/api/v1/dashboards/scenario/1")
         assert resp.status_code == 200
         body = resp.json()
         expected_keys = {

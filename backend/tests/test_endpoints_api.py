@@ -29,7 +29,7 @@ class TestListEndpoints:
     @pytest.mark.asyncio
     async def test_empty(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list")
+        resp = await client.get("/api/v1/endpoints/list")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -43,7 +43,7 @@ class TestListEndpoints:
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
-        resp = await client.get("/api/endpoints/list")
+        resp = await client.get("/api/v1/endpoints/list")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -54,37 +54,37 @@ class TestListEndpoints:
     async def test_filter_by_method(self, client, fake_db):
         """Endpoint accepts ?method=POST and passes it to the query."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"method": "POST"})
+        resp = await client.get("/api/v1/endpoints/list", params={"method": "POST"})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_filter_by_path_contains(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"path_contains": "user"})
+        resp = await client.get("/api/v1/endpoints/list", params={"path_contains": "user"})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_filter_by_search(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"search": "create"})
+        resp = await client.get("/api/v1/endpoints/list", params={"search": "create"})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_filter_by_swagger_source_id(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"swagger_source_id": 1})
+        resp = await client.get("/api/v1/endpoints/list", params={"swagger_source_id": 1})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_filter_has_parameters(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"has_parameters": True})
+        resp = await client.get("/api/v1/endpoints/list", params={"has_parameters": True})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_filter_has_request_body(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"has_request_body": True})
+        resp = await client.get("/api/v1/endpoints/list", params={"has_request_body": True})
         assert resp.status_code == 200
 
 
@@ -102,7 +102,7 @@ class TestEndpointStats:
         # by_source
         fake_db.set_execute_result(make_result(rows=[("PetAPI", 10)]))
 
-        resp = await client.get("/api/endpoints/stats")
+        resp = await client.get("/api/v1/endpoints/stats")
         assert resp.status_code == 200
         body = resp.json()
         assert body["total"] == 10
@@ -115,7 +115,7 @@ class TestEndpointStats:
         fake_db.set_execute_result(make_result(rows=[]))
         fake_db.set_execute_result(make_result(rows=[]))
 
-        resp = await client.get("/api/endpoints/stats")
+        resp = await client.get("/api/v1/endpoints/stats")
         assert resp.status_code == 200
         body = resp.json()
         assert body["total"] == 0
@@ -132,7 +132,7 @@ class TestListMethods:
     @pytest.mark.asyncio
     async def test_returns_methods(self, client, fake_db):
         fake_db.set_execute_result(make_result(rows=[("GET",), ("POST",), ("DELETE",)]))
-        resp = await client.get("/api/endpoints/methods")
+        resp = await client.get("/api/v1/endpoints/methods")
         assert resp.status_code == 200
         methods = resp.json()
         assert set(methods) == {"GET", "POST", "DELETE"}
@@ -140,7 +140,7 @@ class TestListMethods:
     @pytest.mark.asyncio
     async def test_empty_methods(self, client, fake_db):
         fake_db.set_execute_result(make_result(rows=[]))
-        resp = await client.get("/api/endpoints/methods")
+        resp = await client.get("/api/v1/endpoints/methods")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -156,7 +156,7 @@ class TestListPaths:
         fake_db.set_execute_result(
             make_result(rows=[("GET", "/pets", "List pets"), ("POST", "/pets", "Add pet")])
         )
-        resp = await client.get("/api/endpoints/paths")
+        resp = await client.get("/api/v1/endpoints/paths")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 2
@@ -167,7 +167,7 @@ class TestListPaths:
     @pytest.mark.asyncio
     async def test_filter_by_source(self, client, fake_db):
         fake_db.set_execute_result(make_result(rows=[]))
-        resp = await client.get("/api/endpoints/paths", params={"swagger_source_id": 1})
+        resp = await client.get("/api/v1/endpoints/paths", params={"swagger_source_id": 1})
         assert resp.status_code == 200
 
 
@@ -189,7 +189,7 @@ class TestGetEndpoint:
         )
         fake_db.register_get(ApiEndpoint, 42, ep)
 
-        resp = await client.get("/api/endpoints/42")
+        resp = await client.get("/api/v1/endpoints/42")
         assert resp.status_code == 200
         body = resp.json()
         assert body["id"] == 42
@@ -200,7 +200,7 @@ class TestGetEndpoint:
 
     @pytest.mark.asyncio
     async def test_not_found_404(self, client, fake_db):
-        resp = await client.get("/api/endpoints/99999")
+        resp = await client.get("/api/v1/endpoints/99999")
         assert resp.status_code == 404
         assert "not found" in resp.json()["detail"].lower()
 
@@ -224,7 +224,7 @@ class TestSearchEndpoints:
             instance = MockRAG.return_value
             instance.search = AsyncMock(return_value=[ep])
 
-            resp = await client.get("/api/endpoints/search", params={"q": "list animals"})
+            resp = await client.get("/api/v1/endpoints/search", params={"q": "list animals"})
 
         assert resp.status_code == 200
         data = resp.json()
@@ -233,12 +233,12 @@ class TestSearchEndpoints:
 
     @pytest.mark.asyncio
     async def test_search_missing_query_422(self, client):
-        resp = await client.get("/api/endpoints/search")
+        resp = await client.get("/api/v1/endpoints/search")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_search_empty_query_422(self, client):
-        resp = await client.get("/api/endpoints/search", params={"q": ""})
+        resp = await client.get("/api/v1/endpoints/search", params={"q": ""})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
@@ -247,7 +247,7 @@ class TestSearchEndpoints:
             instance = MockRAG.return_value
             instance.search = AsyncMock(return_value=[])
 
-            resp = await client.get("/api/endpoints/search", params={"q": "x", "limit": 5})
+            resp = await client.get("/api/v1/endpoints/search", params={"q": "x", "limit": 5})
 
         assert resp.status_code == 200
         # Verify the limit was passed through
@@ -257,10 +257,10 @@ class TestSearchEndpoints:
 
     @pytest.mark.asyncio
     async def test_search_limit_too_high_422(self, client):
-        resp = await client.get("/api/endpoints/search", params={"q": "x", "limit": 999})
+        resp = await client.get("/api/v1/endpoints/search", params={"q": "x", "limit": 999})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_search_limit_zero_422(self, client):
-        resp = await client.get("/api/endpoints/search", params={"q": "x", "limit": 0})
+        resp = await client.get("/api/v1/endpoints/search", params={"q": "x", "limit": 0})
         assert resp.status_code == 422

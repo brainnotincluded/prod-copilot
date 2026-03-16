@@ -18,7 +18,7 @@ class TestCombinedFilters:
         """Filter by method AND path substring."""
         fake_db.set_execute_result(make_result(scalars=[]))
         resp = await client.get(
-            "/api/endpoints/list",
+            "/api/v1/endpoints/list",
             params={"method": "POST", "path_contains": "user"},
         )
         assert resp.status_code == 200
@@ -28,7 +28,7 @@ class TestCombinedFilters:
         """Filter by method AND text search."""
         fake_db.set_execute_result(make_result(scalars=[]))
         resp = await client.get(
-            "/api/endpoints/list",
+            "/api/v1/endpoints/list",
             params={"method": "GET", "search": "list"},
         )
         assert resp.status_code == 200
@@ -38,7 +38,7 @@ class TestCombinedFilters:
         """Apply all filters simultaneously."""
         fake_db.set_execute_result(make_result(scalars=[]))
         resp = await client.get(
-            "/api/endpoints/list",
+            "/api/v1/endpoints/list",
             params={
                 "swagger_source_id": 1,
                 "method": "POST",
@@ -57,7 +57,7 @@ class TestCombinedFilters:
         """Pagination works with filters."""
         fake_db.set_execute_result(make_result(scalars=[]))
         resp = await client.get(
-            "/api/endpoints/list",
+            "/api/v1/endpoints/list",
             params={
                 "method": "GET",
                 "limit": 5,
@@ -80,7 +80,7 @@ class TestFilterEdgeCases:
             request_body=None, response_schema=None, created_at=now,
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
-        resp = await client.get("/api/endpoints/list", params={"path_contains": ""})
+        resp = await client.get("/api/v1/endpoints/list", params={"path_contains": ""})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
@@ -93,7 +93,7 @@ class TestFilterEdgeCases:
             request_body=None, response_schema=None, created_at=now,
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
-        resp = await client.get("/api/endpoints/list", params={"search": ""})
+        resp = await client.get("/api/v1/endpoints/list", params={"search": ""})
         # Empty search is allowed by implementation (becomes no-op filter)
         assert resp.status_code == 200
 
@@ -102,7 +102,7 @@ class TestFilterEdgeCases:
         """Special characters should be handled safely."""
         fake_db.set_execute_result(make_result(scalars=[]))
         resp = await client.get(
-            "/api/endpoints/list",
+            "/api/v1/endpoints/list",
             params={"path_contains": "<script>alert('xss')</script>"},
         )
         assert resp.status_code == 200
@@ -112,11 +112,11 @@ class TestFilterEdgeCases:
         """SQL wildcards % and _ should be escaped."""
         fake_db.set_execute_result(make_result(scalars=[]))
         # These should not cause SQL injection or unexpected matches
-        resp = await client.get("/api/endpoints/list", params={"path_contains": "%"})
+        resp = await client.get("/api/v1/endpoints/list", params={"path_contains": "%"})
         assert resp.status_code == 200
-        resp = await client.get("/api/endpoints/list", params={"path_contains": "_"})
+        resp = await client.get("/api/v1/endpoints/list", params={"path_contains": "_"})
         assert resp.status_code == 200
-        resp = await client.get("/api/endpoints/list", params={"search": "%test_"})
+        resp = await client.get("/api/v1/endpoints/list", params={"search": "%test_"})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
@@ -124,7 +124,7 @@ class TestFilterEdgeCases:
         """Unicode characters in filters."""
         fake_db.set_execute_result(make_result(scalars=[]))
         resp = await client.get(
-            "/api/endpoints/list",
+            "/api/v1/endpoints/list",
             params={"path_contains": "пользователь", "search": "用户"},
         )
         assert resp.status_code == 200
@@ -136,33 +136,33 @@ class TestPaginationBoundaries:
     @pytest.mark.asyncio
     async def test_zero_limit(self, client):
         """Limit of 0 should be rejected."""
-        resp = await client.get("/api/endpoints/list", params={"limit": 0})
+        resp = await client.get("/api/v1/endpoints/list", params={"limit": 0})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_negative_limit(self, client):
         """Negative limit should be rejected."""
-        resp = await client.get("/api/endpoints/list", params={"limit": -1})
+        resp = await client.get("/api/v1/endpoints/list", params={"limit": -1})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_limit_at_maximum(self, client, fake_db):
         """Limit at maximum allowed value."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"limit": 1000})
+        resp = await client.get("/api/v1/endpoints/list", params={"limit": 1000})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_limit_above_maximum(self, client):
         """Limit above maximum should be rejected."""
-        resp = await client.get("/api/endpoints/list", params={"limit": 1001})
+        resp = await client.get("/api/v1/endpoints/list", params={"limit": 1001})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_large_offset(self, client, fake_db):
         """Very large offset should work."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"offset": 1000000})
+        resp = await client.get("/api/v1/endpoints/list", params={"offset": 1000000})
         assert resp.status_code == 200
 
 
@@ -173,14 +173,14 @@ class TestBooleanFilters:
     async def test_has_parameters_true(self, client, fake_db):
         """Filter for endpoints with parameters."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"has_parameters": True})
+        resp = await client.get("/api/v1/endpoints/list", params={"has_parameters": True})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_has_parameters_false(self, client, fake_db):
         """Filter for endpoints without parameters."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"has_parameters": False})
+        resp = await client.get("/api/v1/endpoints/list", params={"has_parameters": False})
         # False is treated as "don't filter" in current implementation
         assert resp.status_code == 200
 
@@ -188,7 +188,7 @@ class TestBooleanFilters:
     async def test_has_request_body_true(self, client, fake_db):
         """Filter for endpoints with request body."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"has_request_body": True})
+        resp = await client.get("/api/v1/endpoints/list", params={"has_request_body": True})
         assert resp.status_code == 200
 
 
@@ -200,20 +200,20 @@ class TestMethodFilterVariants:
         """Test common HTTP methods."""
         fake_db.set_execute_result(make_result(scalars=[]))
         for method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
-            resp = await client.get("/api/endpoints/list", params={"method": method})
+            resp = await client.get("/api/v1/endpoints/list", params={"method": method})
             assert resp.status_code == 200, f"Method {method} should work"
 
     @pytest.mark.asyncio
     async def test_lowercase_method(self, client, fake_db):
         """Lowercase method should be converted to uppercase."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"method": "get"})
+        resp = await client.get("/api/v1/endpoints/list", params={"method": "get"})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_invalid_method(self, client, fake_db):
         """Invalid method might still be accepted (implementation dependent)."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list", params={"method": "INVALID"})
+        resp = await client.get("/api/v1/endpoints/list", params={"method": "INVALID"})
         # Should not crash - may return empty results
         assert resp.status_code == 200

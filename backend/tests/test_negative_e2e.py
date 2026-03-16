@@ -93,12 +93,12 @@ class TestQueryNegative:
 
     @pytest.mark.asyncio
     async def test_empty_body_returns_422(self, client):
-        resp = await client.post("/api/query", content=b"{}")
+        resp = await client.post("/api/v1/query", content=b"{}")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_empty_query_string_returns_422(self, client):
-        resp = await client.post("/api/query", json={"query": ""})
+        resp = await client.post("/api/v1/query", json={"query": ""})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
@@ -111,7 +111,7 @@ class TestQueryNegative:
                 data={"content": "ok"},
             ))
             resp = await client.post(
-                "/api/query",
+                "/api/v1/query",
                 json={"query": "hello", "unknown_field": True, "foo": 123},
             )
         assert resp.status_code == 200
@@ -122,7 +122,7 @@ class TestSwaggerUploadNegative:
 
     @pytest.mark.asyncio
     async def test_no_file_no_url_returns_400(self, client):
-        resp = await client.post("/api/swagger/upload")
+        resp = await client.post("/api/v1/swagger/upload")
         assert resp.status_code == 400
         assert "file" in resp.json()["detail"].lower() or "url" in resp.json()["detail"].lower()
 
@@ -130,7 +130,7 @@ class TestSwaggerUploadNegative:
     async def test_invalid_json_file_returns_400(self, client):
         broken = b"<<<not json or yaml at all>>>\x00"
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("bad.json", io.BytesIO(broken), "application/json")},
         )
         assert resp.status_code == 400
@@ -142,7 +142,7 @@ class TestSwaggerDeleteNegative:
     @pytest.mark.asyncio
     async def test_nonexistent_source_returns_404(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.delete("/api/swagger/999999")
+        resp = await client.delete("/api/v1/swagger/999999")
         assert resp.status_code == 404
 
 
@@ -152,7 +152,7 @@ class TestEndpointGetNegative:
     @pytest.mark.asyncio
     async def test_nonexistent_endpoint_returns_404(self, client, fake_db):
         # fake_db.get returns None by default
-        resp = await client.get("/api/endpoints/999999")
+        resp = await client.get("/api/v1/endpoints/999999")
         assert resp.status_code == 404
 
 
@@ -161,22 +161,22 @@ class TestEndpointSearchNegative:
 
     @pytest.mark.asyncio
     async def test_empty_query_returns_422(self, client):
-        resp = await client.get("/api/endpoints/search?q=")
+        resp = await client.get("/api/v1/endpoints/search?q=")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_missing_query_returns_422(self, client):
-        resp = await client.get("/api/endpoints/search")
+        resp = await client.get("/api/v1/endpoints/search")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_limit_zero_returns_422(self, client):
-        resp = await client.get("/api/endpoints/search?q=test&limit=0")
+        resp = await client.get("/api/v1/endpoints/search?q=test&limit=0")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_limit_too_high_returns_422(self, client):
-        resp = await client.get("/api/endpoints/search?q=test&limit=999")
+        resp = await client.get("/api/v1/endpoints/search?q=test&limit=999")
         assert resp.status_code == 422
 
 
@@ -185,12 +185,12 @@ class TestEndpointListNegative:
 
     @pytest.mark.asyncio
     async def test_negative_limit_returns_422(self, client):
-        resp = await client.get("/api/endpoints/list?limit=-1")
+        resp = await client.get("/api/v1/endpoints/list?limit=-1")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_negative_offset_returns_422(self, client):
-        resp = await client.get("/api/endpoints/list?offset=-1")
+        resp = await client.get("/api/v1/endpoints/list?offset=-1")
         assert resp.status_code == 422
 
 
@@ -199,18 +199,18 @@ class TestConfirmationNegative:
 
     @pytest.mark.asyncio
     async def test_invalid_status_filter_returns_422(self, client):
-        resp = await client.get("/api/confirmations?status=invalid")
+        resp = await client.get("/api/v1/confirmations?status=invalid")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_create_missing_fields_returns_422(self, client):
-        resp = await client.post("/api/confirmations", json={})
+        resp = await client.post("/api/v1/confirmations", json={})
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_create_invalid_method_trace_returns_422(self, client):
         resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "x",
                 "action": "test",
@@ -223,7 +223,7 @@ class TestConfirmationNegative:
     @pytest.mark.asyncio
     async def test_resolve_nonexistent_returns_404(self, client, fake_db):
         resp = await client.post(
-            "/api/confirmations/999/resolve",
+            "/api/v1/confirmations/999/resolve",
             json={"status": "approved", "resolver": "admin@test"},
         )
         assert resp.status_code == 404
@@ -234,7 +234,7 @@ class TestConfirmationNegative:
         fake_db.register_get(ActionConfirmation, 1, conf)
 
         resp = await client.post(
-            "/api/confirmations/1/resolve",
+            "/api/v1/confirmations/1/resolve",
             json={"status": "maybe", "resolver": "admin@test"},
         )
         assert resp.status_code == 422
@@ -245,7 +245,7 @@ class TestSwaggerListNegative:
 
     @pytest.mark.asyncio
     async def test_limit_zero_returns_422(self, client):
-        resp = await client.get("/api/swagger/list?limit=0")
+        resp = await client.get("/api/v1/swagger/list?limit=0")
         assert resp.status_code == 422
 
 
@@ -261,25 +261,25 @@ class TestSandboxPathTraversal:
 
     @pytest.mark.asyncio
     async def test_path_traversal_blocked(self, client):
-        resp = await client.get("/api/sandbox/files/../../../etc/passwd/x")
+        resp = await client.get("/api/v1/sandbox/files/../../../etc/passwd/x")
         # Either the framework collapses the path (404) or the handler rejects (400)
         assert resp.status_code in (400, 404)
 
     @pytest.mark.asyncio
     async def test_double_dot_session_id_blocked(self, client):
-        resp = await client.get("/api/sandbox/files/..%2F..%2Fetc/passwd")
+        resp = await client.get("/api/v1/sandbox/files/..%2F..%2Fetc/passwd")
         assert resp.status_code in (400, 404)
 
     @pytest.mark.asyncio
     async def test_special_chars_in_session_id_returns_400(self, client):
         """Characters outside [a-zA-Z0-9._-] are rejected by the handler."""
-        resp = await client.get("/api/sandbox/files/abc%3Bls/file.txt")
+        resp = await client.get("/api/v1/sandbox/files/abc%3Bls/file.txt")
         # %3B is ';', which fails the safe_pattern regex → 400
         assert resp.status_code == 400
 
     @pytest.mark.asyncio
     async def test_space_in_filename_returns_400(self, client):
-        resp = await client.get("/api/sandbox/files/session1/file%20name.txt")
+        resp = await client.get("/api/v1/sandbox/files/session1/file%20name.txt")
         assert resp.status_code == 400
 
 
@@ -288,12 +288,12 @@ class TestNonexistentRoute:
 
     @pytest.mark.asyncio
     async def test_nonexistent_route_returns_404(self, client):
-        resp = await client.get("/api/nonexistent")
+        resp = await client.get("/api/v1/nonexistent")
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
     async def test_nonexistent_nested_route_returns_404(self, client):
-        resp = await client.get("/api/swagger/nonexistent/deep/path")
+        resp = await client.get("/api/v1/swagger/nonexistent/deep/path")
         assert resp.status_code in (404, 422)  # 422 if path param parsed as int
 
 
@@ -315,7 +315,7 @@ class TestUploadSearchQueryFlow:
             instance.index_endpoints = AsyncMock(return_value=4)
 
             upload_resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
 
@@ -330,7 +330,7 @@ class TestUploadSearchQueryFlow:
             instance = MockRAG.return_value
             instance.search = AsyncMock(return_value=[ep])
 
-            search_resp = await client.get("/api/endpoints/search?q=list+pets")
+            search_resp = await client.get("/api/v1/endpoints/search?q=list+pets")
 
         assert search_resp.status_code == 200
         search_data = search_resp.json()
@@ -346,7 +346,7 @@ class TestUploadSearchQueryFlow:
             ))
 
             query_resp = await client.post(
-                "/api/query",
+                "/api/v1/query",
                 json={"query": "show all pets", "swagger_source_ids": [source_id]},
             )
 
@@ -366,7 +366,7 @@ class TestUploadDuplicateDeleteReupload:
             MockRAG.return_value.index_endpoints = AsyncMock(return_value=4)
 
             resp1 = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
         assert resp1.status_code == 200
@@ -387,7 +387,7 @@ class TestUploadDuplicateDeleteReupload:
             MockRAG.return_value.index_endpoints = AsyncMock(return_value=4)
 
             resp2 = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
         assert resp2.status_code == 409
@@ -395,7 +395,7 @@ class TestUploadDuplicateDeleteReupload:
 
         # Delete the original
         fake_db.set_execute_result(make_result(scalars=[dup_src]))
-        del_resp = await client.delete(f"/api/swagger/{source_id}")
+        del_resp = await client.delete(f"/api/v1/swagger/{source_id}")
         assert del_resp.status_code == 200
 
         # Re-upload succeeds (no duplicate in DB now)
@@ -406,7 +406,7 @@ class TestUploadDuplicateDeleteReupload:
             MockRAG.return_value.index_endpoints = AsyncMock(return_value=4)
 
             resp3 = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
         assert resp3.status_code == 200
@@ -419,7 +419,7 @@ class TestConfirmationWorkflow:
     async def test_full_confirmation_lifecycle(self, client, fake_db):
         # Step 1: create a confirmation
         create_resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "wf-001",
                 "action": "send_email",
@@ -440,7 +440,7 @@ class TestConfirmationWorkflow:
         pending_conf.endpoint_path = "/emails/send"
         fake_db.set_execute_result(make_result(scalars=[pending_conf]))
 
-        list_resp = await client.get("/api/confirmations?status=pending")
+        list_resp = await client.get("/api/v1/confirmations?status=pending")
         assert list_resp.status_code == 200
         pending_list = list_resp.json()
         assert len(pending_list) >= 1
@@ -461,7 +461,7 @@ class TestConfirmationWorkflow:
         fake_db.register_get(ActionConfirmation, conf_id, pending_conf_for_get)
 
         resolve_resp = await client.post(
-            f"/api/confirmations/{conf_id}/resolve",
+            f"/api/v1/confirmations/{conf_id}/resolve",
             json={"status": "approved", "resolver": "admin@company.com"},
         )
         assert resolve_resp.status_code == 200
@@ -480,7 +480,7 @@ class TestConfirmationWorkflow:
         )
         fake_db.set_execute_result(make_result(scalars=[approved_conf]))
 
-        approved_resp = await client.get("/api/confirmations?status=approved")
+        approved_resp = await client.get("/api/v1/confirmations?status=approved")
         assert approved_resp.status_code == 200
         approved_list = approved_resp.json()
         assert len(approved_list) >= 1
@@ -495,34 +495,34 @@ class TestViewerFullWorkflow:
         async with await _client_with_role(app, "viewer") as viewer:
             # CAN read: list endpoints
             fake_db.set_execute_result(make_result(scalars=[]))
-            resp = await viewer.get("/api/endpoints/list")
+            resp = await viewer.get("/api/v1/endpoints/list")
             assert resp.status_code == 200
 
             # CAN read: list swagger sources
             fake_db.set_execute_result(make_result(scalars=[]))
-            resp = await viewer.get("/api/swagger/list")
+            resp = await viewer.get("/api/v1/swagger/list")
             assert resp.status_code == 200
 
             # CAN read: list confirmations
             fake_db.set_execute_result(make_result(scalars=[]))
-            resp = await viewer.get("/api/confirmations?status=pending")
+            resp = await viewer.get("/api/v1/confirmations?status=pending")
             assert resp.status_code == 200
 
             # BLOCKED on write: upload swagger (editor+)
-            resp = await viewer.post("/api/swagger/upload")
+            resp = await viewer.post("/api/v1/swagger/upload")
             assert resp.status_code == 403
 
             # BLOCKED on write: query (editor+)
-            resp = await viewer.post("/api/query", json={"query": "test"})
+            resp = await viewer.post("/api/v1/query", json={"query": "test"})
             assert resp.status_code == 403
 
             # BLOCKED on admin: delete swagger (admin only)
-            resp = await viewer.delete("/api/swagger/1")
+            resp = await viewer.delete("/api/v1/swagger/1")
             assert resp.status_code == 403
 
             # BLOCKED on admin: resolve confirmation (admin only)
             resp = await viewer.post(
-                "/api/confirmations/1/resolve",
+                "/api/v1/confirmations/1/resolve",
                 json={"status": "approved", "resolver": "x"},
             )
             assert resp.status_code == 403
@@ -539,7 +539,7 @@ class TestEditorFullWorkflow:
                 MockSvc.return_value.execute = AsyncMock(
                     return_value=ResultResponse(type="text", data={"content": "ok"})
                 )
-                resp = await editor.post("/api/query", json={"query": "hello"})
+                resp = await editor.post("/api/v1/query", json={"query": "hello"})
             assert resp.status_code == 200
 
             # CAN write: upload spec
@@ -547,18 +547,18 @@ class TestEditorFullWorkflow:
             with patch("app.api.swagger.RAGService") as MockRAG:
                 MockRAG.return_value.index_endpoints = AsyncMock(return_value=4)
                 resp = await editor.post(
-                    "/api/swagger/upload",
+                    "/api/v1/swagger/upload",
                     files={"file": ("p.json", io.BytesIO(spec_bytes), "application/json")},
                 )
             assert resp.status_code == 200
 
             # BLOCKED on admin: delete swagger
-            resp = await editor.delete("/api/swagger/1")
+            resp = await editor.delete("/api/v1/swagger/1")
             assert resp.status_code == 403
 
             # BLOCKED on admin: resolve confirmation
             resp = await editor.post(
-                "/api/confirmations/1/resolve",
+                "/api/v1/confirmations/1/resolve",
                 json={"status": "approved", "resolver": "x"},
             )
             assert resp.status_code == 403
@@ -581,7 +581,7 @@ class TestLargeSpecName:
             MockRAG.return_value.index_endpoints = AsyncMock(return_value=4)
 
             resp = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("spec.json", io.BytesIO(spec_bytes), "application/json")},
                 data={"name": long_name},
             )
@@ -603,7 +603,7 @@ class TestUnicodeQuery:
             ))
 
             resp = await client.post(
-                "/api/query",
+                "/api/v1/query",
                 json={"query": "Покажи пользователей с эмодзи 🎉🚀"},
             )
 
@@ -617,7 +617,7 @@ class TestUnicodeQuery:
                 data={"content": "dunno"},
             ))
 
-            resp = await client.post("/api/query", json={"query": "🤔"})
+            resp = await client.post("/api/v1/query", json={"query": "🤔"})
 
         assert resp.status_code == 200
 
@@ -630,28 +630,28 @@ class TestSpecialSQLCharsInSearch:
         """SQL wildcard % should be escaped, not cause errors."""
         with patch("app.api.endpoints.RAGService") as MockRAG:
             MockRAG.return_value.search = AsyncMock(return_value=[])
-            resp = await client.get("/api/endpoints/search?q=%25drop+table")
+            resp = await client.get("/api/v1/endpoints/search?q=%25drop+table")
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_underscore_in_search(self, client, fake_db):
         with patch("app.api.endpoints.RAGService") as MockRAG:
             MockRAG.return_value.search = AsyncMock(return_value=[])
-            resp = await client.get("/api/endpoints/search?q=user_id")
+            resp = await client.get("/api/v1/endpoints/search?q=user_id")
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_apostrophe_in_search(self, client, fake_db):
         with patch("app.api.endpoints.RAGService") as MockRAG:
             MockRAG.return_value.search = AsyncMock(return_value=[])
-            resp = await client.get("/api/endpoints/search?q=O'Reilly")
+            resp = await client.get("/api/v1/endpoints/search?q=O'Reilly")
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_sql_injection_attempt_in_list_filter(self, client, fake_db):
         """path_contains with injection payload should be safely escaped."""
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list?path_contains='; DROP TABLE api_endpoints;--")
+        resp = await client.get("/api/v1/endpoints/list?path_contains='; DROP TABLE api_endpoints;--")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -682,7 +682,7 @@ class TestConcurrentUploads:
             MockRAG.return_value.index_endpoints = AsyncMock(return_value=1)
 
             resp1 = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("a.json", io.BytesIO(json.dumps(spec1).encode()), "application/json")},
             )
         assert resp1.status_code == 200
@@ -692,7 +692,7 @@ class TestConcurrentUploads:
             MockRAG.return_value.index_endpoints = AsyncMock(return_value=1)
 
             resp2 = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("b.json", io.BytesIO(json.dumps(spec2).encode()), "application/json")},
             )
         assert resp2.status_code == 200
@@ -705,21 +705,21 @@ class TestEmptyDatabase:
     @pytest.mark.asyncio
     async def test_list_endpoints_empty(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/endpoints/list")
+        resp = await client.get("/api/v1/endpoints/list")
         assert resp.status_code == 200
         assert resp.json() == []
 
     @pytest.mark.asyncio
     async def test_list_swagger_empty(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/swagger/list")
+        resp = await client.get("/api/v1/swagger/list")
         assert resp.status_code == 200
         assert resp.json() == []
 
     @pytest.mark.asyncio
     async def test_list_confirmations_empty(self, client, fake_db):
         fake_db.set_execute_result(make_result(scalars=[]))
-        resp = await client.get("/api/confirmations?status=pending")
+        resp = await client.get("/api/v1/confirmations?status=pending")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -728,7 +728,7 @@ class TestEmptyDatabase:
         fake_db._scalar_result = 0
         fake_db.set_execute_result(make_result(rows=[]))  # by_method
         fake_db.set_execute_result(make_result(rows=[]))  # by_source
-        resp = await client.get("/api/endpoints/stats")
+        resp = await client.get("/api/v1/endpoints/stats")
         assert resp.status_code == 200
         body = resp.json()
         assert body["total"] == 0
@@ -736,14 +736,14 @@ class TestEmptyDatabase:
     @pytest.mark.asyncio
     async def test_endpoint_methods_empty(self, client, fake_db):
         fake_db.set_execute_result(make_result(rows=[]))
-        resp = await client.get("/api/endpoints/methods")
+        resp = await client.get("/api/v1/endpoints/methods")
         assert resp.status_code == 200
         assert resp.json() == []
 
     @pytest.mark.asyncio
     async def test_endpoint_paths_empty(self, client, fake_db):
         fake_db.set_execute_result(make_result(rows=[]))
-        resp = await client.get("/api/endpoints/paths")
+        resp = await client.get("/api/v1/endpoints/paths")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -751,7 +751,7 @@ class TestEmptyDatabase:
     async def test_search_with_no_results(self, client, fake_db):
         with patch("app.api.endpoints.RAGService") as MockRAG:
             MockRAG.return_value.search = AsyncMock(return_value=[])
-            resp = await client.get("/api/endpoints/search?q=nonexistent")
+            resp = await client.get("/api/v1/endpoints/search?q=nonexistent")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -762,7 +762,7 @@ class TestConfirmationEdgeCases:
     @pytest.mark.asyncio
     async def test_create_with_empty_correlation_id_returns_422(self, client):
         resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "",
                 "action": "test",
@@ -775,7 +775,7 @@ class TestConfirmationEdgeCases:
     @pytest.mark.asyncio
     async def test_create_with_empty_action_returns_422(self, client):
         resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "x",
                 "action": "",
@@ -788,7 +788,7 @@ class TestConfirmationEdgeCases:
     @pytest.mark.asyncio
     async def test_create_with_empty_path_returns_422(self, client):
         resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "x",
                 "action": "x",
@@ -804,7 +804,7 @@ class TestConfirmationEdgeCases:
         fake_db.register_get(ActionConfirmation, 1, conf)
 
         resp = await client.post(
-            "/api/confirmations/1/resolve",
+            "/api/v1/confirmations/1/resolve",
             json={"status": "approved", "resolver": ""},
         )
         assert resp.status_code == 422
@@ -814,7 +814,7 @@ class TestConfirmationEdgeCases:
         """All valid HTTP methods (GET, POST, PUT, PATCH, DELETE) are accepted."""
         for method in ("GET", "POST", "PUT", "PATCH", "DELETE"):
             resp = await client.post(
-                "/api/confirmations",
+                "/api/v1/confirmations",
                 json={
                     "correlation_id": f"test-{method}",
                     "action": "test",
@@ -829,7 +829,7 @@ class TestConfirmationEdgeCases:
         """Non-allowed methods (HEAD, OPTIONS, TRACE, CONNECT) are rejected."""
         for method in ("HEAD", "OPTIONS", "TRACE", "CONNECT", "FOOBAR"):
             resp = await client.post(
-                "/api/confirmations",
+                "/api/v1/confirmations",
                 json={
                     "correlation_id": "x",
                     "action": "test",
@@ -845,12 +845,12 @@ class TestSwaggerListPagination:
 
     @pytest.mark.asyncio
     async def test_limit_above_max_returns_422(self, client):
-        resp = await client.get("/api/swagger/list?limit=501")
+        resp = await client.get("/api/v1/swagger/list?limit=501")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_negative_offset_returns_422(self, client):
-        resp = await client.get("/api/swagger/list?offset=-1")
+        resp = await client.get("/api/v1/swagger/list?offset=-1")
         assert resp.status_code == 422
 
 
@@ -859,12 +859,12 @@ class TestEndpointListPagination:
 
     @pytest.mark.asyncio
     async def test_limit_above_max_returns_422(self, client):
-        resp = await client.get("/api/endpoints/list?limit=1001")
+        resp = await client.get("/api/v1/endpoints/list?limit=1001")
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
     async def test_limit_zero_returns_422(self, client):
-        resp = await client.get("/api/endpoints/list?limit=0")
+        resp = await client.get("/api/v1/endpoints/list?limit=0")
         assert resp.status_code == 422
 
 
@@ -880,7 +880,7 @@ class TestQueryWithSourceIds:
                 data={"content": "ok"},
             ))
             resp = await client.post(
-                "/api/query",
+                "/api/v1/query",
                 json={"query": "test", "swagger_source_ids": []},
             )
         assert resp.status_code == 200
@@ -893,7 +893,7 @@ class TestQueryWithSourceIds:
                 data={"content": "ok"},
             ))
             resp = await client.post(
-                "/api/query",
+                "/api/v1/query",
                 json={"query": "test", "swagger_source_ids": None},
             )
         assert resp.status_code == 200
@@ -907,7 +907,7 @@ class TestUploadSpecContentEdgeCases:
         """JSON array (not object) should fail."""
         arr = json.dumps([{"path": "/a"}]).encode()
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("arr.json", io.BytesIO(arr), "application/json")},
         )
         assert resp.status_code == 400
@@ -918,7 +918,7 @@ class TestUploadSpecContentEdgeCases:
         """Plain string JSON should fail."""
         scalar = json.dumps("just a string").encode()
         resp = await client.post(
-            "/api/swagger/upload",
+            "/api/v1/swagger/upload",
             files={"file": ("s.json", io.BytesIO(scalar), "application/json")},
         )
         assert resp.status_code == 400

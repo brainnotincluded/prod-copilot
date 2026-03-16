@@ -37,7 +37,7 @@ class TestListConfirmations:
         )
         fake_db.set_execute_result(make_result(scalars=[conf]))
 
-        resp = await client.get("/api/confirmations?status=pending")
+        resp = await client.get("/api/v1/confirmations?status=pending")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -58,7 +58,7 @@ class TestResolveConfirmation:
         fake_db.register_get(ActionConfirmation, 1, conf)
 
         resp = await client.post(
-            "/api/confirmations/1/resolve",
+            "/api/v1/confirmations/1/resolve",
             json={"status": "approved", "resolver": "admin@example.com"},
         )
         assert resp.status_code == 200
@@ -77,7 +77,7 @@ class TestResolveConfirmation:
         fake_db.register_get(ActionConfirmation, 1, conf)
 
         resp = await client.post(
-            "/api/confirmations/1/resolve",
+            "/api/v1/confirmations/1/resolve",
             json={"status": "rejected", "resolver": "admin@example.com"},
         )
         assert resp.status_code == 200
@@ -95,7 +95,7 @@ class TestResolveConfirmation:
         fake_db.register_get(ActionConfirmation, 1, conf)
 
         resp = await client.post(
-            "/api/confirmations/1/resolve",
+            "/api/v1/confirmations/1/resolve",
             json={"status": "rejected", "resolver": "admin@example.com"},
         )
         assert resp.status_code == 409
@@ -103,7 +103,7 @@ class TestResolveConfirmation:
     @pytest.mark.asyncio
     async def test_resolve_not_found(self, client, fake_db):
         resp = await client.post(
-            "/api/confirmations/999/resolve",
+            "/api/v1/confirmations/999/resolve",
             json={"status": "approved", "resolver": "admin@example.com"},
         )
         assert resp.status_code == 404
@@ -114,7 +114,7 @@ class TestCreateConfirmation:
     @pytest.mark.asyncio
     async def test_create_confirmation(self, client, fake_db):
         resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "xyz-789",
                 "action": "create_campaign",
@@ -136,7 +136,7 @@ class TestCreateConfirmation:
     @pytest.mark.asyncio
     async def test_create_confirmation_without_payload(self, client, fake_db):
         resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "abc-111",
                 "action": "delete_segment",
@@ -150,7 +150,7 @@ class TestCreateConfirmation:
     @pytest.mark.asyncio
     async def test_create_confirmation_invalid_method_rejected(self, client, fake_db):
         resp = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "x",
                 "action": "x",
@@ -162,5 +162,5 @@ class TestCreateConfirmation:
 
     @pytest.mark.asyncio
     async def test_create_confirmation_missing_fields_rejected(self, client, fake_db):
-        resp = await client.post("/api/confirmations", json={})
+        resp = await client.post("/api/v1/confirmations", json={})
         assert resp.status_code == 422

@@ -309,7 +309,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[ep1, ep2]))
         fake_db.set_execute_result(make_result(scalars=[rel]))
 
-        resp = await client.get("/api/relations/map")
+        resp = await client.get("/api/v1/relations/map")
         assert resp.status_code == 200
         data = resp.json()
 
@@ -354,7 +354,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[]))
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/map")
+        resp = await client.get("/api/v1/relations/map")
         assert resp.status_code == 200
         data = resp.json()
         assert data["nodes"] == []
@@ -375,7 +375,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[ep]))
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/map", params={"source_id": 5})
+        resp = await client.get("/api/v1/relations/map", params={"source_id": 5})
         assert resp.status_code == 200
         data = resp.json()
         assert len(data["nodes"]) == 2  # 1 source + 1 endpoint
@@ -389,7 +389,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[]))
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/map", params={"source_id": 0})
+        resp = await client.get("/api/v1/relations/map", params={"source_id": 0})
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
@@ -405,7 +405,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[ep]))
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/map")
+        resp = await client.get("/api/v1/relations/map")
         data = resp.json()
         ep_node = [n for n in data["nodes"] if n["type"] == "endpoint"][0]
         assert ep_node["data"]["has_request_body"] is True
@@ -421,7 +421,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[ep]))
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/map")
+        resp = await client.get("/api/v1/relations/map")
         data = resp.json()
         ep_node = [n for n in data["nodes"] if n["type"] == "endpoint"][0]
         assert ep_node["data"]["has_request_body"] is False
@@ -440,7 +440,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[ep1, ep2]))
         fake_db.set_execute_result(make_result(scalars=[rel]))
 
-        resp = await client.get("/api/relations/map")
+        resp = await client.get("/api/v1/relations/map")
         assert resp.status_code == 200
         data = resp.json()
         assert data["stats"]["total_apis"] == 2
@@ -464,7 +464,7 @@ class TestGetEntityMap:
         fake_db.set_execute_result(make_result(scalars=[ep1, ep2]))
         fake_db.set_execute_result(make_result(scalars=[rel]))
 
-        resp = await client.get("/api/relations/map")
+        resp = await client.get("/api/v1/relations/map")
         data = resp.json()
         rel_edge = [e for e in data["edges"] if e["type"] == "relation"][0]
         assert rel_edge["label"] == "order_id → id"
@@ -481,7 +481,7 @@ class TestGetConnectionSuggestions:
     async def test_not_found_returns_404(self, client, fake_db):
         """Non-existent endpoint_id returns 404."""
         # db.get returns None by default
-        resp = await client.get("/api/relations/relations/999/suggestions")
+        resp = await client.get("/api/v1/relations/relations/999/suggestions")
         assert resp.status_code == 404
         assert "not found" in resp.json()["detail"].lower()
 
@@ -495,7 +495,7 @@ class TestGetConnectionSuggestions:
         # Reverse relations query
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/relations/5/suggestions")
+        resp = await client.get("/api/v1/relations/relations/5/suggestions")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -519,7 +519,7 @@ class TestGetConnectionSuggestions:
         # Reverse relations
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/relations/1/suggestions")
+        resp = await client.get("/api/v1/relations/relations/1/suggestions")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -550,7 +550,7 @@ class TestGetConnectionSuggestions:
         # Reverse relations for endpoint 5
         fake_db.set_execute_result(make_result(scalars=[rel]))
 
-        resp = await client.get("/api/relations/relations/5/suggestions")
+        resp = await client.get("/api/v1/relations/relations/5/suggestions")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -583,7 +583,7 @@ class TestGetConnectionSuggestions:
         # Reverse relations
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/relations/1/suggestions")
+        resp = await client.get("/api/v1/relations/relations/1/suggestions")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 3
@@ -609,7 +609,7 @@ class TestGetConnectionSuggestions:
         fake_db.set_execute_result(make_result(scalars=[fwd_rel]))
         fake_db.set_execute_result(make_result(scalars=[rev_rel]))
 
-        resp = await client.get("/api/relations/relations/1/suggestions")
+        resp = await client.get("/api/v1/relations/relations/1/suggestions")
         assert resp.status_code == 200
         data = resp.json()
         types = {s["type"] for s in data}
@@ -628,7 +628,7 @@ class TestGetConnectionSuggestions:
         fake_db.set_execute_result(make_result(scalars=[rel]))
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/relations/1/suggestions")
+        resp = await client.get("/api/v1/relations/relations/1/suggestions")
         assert resp.status_code == 200
         assert resp.json() == []
 
@@ -650,7 +650,7 @@ class TestGetConnectionSuggestions:
         fake_db.set_execute_result(make_result(scalars=[rel]))
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.get("/api/relations/relations/1/suggestions")
+        resp = await client.get("/api/v1/relations/relations/1/suggestions")
         data = resp.json()
         assert len(data) == 1
         assert "related" in data[0]["reason"]
@@ -689,7 +689,7 @@ class TestAnalyzeRelations:
         )
         fake_db.set_execute_result(make_result(scalars=[ep1, ep2]))
 
-        resp = await client.post("/api/relations/relations/analyze")
+        resp = await client.post("/api/v1/relations/relations/analyze")
         assert resp.status_code == 200
         data = resp.json()
         assert data["analyzed_endpoints"] == 2
@@ -702,7 +702,7 @@ class TestAnalyzeRelations:
         """No endpoints in DB -> zero analyzed and zero discovered."""
         fake_db.set_execute_result(make_result(scalars=[]))
 
-        resp = await client.post("/api/relations/relations/analyze")
+        resp = await client.post("/api/v1/relations/relations/analyze")
         assert resp.status_code == 200
         data = resp.json()
         assert data["analyzed_endpoints"] == 0
@@ -714,7 +714,7 @@ class TestAnalyzeRelations:
         ep = _make_endpoint(id=1, response_schema=None)
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
-        resp = await client.post("/api/relations/relations/analyze")
+        resp = await client.post("/api/v1/relations/relations/analyze")
         assert resp.status_code == 200
         data = resp.json()
         assert data["analyzed_endpoints"] == 1
@@ -734,7 +734,7 @@ class TestAnalyzeRelations:
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
         resp = await client.post(
-            "/api/relations/relations/analyze",
+            "/api/v1/relations/relations/analyze",
             params={"source_ids": [7]},
         )
         assert resp.status_code == 200
@@ -762,7 +762,7 @@ class TestAnalyzeRelations:
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
-        resp = await client.post("/api/relations/relations/analyze")
+        resp = await client.post("/api/v1/relations/relations/analyze")
         assert resp.status_code == 200
         data = resp.json()
         # "address" (no _id), "address.city_id" (ends with _id) => 1
@@ -783,7 +783,7 @@ class TestAnalyzeRelations:
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
-        resp = await client.post("/api/relations/relations/analyze")
+        resp = await client.post("/api/v1/relations/relations/analyze")
         assert resp.status_code == 200
         data = resp.json()
         assert data["analyzed_endpoints"] == 1
@@ -795,7 +795,7 @@ class TestAnalyzeRelations:
         fake_db.set_execute_result(make_result(scalars=[]))
 
         resp = await client.post(
-            "/api/relations/relations/analyze",
+            "/api/v1/relations/relations/analyze",
             params={"source_ids": []},
         )
         assert resp.status_code == 200
@@ -825,7 +825,7 @@ class TestAnalyzeRelations:
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
-        resp = await client.post("/api/relations/relations/analyze")
+        resp = await client.post("/api/v1/relations/relations/analyze")
         assert resp.status_code == 200
         data = resp.json()
         # "items" (no _id), "items[].product_id" (ends with _id), "items[].label" (no) => 1

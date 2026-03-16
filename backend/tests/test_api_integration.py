@@ -30,7 +30,7 @@ class TestUploadAndQueryFlow:
             fake_db.set_execute_result(make_result(scalars=[]))
             
             resp_upload = await client.post(
-                "/api/swagger/upload",
+                "/api/v1/swagger/upload",
                 files={"file": ("petstore.json", io.BytesIO(spec_bytes), "application/json")},
             )
             assert resp_upload.status_code == 200
@@ -44,7 +44,7 @@ class TestUploadAndQueryFlow:
         )
         fake_db.set_execute_result(make_result(scalars=[ep]))
 
-        resp_list = await client.get("/api/endpoints/list")
+        resp_list = await client.get("/api/v1/endpoints/list")
         assert resp_list.status_code == 200
         data = resp_list.json()
         assert len(data) == 1
@@ -59,7 +59,7 @@ class TestConfirmationWorkflow:
         """Create confirmation and then resolve it."""
         # Step 1: Create confirmation
         resp_create = await client.post(
-            "/api/confirmations",
+            "/api/v1/confirmations",
             json={
                 "correlation_id": "workflow-123",
                 "action": "delete_user",
@@ -81,14 +81,14 @@ class TestConfirmationWorkflow:
         )
         fake_db.set_execute_result(make_result(scalars=[conf]))
 
-        resp_list = await client.get("/api/confirmations?status=pending")
+        resp_list = await client.get("/api/v1/confirmations?status=pending")
         assert resp_list.status_code == 200
         assert len(resp_list.json()) == 1
 
         # Step 3: Resolve confirmation
         fake_db.register_get(ActionConfirmation, confirm_id, conf)
         resp_resolve = await client.post(
-            f"/api/confirmations/{confirm_id}/resolve",
+            f"/api/v1/confirmations/{confirm_id}/resolve",
             json={"status": "approved", "resolver": "admin@example.com"},
         )
         assert resp_resolve.status_code == 200
@@ -110,15 +110,15 @@ class TestAuthProtectedWorkflow:
         ) as client:
             # Can list endpoints
             fake_db.set_execute_result(make_result(scalars=[]))
-            resp = await client.get("/api/endpoints/list")
+            resp = await client.get("/api/v1/endpoints/list")
             assert resp.status_code == 200
 
             # Cannot upload
-            resp = await client.post("/api/swagger/upload")
+            resp = await client.post("/api/v1/swagger/upload")
             assert resp.status_code == 403
 
             # Cannot delete
-            resp = await client.delete("/api/swagger/1")
+            resp = await client.delete("/api/v1/swagger/1")
             assert resp.status_code == 403
 
     @pytest.mark.asyncio
@@ -134,15 +134,15 @@ class TestAuthProtectedWorkflow:
         ) as client:
             # Can list
             fake_db.set_execute_result(make_result(scalars=[]))
-            resp = await client.get("/api/endpoints/list")
+            resp = await client.get("/api/v1/endpoints/list")
             assert resp.status_code == 200
 
             # Cannot delete (admin only)
-            resp = await client.delete("/api/swagger/1")
+            resp = await client.delete("/api/v1/swagger/1")
             assert resp.status_code == 403
 
             # Cannot resolve confirmations (admin only)
-            resp = await client.post("/api/confirmations/1/resolve", json={"status": "approved"})
+            resp = await client.post("/api/v1/confirmations/1/resolve", json={"status": "approved"})
             assert resp.status_code == 403
 
 
@@ -162,6 +162,6 @@ class TestErrorRecovery:
                 "metadata": {"status": "completed"},
             })())
 
-            resp = await client.post("/api/query", json={"query": "do something"})
+            resp = await client.post("/api/v1/query", json={"query": "do something"})
             assert resp.status_code == 200
 

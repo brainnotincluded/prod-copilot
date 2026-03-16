@@ -76,26 +76,26 @@ class TestViewerRestrictions:
     @pytest.mark.asyncio
     async def test_viewer_cannot_upload(self, app, fake_db):
         async with await _client_with_role(app, "viewer") as c:
-            resp = await c.post("/api/swagger/upload")
+            resp = await c.post("/api/v1/swagger/upload")
         assert resp.status_code == 403
 
     @pytest.mark.asyncio
     async def test_viewer_cannot_delete(self, app, fake_db):
         async with await _client_with_role(app, "viewer") as c:
-            resp = await c.delete("/api/swagger/1")
+            resp = await c.delete("/api/v1/swagger/1")
         assert resp.status_code == 403
 
     @pytest.mark.asyncio
     async def test_viewer_cannot_query(self, app, fake_db):
         async with await _client_with_role(app, "viewer") as c:
-            resp = await c.post("/api/query", json={"query": "test"})
+            resp = await c.post("/api/v1/query", json={"query": "test"})
         assert resp.status_code == 403
 
     @pytest.mark.asyncio
     async def test_viewer_cannot_resolve_confirmation(self, app, fake_db):
         async with await _client_with_role(app, "viewer") as c:
             resp = await c.post(
-                "/api/confirmations/1/resolve",
+                "/api/v1/confirmations/1/resolve",
                 json={"status": "approved", "resolver": "x"},
             )
         assert resp.status_code == 403
@@ -105,7 +105,7 @@ class TestViewerRestrictions:
         from tests.conftest import make_result
         fake_db.set_execute_result(make_result(scalars=[]))
         async with await _client_with_role(app, "viewer") as c:
-            resp = await c.get("/api/endpoints/list")
+            resp = await c.get("/api/v1/endpoints/list")
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
@@ -113,7 +113,7 @@ class TestViewerRestrictions:
         from tests.conftest import make_result
         fake_db.set_execute_result(make_result(scalars=[]))
         async with await _client_with_role(app, "viewer") as c:
-            resp = await c.get("/api/swagger/list")
+            resp = await c.get("/api/v1/swagger/list")
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
@@ -121,7 +121,7 @@ class TestViewerRestrictions:
         from tests.conftest import make_result
         fake_db.set_execute_result(make_result(scalars=[]))
         async with await _client_with_role(app, "viewer") as c:
-            resp = await c.get("/api/confirmations?status=pending")
+            resp = await c.get("/api/v1/confirmations?status=pending")
         assert resp.status_code == 200
 
 
@@ -134,14 +134,14 @@ class TestEditorRestrictions:
     @pytest.mark.asyncio
     async def test_editor_cannot_delete(self, app, fake_db):
         async with await _client_with_role(app, "editor") as c:
-            resp = await c.delete("/api/swagger/1")
+            resp = await c.delete("/api/v1/swagger/1")
         assert resp.status_code == 403
 
     @pytest.mark.asyncio
     async def test_editor_cannot_resolve_confirmation(self, app, fake_db):
         async with await _client_with_role(app, "editor") as c:
             resp = await c.post(
-                "/api/confirmations/1/resolve",
+                "/api/v1/confirmations/1/resolve",
                 json={"status": "approved", "resolver": "x"},
             )
         assert resp.status_code == 403
@@ -154,7 +154,7 @@ class TestEditorRestrictions:
                 return_value=ResultResponse(type="text", data={"content": "ok"})
             )
             async with await _client_with_role(app, "editor") as c:
-                resp = await c.post("/api/query", json={"query": "test"})
+                resp = await c.post("/api/v1/query", json={"query": "test"})
         assert resp.status_code == 200
 
 
@@ -171,7 +171,7 @@ class TestAdminAccess:
         now = datetime.now(timezone.utc)
         src = SwaggerSource(id=1, name="X", raw_json="{}", created_at=now)
         fake_db.set_execute_result(make_result(scalars=[src]))
-        resp = await client.delete("/api/swagger/1")
+        resp = await client.delete("/api/v1/swagger/1")
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
@@ -185,7 +185,7 @@ class TestAdminAccess:
         )
         fake_db.register_get(ActionConfirmation, 1, conf)
         resp = await client.post(
-            "/api/confirmations/1/resolve",
+            "/api/v1/confirmations/1/resolve",
             json={"status": "approved", "resolver": "admin@co"},
         )
         assert resp.status_code == 200
@@ -208,9 +208,9 @@ class TestDefaultRole:
                 MockSvc.return_value.execute = AsyncMock(
                     return_value=ResultResponse(type="text", data={"content": "ok"})
                 )
-                resp = await c.post("/api/query", json={"query": "test"})
+                resp = await c.post("/api/v1/query", json={"query": "test"})
             assert resp.status_code == 200
 
             # but cannot delete (admin only)
-            resp = await c.delete("/api/swagger/1")
+            resp = await c.delete("/api/v1/swagger/1")
             assert resp.status_code == 403
