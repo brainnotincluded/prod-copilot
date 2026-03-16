@@ -10,6 +10,7 @@ import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
 import { useEndpointsStore } from '@/stores/endpoints'
 import { useSwaggerStore } from '@/stores/swagger'
+import { useLocale } from '@/composables/useLocale'
 import SourceGroupNode from '@/components/apimap/SourceGroupNode.vue'
 import EndpointNode from '@/components/apimap/EndpointNode.vue'
 import type { EndpointItem } from '@/types'
@@ -17,6 +18,7 @@ import type { EndpointItem } from '@/types'
 const endpointsStore = useEndpointsStore()
 const swaggerStore = useSwaggerStore()
 const { fitView } = useVueFlow()
+const { t } = useLocale()
 
 interface SelectedEndpoint extends EndpointItem {
   color: string
@@ -533,11 +535,11 @@ onMounted(async () => {
   <div class="api-maps">
     <div class="maps-header">
       <div class="header-left">
-        <h2 class="header-title">Карта API</h2>
-        <span class="endpoint-count">{{ endpointsStore.endpoints.length }} эндпоинтов</span>
+        <h2 class="header-title">{{ t('maps.title') }}</h2>
+        <span class="endpoint-count">{{ endpointsStore.endpoints.length }} {{ t('common.endpoints') }}</span>
       </div>
       <div class="header-actions">
-        <button class="fit-btn" @click="fitView({ padding: 0.15 })" title="Вписать в экран">
+        <button class="fit-btn" @click="fitView({ padding: 0.15 })" :title="t('maps.fitView')">
           <i class="pi pi-expand"></i>
         </button>
       </div>
@@ -545,13 +547,13 @@ onMounted(async () => {
 
     <div v-if="endpointsStore.isLoading" class="maps-loading">
       <i class="pi pi-spin pi-spinner"></i>
-      <span>Загрузка карты API...</span>
+      <span>{{ t('maps.loading') }}</span>
     </div>
 
     <div v-else-if="endpointsStore.endpoints.length === 0" class="maps-empty">
       <i class="pi pi-sitemap maps-empty-icon"></i>
-      <p>Нет эндпоинтов для визуализации.</p>
-      <p class="maps-empty-hint">Загрузите Swagger спецификацию, чтобы увидеть карту API.</p>
+      <p>{{ t('maps.noEndpoints') }}</p>
+      <p class="maps-empty-hint">{{ t('maps.uploadHint') }}</p>
     </div>
 
     <div v-else class="maps-container">
@@ -581,7 +583,7 @@ onMounted(async () => {
 
       <!-- Legend -->
       <div class="map-legend">
-        <div class="legend-title">Легенда</div>
+        <div class="legend-title">{{ t('maps.legend') }}</div>
         <div class="legend-section">
           <div class="legend-item">
             <span class="legend-swatch" style="background: #34a853"></span>
@@ -607,15 +609,15 @@ onMounted(async () => {
         <div class="legend-section">
           <div class="legend-item">
             <span class="legend-line legend-solid"></span>
-            <span>Иерархия</span>
+            <span>{{ t('maps.hierarchy') }}</span>
           </div>
           <div class="legend-item">
             <span class="legend-line legend-dashed-blue"></span>
-            <span>FK ссылка</span>
+            <span>{{ t('maps.fkReference') }}</span>
           </div>
           <div class="legend-item">
             <span class="legend-line legend-dashed-purple"></span>
-            <span>Родительский ресурс</span>
+            <span>{{ t('maps.parentResource') }}</span>
           </div>
         </div>
       </div>
@@ -637,7 +639,7 @@ onMounted(async () => {
             </span>
             <span class="detail-path">{{ selectedEndpoint.path }}</span>
           </div>
-          <button class="close-btn" @click="closePanel" title="Закрыть">
+          <button class="close-btn" @click="closePanel" :title="t('common.close')">
             <i class="pi pi-times"></i>
           </button>
         </div>
@@ -654,7 +656,7 @@ onMounted(async () => {
             v-if="selectedEndpoint.parameters && selectedEndpoint.parameters.length"
             class="detail-section"
           >
-            <h4 class="section-title">Параметры</h4>
+            <h4 class="section-title">{{ t('maps.parameters') }}</h4>
             <div class="params-list">
               <div
                 v-for="p in selectedEndpoint.parameters"
@@ -666,18 +668,18 @@ onMounted(async () => {
                 <span v-if="p.schema?.type || p.type" class="param-type">{{
                   p.schema?.type || p.type
                 }}</span>
-                <span v-if="p.required" class="param-required">обязательный</span>
+                <span v-if="p.required" class="param-required">{{ t('common.required') }}</span>
               </div>
             </div>
           </div>
 
           <div v-if="selectedEndpoint.request_body" class="detail-section">
-            <h4 class="section-title">Тело запроса</h4>
+            <h4 class="section-title">{{ t('maps.requestBody') }}</h4>
             <pre class="detail-code">{{ formatJson(selectedEndpoint.request_body) }}</pre>
           </div>
 
           <div v-if="selectedEndpoint.response_schema" class="detail-section">
-            <h4 class="section-title">Схема ответа</h4>
+            <h4 class="section-title">{{ t('maps.responseSchema') }}</h4>
             <pre class="detail-code">{{ formatJson(selectedEndpoint.response_schema) }}</pre>
           </div>
         </div>

@@ -2,9 +2,11 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useChatStore } from './chat'
 import { useWebSocket } from '@/composables/useWebSocket'
+import { useLocale } from '@/composables/useLocale'
 import type { OrchestrationStep, QueryResult, WebSocketMessage } from '@/types'
 
 export const useQueryStore = defineStore('query', () => {
+  const { t } = useLocale()
   const orchestrationSteps = ref<OrchestrationStep[]>([])
   const currentResult = ref<QueryResult | null>(null)
   const isLoading = ref(false)
@@ -56,7 +58,7 @@ export const useQueryStore = defineStore('query', () => {
             // Empty result: show error text
             chatStore.updateMessage(currentMessageId.value, {
               result: undefined,
-              content: textContent || 'Данные не были получены.',
+              content: textContent || t('error.noData'),
             })
           } else {
             // API result with data: show result renderer, no extra text
@@ -72,7 +74,7 @@ export const useQueryStore = defineStore('query', () => {
       case 'error': {
         if (currentMessageId.value) {
           chatStore.updateMessage(currentMessageId.value, {
-            content: `Ошибка: ${msg.data.message || 'Произошла ошибка'}`,
+            content: `Error: ${msg.data.message || t('error.generic')}`,
           })
         }
         isLoading.value = false

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useLocale } from '@/composables/useLocale'
+
+const { t } = useLocale()
 
 const props = defineProps<{
   data: Record<string, any>
@@ -85,7 +88,7 @@ onMounted(async () => {
     <div v-if="title" class="result-title">{{ title }}</div>
     <div ref="mapContainer" class="map-container"></div>
     <div v-if="markers.length > 0" class="map-info">
-      {{ markers.length }} {{ markers.length === 1 ? 'локация' : 'локаций' }}
+      {{ t('results.locations', markers.length) }}
     </div>
   </div>
 </template>

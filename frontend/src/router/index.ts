@@ -23,11 +23,12 @@ const router = createRouter({
       name: 'api-maps',
       component: () => import('@/views/ApiMapsView.vue'),
     },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('@/views/DashboardView.vue'),
-    },
+    // Dashboard temporarily hidden
+    // {
+    //   path: '/dashboard',
+    //   name: 'dashboard',
+    //   component: () => import('@/views/DashboardView.vue'),
+    // },
   ],
 })
 

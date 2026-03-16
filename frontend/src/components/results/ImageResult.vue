@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLocale } from '@/composables/useLocale'
+
+const { t } = useLocale()
 
 const props = defineProps<{
   data: Record<string, any>
@@ -25,7 +28,7 @@ const title = computed(() => props.data.title || props.metadata?.title || '')
     <div class="image-grid" :class="{ single: images.length === 1 }">
       <figure v-for="(img, idx) in images" :key="idx" class="image-item">
         <a :href="img.url" target="_blank" rel="noopener">
-          <img :src="img.url" :alt="img.title || 'Generated image'" loading="lazy" />
+          <img :src="img.url" :alt="img.title || t('results.generatedImage')" loading="lazy" />
         </a>
         <figcaption v-if="img.title && images.length > 1">{{ img.title }}</figcaption>
       </figure>

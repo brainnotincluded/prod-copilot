@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useLocale } from '@/composables/useLocale'
+
+const { t } = useLocale()
 
 const props = defineProps<{
   data: Record<string, any>
@@ -107,10 +110,10 @@ function formatCell(value: any): string {
             v-model="filterText"
             type="text"
             class="filter-input"
-            placeholder="Поиск..."
+            :placeholder="t('results.filter')"
           />
         </div>
-        <span class="row-count">{{ filteredRows.length }} строк</span>
+        <span class="row-count">{{ t('results.rows', filteredRows.length) }}</span>
       </div>
     </div>
     <div class="table-wrapper">
@@ -124,7 +127,7 @@ function formatCell(value: any): string {
               @click="toggleSort(col)"
             >
               <span class="th-content">
-                {{ isArrayRows ? `Column ${colIdx + 1}` : formatHeader(col) }}
+                {{ isArrayRows ? t('results.column', colIdx + 1) : formatHeader(col) }}
                 <i
                   v-if="sortColumn === col"
                   class="pi sort-icon"
@@ -136,7 +139,7 @@ function formatCell(value: any): string {
         </thead>
         <tbody>
           <tr v-if="filteredRows.length === 0">
-            <td :colspan="columns.length" class="table-empty">Нет данных</td>
+            <td :colspan="columns.length" class="table-empty">{{ t('results.noData') }}</td>
           </tr>
           <tr v-for="(row, idx) in filteredRows" :key="idx" class="table-row">
             <td v-for="(col, colIdx) in columns" :key="col" class="table-td">

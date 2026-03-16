@@ -1,19 +1,208 @@
 <script setup lang="ts">
+import { onMounted, computed } from 'vue'
+import { useEndpointsStore } from '@/stores/endpoints'
+import { useSwaggerStore } from '@/stores/swagger'
+import { useLocale } from '@/composables/useLocale'
+import VChart from 'vue-echarts'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { BarChart, PieChart } from 'echarts/charts'
+import { TooltipComponent, LegendComponent, GridComponent } from 'echarts/components'
+
+use([CanvasRenderer, BarChart, PieChart, TooltipComponent, LegendComponent, GridComponent])
+
+const endpointsStore = useEndpointsStore()
+const swaggerStore = useSwaggerStore()
+const { t } = useLocale()
+
+onMounted(async () => {
+  await Promise.all([
+    endpointsStore.fetchEndpoints(),
+    endpointsStore.fetchStats(),
+    swaggerStore.fetchSwaggers(),
+  ])
+})
+
+const stats = computed(() => endpointsStore.stats)
+const sources = computed(() => swaggerStore.swaggers)
+const isLoading = computed(() => endpointsStore.isLoading || swaggerStore.isLoading)
+
+const methodColors: Record<string, string> = {
+  GET: '#34a853',
+  POST: '#1a73e8',
+  PUT: '#fbbc04',
+  PATCH: '#ff6d01',
+  DELETE: '#ea4335',
+  HEAD: '#80868b',
+  OPTIONS: '#ab47bc',
+}
+
+const methodChartOption = computed(() => {
+  const byMethod = stats.value?.by_method || {}
+  const entries = Object.entries(byMethod).sort((a, b) => b[1] - a[1])
+  return {
+    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+    legend: { bottom: 0, textStyle: { fontSize: 12, color: '#5f6368' } },
+    series: [
+      {
+        type: 'pie',
+        radius: ['42%', '70%'],
+        center: ['50%', '45%'],
+        avoidLabelOverlap: true,
+        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+        label: { show: false },
+        emphasis: {
+          label: { show: true, fontSize: 14, fontWeight: 600 },
+          itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.15)' },
+        },
+        data: entries.map(([method, count]) => ({
+          name: method,
+          value: count,
+          itemStyle: { color: methodColors[method] || '#80868b' },
+        })),
+      },
+    ],
+  }
+})
+
+const sourceChartOption = computed(() => {
+  const bySource = stats.value?.by_source || {}
+  const entries = Object.entries(bySource).sort((a, b) => b[1] - a[1]).slice(0, 10)
+  const names = entries.map(([name]) => name.length > 20 ? name.slice(0, 18) + '...' : name)
+  const values = entries.map(([, count]) => count)
+  return {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: 12, right: 20, top: 12, bottom: 4, containLabel: true },
+    xAxis: {
+      type: 'value',
+      axisLabel: { fontSize: 11, color: '#5f6368' },
+      splitLine: { lineStyle: { color: '#f1f3f4' } },
+    },
+    yAxis: {
+      type: 'category',
+      data: names.reverse(),
+      axisLabel: { fontSize: 11, color: '#5f6368' },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
+    series: [
+      {
+        type: 'bar',
+        data: values.reverse(),
+        barMaxWidth: 28,
+        itemStyle: { color: '#1a73e8', borderRadius: [0, 4, 4, 0] },
+        emphasis: { itemStyle: { color: '#1557b0' } },
+      },
+    ],
+  }
+})
+
+const sortedSources = computed(() => {
+  return [...sources.value].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+})
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
 </script>
 
 <template>
   <div class="dashboard-view">
     <div class="dashboard-container">
-      <div class="dashboard-empty">
+      <!-- Loading skeleton -->
+      <template v-if="isLoading && !stats">
+        <div class="stats-row">
+          <div v-for="i in 4" :key="i" class="stat-card">
+            <div class="skeleton" style="width: 48px; height: 14px; margin-bottom: 8px"></div>
+            <div class="skeleton" style="width: 64px; height: 28px"></div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Stats cards -->
+      <template v-else>
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-label">{{ t('dash.apiSources') }}</span>
+            <span class="stat-value">{{ sources.length }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ t('dash.endpoints') }}</span>
+            <span class="stat-value">{{ stats?.total ?? 0 }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ t('dash.httpMethods') }}</span>
+            <span class="stat-value">{{ Object.keys(stats?.by_method || {}).length }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ t('dash.avgPerSource') }}</span>
+            <span class="stat-value">
+              {{ sources.length ? Math.round((stats?.total ?? 0) / sources.length) : 0 }}
+            </span>
+          </div>
+        </div>
+      </template>
+
+      <!-- Charts row -->
+      <div class="charts-row" v-if="stats && stats.total > 0">
+        <div class="chart-card">
+          <h3 class="card-title">{{ t('dash.methods') }}</h3>
+          <v-chart :option="methodChartOption" autoresize style="height: 260px" />
+        </div>
+        <div class="chart-card">
+          <h3 class="card-title">{{ t('dash.bySource') }}</h3>
+          <v-chart :option="sourceChartOption" autoresize style="height: 260px" />
+        </div>
+      </div>
+
+      <!-- Sources table -->
+      <div class="table-card" v-if="sortedSources.length > 0">
+        <h3 class="card-title">{{ t('dash.sourcesTable') }}</h3>
+        <table class="sources-table">
+          <thead>
+            <tr>
+              <th>{{ t('dash.name') }}</th>
+              <th>{{ t('dash.baseUrl') }}</th>
+              <th>{{ t('dash.endpointsCol') }}</th>
+              <th>{{ t('dash.added') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="src in sortedSources" :key="src.id">
+              <td class="source-name">{{ src.name }}</td>
+              <td class="source-url">{{ src.base_url || '\u2014' }}</td>
+              <td class="source-count">{{ src.endpoint_count }}</td>
+              <td class="source-date">{{ formatDate(src.created_at) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Method breakdown -->
+      <div class="method-cards" v-if="stats && stats.total > 0">
+        <div
+          v-for="(count, method) in stats.by_method"
+          :key="method"
+          class="method-badge"
+          :style="{ '--badge-color': methodColors[method] || '#80868b' }"
+        >
+          <span class="method-name">{{ method }}</span>
+          <span class="method-count">{{ count }}</span>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="dashboard-empty" v-if="!isLoading && (!stats || stats.total === 0)">
         <i class="pi pi-chart-bar empty-icon"></i>
-        <h2 class="empty-title">Панель</h2>
-        <p class="empty-description">
-          Сохранённые результаты и пользовательские панели появятся здесь. Начните с выполнения запросов в Чате
-          и сохранения результатов, которые хотите отслеживать.
-        </p>
-        <router-link to="/chat" class="empty-action">
-          Перейти в Чат
-        </router-link>
+        <h2 class="empty-title">{{ t('dash.noData') }}</h2>
+        <p class="empty-description">{{ t('dash.noDataDesc') }}</p>
+        <router-link to="/swagger" class="empty-action">{{ t('dash.uploadSpec') }}</router-link>
       </div>
     </div>
   </div>
@@ -23,14 +212,175 @@
 .dashboard-view {
   flex: 1;
   overflow-y: auto;
-  padding: 32px;
+  padding: 28px 32px;
 }
 
 .dashboard-container {
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
+/* ---- Stats cards ---- */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast);
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+/* ---- Charts ---- */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.chart-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 12px;
+}
+
+/* ---- Sources table ---- */
+.table-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.sources-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.sources-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sources-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+}
+
+.sources-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sources-table tr:hover td {
+  background: var(--color-bg-secondary);
+}
+
+.source-name {
+  font-weight: 500;
+}
+
+.source-url {
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-count {
+  font-weight: 600;
+  text-align: center;
+}
+
+.source-date {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ---- Method badges ---- */
+.method-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.method-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-left: 3px solid var(--badge-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.method-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--badge-color);
+  font-family: var(--font-mono);
+}
+
+.method-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ---- Empty state ---- */
 .dashboard-empty {
   display: flex;
   flex-direction: column;
@@ -73,5 +423,15 @@
 .empty-action:hover {
   background: var(--color-accent-hover);
   text-decoration: none;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

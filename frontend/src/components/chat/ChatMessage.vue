@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { marked } from 'marked'
 import type { ChatMessage } from '@/types'
+import { useLocale } from '@/composables/useLocale'
 import OrchestrationFlow from './OrchestrationFlow.vue'
 import ResultRenderer from '@/components/results/ResultRenderer.vue'
 
@@ -12,6 +13,7 @@ const props = defineProps<{
   message: ChatMessage
 }>()
 
+const { t } = useLocale()
 const showSteps = ref(false)
 
 const isUser = computed(() => props.message.role === 'user')
@@ -39,17 +41,16 @@ const renderedContent = computed(() => {
 const stepsLabel = computed(() => {
   const steps = props.message.steps || []
   const total = steps.length
-  const completed = steps.filter(s => s.status === 'completed').length
   const errors = steps.filter(s => s.status === 'error').length
   const allDone = steps.every(s => s.status === 'completed' || s.status === 'error')
 
   if (!allDone) {
-    return `Выполняется... (${total} шагов)`
+    return t('chat.running', total)
   }
   if (errors > 0) {
-    return `${total} шагов (${errors} с ошибкой)`
+    return t('chat.stepsFailed', total, errors)
   }
-  return `${total} шагов выполнено`
+  return t('chat.stepsCompleted', total)
 })
 const formattedTime = computed(() => {
   const date = new Date(props.message.timestamp)
@@ -80,7 +81,7 @@ watch(
 
       <div class="message-body">
         <div class="message-header">
-          <span class="message-role">{{ isUser ? 'Вы' : 'Copilot' }}</span>
+          <span class="message-role">{{ isUser ? t('chat.you') : t('chat.copilot') }}</span>
           <span class="message-time">{{ formattedTime }}</span>
         </div>
 
@@ -93,7 +94,7 @@ watch(
             <span></span>
             <span></span>
           </div>
-          <span class="thinking-text">Обработка...</span>
+          <span class="thinking-text">{{ t('chat.thinking') }}</span>
         </div>
 
         <div v-if="hasSteps" class="message-steps">
@@ -109,7 +110,7 @@ watch(
                 :key="step.step"
                 class="step-dot"
                 :class="step.status"
-                :title="`Step ${step.step}: ${step.action} (${step.status})`"
+                :title="t('chat.stepTooltip', step.step, step.action, step.status)"
               ></span>
             </span>
           </button>

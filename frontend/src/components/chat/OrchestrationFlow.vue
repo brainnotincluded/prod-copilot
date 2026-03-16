@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { OrchestrationStep } from '@/types'
+import { useLocale } from '@/composables/useLocale'
 
 defineProps<{
   steps: OrchestrationStep[]
 }>()
+
+const { t } = useLocale()
 
 function statusIcon(status: string): string {
   switch (status) {
@@ -23,7 +26,7 @@ function statusIcon(status: string): string {
 <template>
   <div class="orchestration-flow">
     <div v-if="steps.length === 0" class="flow-empty">
-      Нет шагов оркестрации
+      {{ t('chat.noSteps') }}
     </div>
     <div v-else class="timeline">
       <div

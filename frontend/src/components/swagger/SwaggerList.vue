@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '@/composables/useApi'
 import { useToast } from '@/composables/useToast'
+import { useLocale } from '@/composables/useLocale'
 import type { SwaggerSource } from '@/types'
 
 const props = defineProps<{
@@ -18,6 +19,7 @@ const emit = defineEmits<{
 const router = useRouter()
 const { api } = useApi()
 const { showToast } = useToast()
+const { t } = useLocale()
 
 const sourceStats = ref<Record<number, { total_endpoints: number; by_method: Record<string, number>; base_url?: string }>>({})
 
@@ -55,11 +57,11 @@ function formatDate(dateStr: string): string {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
   if (diffDays === 0) {
-    return 'Сегодня'
+    return t('swagger.today')
   } else if (diffDays === 1) {
-    return 'Вчера'
+    return t('swagger.yesterday')
   } else if (diffDays < 7) {
-    return `${diffDays} дн. назад`
+    return t('swagger.daysAgo', diffDays)
   }
 
   return date.toLocaleDateString(undefined, {
@@ -70,9 +72,9 @@ function formatDate(dateStr: string): string {
 }
 
 function confirmDelete(id: number, name: string) {
-  if (window.confirm(`Удалить API источник "${name}"? Все проиндексированные эндпоинты будут удалены. Это действие нельзя отменить.`)) {
+  if (window.confirm(t('swagger.confirmDelete', name))) {
     emit('delete', id)
-    showToast(`Удалено "${name}"`, 'success')
+    showToast(t('swagger.deleted', name), 'success')
   }
 }
 
@@ -106,13 +108,13 @@ function isValidUrl(str: string): boolean {
   <div class="swagger-list">
     <div v-if="loading && swaggers.length === 0" class="list-loading">
       <i class="pi pi-spin pi-spinner"></i>
-      <span>Загрузка API источников...</span>
+      <span>{{ t('swagger.loading') }}</span>
     </div>
 
     <div v-else-if="swaggers.length === 0" class="list-empty">
       <i class="pi pi-inbox list-empty-icon"></i>
-      <p>API источники ещё не добавлены.</p>
-      <p class="list-empty-hint">Загрузите Swagger файл или импортируйте по URL, чтобы начать.</p>
+      <p>{{ t('swagger.noSources') }}</p>
+      <p class="list-empty-hint">{{ t('swagger.noSourcesHint') }}</p>
     </div>
 
     <div v-else class="list-items">
@@ -126,7 +128,7 @@ function isValidUrl(str: string): boolean {
             <span
               class="status-dot"
               :class="getBaseUrl(swagger) ? 'green' : 'yellow'"
-              :title="getBaseUrl(swagger) ? 'Base URL обнаружен' : 'Нет base URL'"
+              :title="getBaseUrl(swagger) ? t('swagger.baseUrlDetected') : t('swagger.noBaseUrl')"
             ></span>
           </div>
           <div class="card-info">
@@ -143,7 +145,7 @@ function isValidUrl(str: string): boolean {
             </div>
             <div class="card-meta">
               <span class="endpoint-badge">
-                {{ getEndpointCount(swagger) }} эндпоинтов
+                {{ getEndpointCount(swagger) }} {{ t('common.endpoints') }}
               </span>
               <span class="meta-dot"></span>
               <span class="import-date">
@@ -154,7 +156,7 @@ function isValidUrl(str: string): boolean {
                 <span class="meta-dot"></span>
                 <a :href="swagger.url" target="_blank" rel="noopener" class="source-url">
                   <i class="pi pi-external-link meta-icon"></i>
-                  Источник
+                  {{ t('swagger.source') }}
                 </a>
               </template>
             </div>
@@ -163,14 +165,14 @@ function isValidUrl(str: string): boolean {
             <button
               class="action-btn view-btn"
               @click="viewEndpoints(swagger.id)"
-              title="Открыть на Карте API"
+              :title="t('swagger.viewInMaps')"
             >
               <i class="pi pi-map"></i>
             </button>
             <button
               class="action-btn delete-btn"
               @click="confirmDelete(swagger.id, swagger.name)"
-              title="Удалить этот API источник"
+              :title="t('swagger.deleteSource')"
             >
               <i class="pi pi-trash"></i>
             </button>

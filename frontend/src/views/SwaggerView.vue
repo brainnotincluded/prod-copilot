@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { useSwaggerStore } from '@/stores/swagger'
+import { useLocale } from '@/composables/useLocale'
 import SwaggerUpload from '@/components/swagger/SwaggerUpload.vue'
 import SwaggerList from '@/components/swagger/SwaggerList.vue'
 
 const swaggerStore = useSwaggerStore()
+const { t } = useLocale()
 
 const sourceCount = computed(() => swaggerStore.swaggers.length)
 
@@ -23,18 +25,16 @@ function refreshList() {
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-title-row">
-          <h1 class="page-title">API Источники</h1>
+          <h1 class="page-title">{{ t('swagger.title') }}</h1>
           <span v-if="sourceCount > 0" class="page-count">{{ sourceCount }}</span>
         </div>
-        <p class="page-description">
-          Импортируйте и управляйте вашими OpenAPI/Swagger спецификациями. Они используются для оркестрации API запросов.
-        </p>
+        <p class="page-description">{{ t('swagger.description') }}</p>
       </div>
 
       <!-- Upload Card -->
       <div class="section-card">
         <div class="card-header">
-          <h2 class="card-title">Добавить API спецификацию</h2>
+          <h2 class="card-title">{{ t('swagger.addSpec') }}</h2>
         </div>
         <SwaggerUpload />
       </div>
@@ -42,8 +42,8 @@ function refreshList() {
       <!-- Sources List -->
       <div class="section">
         <div class="section-header">
-          <h2 class="section-title">Подключённые источники</h2>
-          <button class="refresh-btn" @click="refreshList" title="Обновить список">
+          <h2 class="section-title">{{ t('swagger.connectedSources') }}</h2>
+          <button class="refresh-btn" @click="refreshList" :title="t('swagger.refresh')">
             <i class="pi pi-refresh" :class="{ 'pi-spin': swaggerStore.isLoading }"></i>
           </button>
         </div>

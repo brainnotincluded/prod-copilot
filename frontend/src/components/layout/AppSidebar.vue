@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useLocale } from '@/composables/useLocale'
 
 const props = defineProps<{
   collapsed: boolean
 }>()
 
 const route = useRoute()
+const { t } = useLocale()
 
-const navItems = [
-  { path: '/chat', label: 'Чат', icon: 'pi pi-comment' },
-  { path: '/swagger', label: 'API Источники', icon: 'pi pi-file' },
-  { path: '/endpoints', label: 'Карта API', icon: 'pi pi-sitemap' },
-  { path: '/dashboard', label: 'Панель', icon: 'pi pi-chart-bar' },
-]
+const navItems = computed(() => [
+  { path: '/chat', label: t('nav.chat'), icon: 'pi pi-comment' },
+  { path: '/swagger', label: t('nav.apiSources'), icon: 'pi pi-file' },
+  { path: '/endpoints', label: t('nav.apiMaps'), icon: 'pi pi-sitemap' },
+  { path: '/dashboard', label: t('nav.dashboard'), icon: 'pi pi-chart-bar' },
+])
 
 function isActive(path: string): boolean {
   return route.path === path
@@ -25,7 +27,7 @@ function isActive(path: string): boolean {
     <div class="sidebar-header">
       <div class="logo">
         <span class="logo-icon">P</span>
-        <span v-if="!collapsed" class="logo-text">Prod Copilot</span>
+        <span v-if="!collapsed" class="logo-text">{{ t('nav.appName') }}</span>
       </div>
     </div>
 
@@ -44,9 +46,9 @@ function isActive(path: string): boolean {
     </nav>
 
     <div class="sidebar-footer">
-      <div class="nav-item" :title="collapsed ? 'Настройки' : undefined">
+      <div class="nav-item" :title="collapsed ? t('common.settings') : undefined">
         <i class="pi pi-cog nav-icon"></i>
-        <span v-if="!collapsed" class="nav-label">Настройки</span>
+        <span v-if="!collapsed" class="nav-label">{{ t('common.settings') }}</span>
       </div>
     </div>
   </aside>

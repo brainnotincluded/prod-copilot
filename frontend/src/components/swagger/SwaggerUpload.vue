@@ -3,11 +3,13 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSwaggerStore } from '@/stores/swagger'
 import { useToast } from '@/composables/useToast'
+import { useLocale } from '@/composables/useLocale'
 import type { SwaggerUploadResult } from '@/types'
 
 const swaggerStore = useSwaggerStore()
 const { showToast } = useToast()
 const router = useRouter()
+const { t } = useLocale()
 
 const activeTab = ref<'file' | 'url'>('file')
 const isDragging = ref(false)
@@ -39,11 +41,11 @@ function resetProgress() {
 
 function initProgressSteps(mode: 'file' | 'url') {
   progressSteps.value = [
-    { label: mode === 'url' ? 'Загрузка спецификации...' : 'Чтение файла...', status: 'active' },
-    { label: 'Парсинг эндпоинтов...', status: 'pending' },
-    { label: 'Генерация эмбеддингов...', status: 'pending' },
-    { label: 'Индексация в RAG...', status: 'pending' },
-    { label: 'Готово!', status: 'pending' },
+    { label: mode === 'url' ? t('swagger.fetchingSpec') : t('swagger.readingFile'), status: 'active' },
+    { label: t('swagger.parsingEndpoints'), status: 'pending' },
+    { label: t('swagger.generatingEmbeddings'), status: 'pending' },
+    { label: t('swagger.indexingRag'), status: 'pending' },
+    { label: t('swagger.done'), status: 'pending' },
   ]
 }
 
@@ -66,7 +68,7 @@ function completeProgress(result: SwaggerUploadResult) {
   }
   const last = progressSteps.value[progressSteps.value.length - 1]
   last.status = 'done'
-  last.detail = `${result.endpoints_count} эндпоинтов проиндексировано`
+  last.detail = t('swagger.endpointsIndexed', result.endpoints_count)
 }
 
 // --- File Upload ---
@@ -106,8 +108,8 @@ async function uploadFile(file: File) {
   const ext = '.' + file.name.split('.').pop()?.toLowerCase()
 
   if (!validExtensions.includes(ext)) {
-    uploadError.value = 'Пожалуйста, загрузите файл JSON или YAML.'
-    showToast('Пожалуйста, загрузите файл JSON или YAML.', 'error')
+    uploadError.value = t('swagger.invalidFile')
+    showToast(t('swagger.invalidFile'), 'error')
     return
   }
 
@@ -116,9 +118,8 @@ async function uploadFile(file: File) {
   initProgressSteps('file')
 
   try {
-    // Simulate progress steps while waiting for response
     setTimeout(() => {
-      if (isUploading.value) advanceProgress(1, 'Анализ спецификации...')
+      if (isUploading.value) advanceProgress(1)
     }, 800)
     setTimeout(() => {
       if (isUploading.value) advanceProgress(2)
@@ -131,14 +132,11 @@ async function uploadFile(file: File) {
     uploadResult.value = result
     completeProgress(result)
 
-    showToast(
-      `Успешно импортировано ${result.name} -- ${result.endpoints_count} эндпоинтов проиндексировано`,
-      'success',
-    )
+    showToast(t('swagger.importSuccess', result.name, result.endpoints_count), 'success')
   } catch {
-    uploadError.value = swaggerStore.error || 'Загрузка не удалась. Попробуйте снова.'
+    uploadError.value = swaggerStore.error || t('swagger.uploadFailed')
     progressSteps.value = []
-    showToast(swaggerStore.error || 'Загрузка не удалась. Попробуйте снова.', 'error')
+    showToast(swaggerStore.error || t('swagger.uploadFailed'), 'error')
   } finally {
     isUploading.value = false
   }
@@ -148,15 +146,15 @@ async function uploadFile(file: File) {
 async function importFromUrl() {
   const url = importUrl.value.trim()
   if (!url) {
-    uploadError.value = 'Пожалуйста, введите URL.'
+    uploadError.value = t('swagger.enterUrl')
     return
   }
 
   try {
     new URL(url)
   } catch {
-    uploadError.value = 'Пожалуйста, введите корректный URL.'
-    showToast('Пожалуйста, введите корректный URL.', 'error')
+    uploadError.value = t('swagger.invalidUrl')
+    showToast(t('swagger.invalidUrl'), 'error')
     return
   }
 
@@ -166,7 +164,7 @@ async function importFromUrl() {
 
   try {
     setTimeout(() => {
-      if (isUploading.value) advanceProgress(1, 'Парсинг спецификации...')
+      if (isUploading.value) advanceProgress(1)
     }, 1200)
     setTimeout(() => {
       if (isUploading.value) advanceProgress(2)
@@ -180,20 +178,14 @@ async function importFromUrl() {
     uploadResult.value = result
     completeProgress(result)
 
-    showToast(
-      `Успешно импортировано ${result.name} -- ${result.endpoints_count} эндпоинтов проиндексировано`,
-      'success',
-    )
+    showToast(t('swagger.importSuccess', result.name, result.endpoints_count), 'success')
 
     importUrl.value = ''
     importName.value = ''
   } catch {
-    uploadError.value = swaggerStore.error || 'Импорт не удался. Проверьте URL и попробуйте снова.'
+    uploadError.value = swaggerStore.error || t('swagger.importFailed')
     progressSteps.value = []
-    showToast(
-      swaggerStore.error || 'Импорт не удался. Проверьте URL и попробуйте снова.',
-      'error',
-    )
+    showToast(swaggerStore.error || t('swagger.importFailed'), 'error')
   } finally {
     isUploading.value = false
   }
@@ -218,7 +210,7 @@ function dismissResult() {
         @click="activeTab = 'file'; resetProgress()"
       >
         <i class="pi pi-upload"></i>
-        Загрузка файла
+        {{ t('swagger.fileUpload') }}
       </button>
       <button
         class="tab-btn"
@@ -226,7 +218,7 @@ function dismissResult() {
         @click="activeTab = 'url'; resetProgress()"
       >
         <i class="pi pi-link"></i>
-        Импорт по URL
+        {{ t('swagger.urlImport') }}
       </button>
     </div>
 
@@ -253,10 +245,8 @@ function dismissResult() {
 
         <div class="upload-content">
           <i class="pi pi-cloud-upload upload-icon"></i>
-          <p class="upload-text">
-            Перетащите файл Swagger/OpenAPI сюда или нажмите для выбора
-          </p>
-          <p class="upload-hint">Поддерживаются форматы JSON и YAML</p>
+          <p class="upload-text">{{ t('swagger.dropZone') }}</p>
+          <p class="upload-hint">{{ t('swagger.formats') }}</p>
         </div>
       </div>
     </div>
@@ -265,7 +255,7 @@ function dismissResult() {
     <div v-if="activeTab === 'url'" class="tab-content">
       <div class="url-form">
         <div class="form-field">
-          <label class="form-label" for="swagger-url">URL спецификации</label>
+          <label class="form-label" for="swagger-url">{{ t('swagger.specUrl') }}</label>
           <input
             id="swagger-url"
             v-model="importUrl"
@@ -278,15 +268,15 @@ function dismissResult() {
         </div>
         <div class="form-field">
           <label class="form-label" for="swagger-name">
-            Название API
-            <span class="form-label-hint">(необязательно)</span>
+            {{ t('swagger.apiName') }}
+            <span class="form-label-hint">{{ t('swagger.optional') }}</span>
           </label>
           <input
             id="swagger-name"
             v-model="importName"
             type="text"
             class="form-input"
-            placeholder="Мой API"
+            placeholder="My API"
             :disabled="isUploading"
             @keyup.enter="importFromUrl"
           />
@@ -297,7 +287,7 @@ function dismissResult() {
           @click="importFromUrl"
         >
           <i class="pi" :class="isUploading ? 'pi-spin pi-spinner' : 'pi-download'"></i>
-          {{ isUploading ? 'Импортирую...' : 'Импортировать' }}
+          {{ isUploading ? t('swagger.importing') : t('swagger.import') }}
         </button>
       </div>
     </div>
@@ -343,7 +333,7 @@ function dismissResult() {
         <i class="pi pi-check-circle result-icon"></i>
         <div class="result-info">
           <span class="result-name">{{ uploadResult.name }}</span>
-          <span class="result-count">{{ uploadResult.endpoints_count }} эндпоинтов проиндексировано</span>
+          <span class="result-count">{{ t('swagger.endpointsIndexed', uploadResult.endpoints_count) }}</span>
           <span v-if="uploadResult.base_url" class="result-base-url">
             {{ uploadResult.base_url }}
           </span>
@@ -352,10 +342,10 @@ function dismissResult() {
       <div class="result-actions">
         <button class="result-btn primary" @click="goToApiMaps">
           <i class="pi pi-map"></i>
-          Открыть на Карте API
+          {{ t('swagger.viewApiMaps') }}
         </button>
         <button class="result-btn secondary" @click="dismissResult">
-          Закрыть
+          {{ t('swagger.dismiss') }}
         </button>
       </div>
     </div>

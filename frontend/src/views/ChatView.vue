@@ -3,12 +3,14 @@ import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useQueryStore } from '@/stores/query'
 import { useSwaggerStore } from '@/stores/swagger'
+import { useLocale } from '@/composables/useLocale'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 
 const chatStore = useChatStore()
 const queryStore = useQueryStore()
 const swaggerStore = useSwaggerStore()
+const { t } = useLocale()
 const messagesContainer = ref<HTMLElement | null>(null)
 
 onMounted(() => {
@@ -52,28 +54,26 @@ watch(
     <div v-if="!hasMessages" class="chat-empty">
       <div class="empty-content">
         <div class="empty-logo">P</div>
-        <h2 class="empty-title">Чем могу помочь?</h2>
-        <p class="empty-subtitle">
-          Задайте вопрос о ваших API. Я выполню запросы и верну структурированные результаты.
-        </p>
+        <h2 class="empty-title">{{ t('chat.emptyTitle') }}</h2>
+        <p class="empty-subtitle">{{ t('chat.emptySubtitle') }}</p>
         <div class="empty-suggestions">
           <button
             class="suggestion-chip"
-            @click="handleSend('Покажи все доступные API эндпоинты')"
+            @click="handleSend(t('chat.suggestion1'))"
           >
-            Покажи все доступные API эндпоинты
+            {{ t('chat.suggestion1') }}
           </button>
           <button
             class="suggestion-chip"
-            @click="handleSend('Покажи самые используемые эндпоинты за неделю')"
+            @click="handleSend(t('chat.suggestion2'))"
           >
-            Покажи самые используемые эндпоинты за неделю
+            {{ t('chat.suggestion2') }}
           </button>
           <button
             class="suggestion-chip"
-            @click="handleSend('Найди пользователей, созданных за последние 24 часа')"
+            @click="handleSend(t('chat.suggestion3'))"
           >
-            Найди пользователей, созданных за последние 24 часа
+            {{ t('chat.suggestion3') }}
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQueryStore } from '@/stores/query'
+import { useLocale } from '@/composables/useLocale'
 
 const props = defineProps<{
   sidebarCollapsed: boolean
@@ -13,17 +14,20 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const queryStore = useQueryStore()
+const { t, locale, toggleLocale } = useLocale()
 
 const pageTitle = computed(() => {
   switch (route.path) {
     case '/chat':
-      return 'Чат'
+      return t('nav.chat')
     case '/swagger':
-      return 'API Источники'
+      return t('nav.apiSources')
     case '/dashboard':
-      return 'Панель'
+      return t('nav.dashboard')
+    case '/endpoints':
+      return t('nav.apiMaps')
     default:
-      return 'Prod Copilot'
+      return t('nav.appName')
   }
 })
 </script>
@@ -31,15 +35,18 @@ const pageTitle = computed(() => {
 <template>
   <header class="app-header">
     <div class="header-left">
-      <button class="menu-btn" @click="emit('toggleSidebar')" title="Переключить боковую панель">
+      <button class="menu-btn" @click="emit('toggleSidebar')" :title="t('common.toggleSidebar')">
         <i class="pi pi-bars"></i>
       </button>
       <h1 class="page-title">{{ pageTitle }}</h1>
     </div>
     <div class="header-right">
+      <button class="lang-toggle" @click="toggleLocale" :title="locale === 'en' ? 'Русский' : 'English'">
+        {{ locale === 'en' ? 'RU' : 'EN' }}
+      </button>
       <div class="connection-status" :class="{ connected: queryStore.isConnected }">
         <span class="status-dot"></span>
-        <span class="status-text">{{ queryStore.isConnected ? 'Подключен' : 'Отключен' }}</span>
+        <span class="status-text">{{ queryStore.isConnected ? t('common.connected') : t('common.disconnected') }}</span>
       </div>
     </div>
   </header>
@@ -89,7 +96,26 @@ const pageTitle = computed(() => {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+.lang-toggle {
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.lang-toggle:hover {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .connection-status {

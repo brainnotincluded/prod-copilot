@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useSwaggerStore } from '@/stores/swagger'
+import { useLocale } from '@/composables/useLocale'
 
 const props = defineProps<{
   disabled?: boolean
@@ -11,6 +12,7 @@ const emit = defineEmits<{
 }>()
 
 const swaggerStore = useSwaggerStore()
+const { t } = useLocale()
 
 const inputText = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -101,7 +103,7 @@ function handleInput() {
         @click="toggleAll"
       >
         <span class="source-dot" :class="{ active: allSelected }"></span>
-        <span class="source-name">Все API</span>
+        <span class="source-name">{{ t('chat.allApis') }}</span>
       </button>
       <button
         v-for="source in sources"
@@ -120,7 +122,7 @@ function handleInput() {
         ref="textareaRef"
         v-model="inputText"
         class="chat-textarea"
-        placeholder="Задайте вопрос о ваших API..."
+        :placeholder="t('chat.placeholder')"
         rows="1"
         :disabled="disabled"
         @keydown="handleKeydown"
@@ -131,14 +133,12 @@ function handleInput() {
         :class="{ active: canSend }"
         :disabled="!canSend"
         @click="send"
-        title="Отправить сообщение"
+        :title="t('chat.send')"
       >
         <i class="pi pi-arrow-up"></i>
       </button>
     </div>
-    <p class="input-hint">
-      Enter для отправки, Shift+Enter для новой строки
-    </p>
+    <p class="input-hint">{{ t('chat.hint') }}</p>
   </div>
 </template>
 
