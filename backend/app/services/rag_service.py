@@ -96,7 +96,7 @@ class RAGService:
             # Validate that all IDs are integers to prevent injection
             safe_ids = [int(sid) for sid in swagger_source_ids]
             placeholders = ",".join(f":sid_{i}" for i in range(len(safe_ids)))
-            bind_params = {f"sid_{i}": sid for i, sid in enumerate(safe_ids)}
+            bind_params: dict[str, int | str] = {f"sid_{i}": sid for i, sid in enumerate(safe_ids)}
             bind_params["limit"] = limit
             bind_params["embedding"] = embedding_literal
             stmt = text(

@@ -126,6 +126,7 @@ class TestExecutePlan:
             result = await execute_plan(steps)
 
         assert isinstance(result, ResultResponse)
+        assert result.metadata is not None
         assert result.metadata["status"] == "completed"
 
     @pytest.mark.asyncio
@@ -133,6 +134,7 @@ class TestExecutePlan:
         with patch("app.orchestrator.executor.get_settings", return_value=mock_settings):
             result = await execute_plan([])
         assert isinstance(result, ResultResponse)
+        assert result.metadata is not None
         assert result.metadata["steps_total"] == 0
 
 

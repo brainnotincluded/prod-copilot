@@ -3,7 +3,6 @@
 Covers: table structure, JSON columns, widget types.
 """
 
-import pytest
 
 from app.db.models import WidgetConfig
 

@@ -178,6 +178,7 @@ class TestEndpointSearchResult:
             response_schema={"type": "object"},
         )
         assert r.method == "POST"
+        assert r.parameters is not None
         assert len(r.parameters) == 1
 
     def test_missing_method_rejected(self):

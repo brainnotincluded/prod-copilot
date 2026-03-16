@@ -7,13 +7,12 @@ Default (no header) = editor.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import AsyncGenerator
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from app.auth import CurrentUser, Role, get_current_user, require_role
+from app.auth import Role, get_current_user
 
 
 # -----------------------------------------------------------------------

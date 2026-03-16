@@ -3,7 +3,6 @@
 Covers: table structure, relationships, constraints.
 """
 
-import pytest
 
 from app.db.models import EntityRelation
 

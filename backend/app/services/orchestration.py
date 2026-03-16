@@ -17,7 +17,7 @@ from typing import Any, AsyncGenerator
 from sqlalchemy import select as sa_select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import ApiEndpoint, SwaggerSource, ScenarioRun, ScenarioStep, ActionConfirmation
+from app.db.models import ApiEndpoint, SwaggerSource
 from app.schemas.models import OrchestrationStep, ResultResponse
 from app.services.mlops_client import MLOpsClient
 from app.services.rag_service import RAGService
@@ -44,7 +44,7 @@ class StepState(enum.Enum):
 
     @classmethod
     def validate_transition(cls, from_state: StepState, to_state: StepState) -> None:
-        allowed = cls._TRANSITIONS.value.get(from_state.value, set())
+        allowed = cls._TRANSITIONS.get(from_state.value, set())
         if to_state.value not in allowed:
             raise ValueError(
                 f"Invalid state transition: {from_state.value} -> {to_state.value}"

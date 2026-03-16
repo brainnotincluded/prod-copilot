@@ -236,7 +236,7 @@ def _extract_coordinates(df: pd.DataFrame, operation: dict) -> dict:
         lat = row.get(lat_col)
         lng = row.get(lng_col)
         if pd.notna(lat) and pd.notna(lng):
-            point = {
+            point: dict[str, int | float | str] = {
                 "lat": float(lat),
                 "lng": float(lng),
             }

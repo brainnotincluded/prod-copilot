@@ -45,8 +45,8 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_base_url: str = ""
     llm_model: str = ""
-    llm_timeout: float = 120.0
-    llm_max_retries: int = 3
+    llm_timeout: float = 180.0
+    llm_max_retries: int = 2
     llm_retry_delay: float = 1.0
 
     # Orchestration

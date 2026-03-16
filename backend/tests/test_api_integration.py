@@ -3,12 +3,13 @@
 Covers: end-to-end scenarios combining multiple endpoints.
 """
 
+import io
 import json
 import pytest
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 
-from app.db.models import ApiEndpoint, SwaggerSource, ActionConfirmation
+from app.db.models import ApiEndpoint, ActionConfirmation
 from tests.conftest import make_result
 
 
@@ -164,6 +165,3 @@ class TestErrorRecovery:
             resp = await client.post("/api/query", json={"query": "do something"})
             assert resp.status_code == 200
 
-
-# Import for test usage
-import io

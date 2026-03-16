@@ -356,8 +356,23 @@ async def _execute_single_step(
             step.status = "completed"
 
         elif step.action == "format_output":
-            # Auto-detect output type from data structure (fast, no LLM call)
-            latest_data = _get_latest_data(context)
+            # If multiple steps produced results, merge them into a combined view
+            step_results = context.get("step_results", {})
+            if len(step_results) > 1:
+                latest_data = _merge_all_step_results(context)
+            elif step_results:
+                latest_data = _get_latest_data(context)
+            else:
+                # No API calls were made — use available_endpoints if present
+                available_eps = context.get("available_endpoints")
+                if available_eps:
+                    latest_data = [
+                        {"method": ep.get("method", ""), "path": ep.get("path", ""),
+                         "summary": ep.get("summary", ""), "description": ep.get("description", "")}
+                        for ep in available_eps
+                    ]
+                else:
+                    latest_data = None
 
             # Use step parameters hint if available
             output_type = (step.parameters or {}).get("output_type", "")
@@ -549,6 +564,45 @@ async def _execute_single_step(
         step.result = {"error": str(e)}
 
     return step
+
+
+def _merge_all_step_results(context: dict) -> list[dict] | None:
+    """Merge results from all steps into a flat list of summary records.
+
+    Each API call result becomes one row with a 'source' label.
+    If a result is a list, each item gets its own row.
+    """
+    step_results = context.get("step_results", {})
+    merged: list[dict] = []
+
+    for step_num in sorted(step_results.keys(), key=int):
+        result = step_results[step_num]
+        if not isinstance(result, dict):
+            continue
+
+        # Extract body from api_call results
+        body = result
+        if "status_code" in result and "success" in result:
+            if not result.get("success"):
+                continue
+            body = result.get("body")
+            if not body:
+                continue
+
+        if isinstance(body, dict) and "data" in body:
+            body = body["data"]
+        if isinstance(body, dict) and "body" in body:
+            body = body["body"]
+
+        if isinstance(body, list):
+            merged.extend(
+                row if isinstance(row, dict) else {"value": row}
+                for row in body
+            )
+        elif isinstance(body, dict):
+            merged.append(body)
+
+    return merged if merged else None
 
 
 def _get_latest_data(context: dict) -> dict | list | None:
@@ -768,7 +822,7 @@ async def execute_plan(
         final_data = {"content": "The operation completed but returned no data."}
 
     return ResultResponse(
-        type=output_type,  # type: ignore[arg-type]
+        type=output_type,
         data=final_data,
         metadata={
             "steps_total": len(plan),
@@ -888,6 +942,10 @@ async def execute_plan_stream(
         output_type = "text"
         final_data = {"content": "The operation completed but returned no data."}
 
+    # Extract summary from the format_output step description (if any)
+    format_steps = [s for s in plan if s.action == "format_output"]
+    summary = format_steps[-1].description if format_steps else ""
+
     yield OrchestrationStreamEvent(
         event="result",
         data={
@@ -898,6 +956,7 @@ async def execute_plan_stream(
                 "steps_completed": sum(1 for s in plan if s.status == "completed"),
                 "steps_errored": sum(1 for s in plan if s.status == "error"),
                 "status": "completed" if not errored_steps else "partial",
+                "summary": summary,
             },
         },
     )

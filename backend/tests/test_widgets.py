@@ -16,13 +16,11 @@ Plus unit tests for all helper functions:
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from types import SimpleNamespace
-from typing import Any
 
 import pytest
 
 from app.db.models import ApiEndpoint, ScenarioRun, ScenarioStep, WidgetConfig
-from tests.conftest import FakeAsyncSession, make_result
+from tests.conftest import make_result
 
 
 # ---------------------------------------------------------------------------
@@ -69,7 +67,7 @@ def _step(
     status: str = "completed",
     endpoint_id: int | None = None,
     request_payload: dict | None = None,
-    response_data: dict | None = None,
+    response_data: dict | list | None = None,
     reasoning: str | None = "Best match",
     created_at: datetime = NOW,
 ) -> ScenarioStep:

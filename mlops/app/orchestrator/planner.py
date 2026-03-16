@@ -21,7 +21,7 @@ _INSTANT_GREETING_RESPONSE = (
 )
 
 
-async def _classify_intent(query: str) -> dict:
+async def _classify_intent(query: str, history: list[dict] | None = None) -> dict:
     """Use the LLM to classify a query as 'chat' or 'api_query'.
 
     Returns a dict like:
@@ -31,8 +31,15 @@ async def _classify_intent(query: str) -> dict:
 
     messages = [
         {"role": "system", "content": CLASSIFIER_PROMPT},
-        {"role": "user", "content": query},
     ]
+    # Include recent chat history for conversational context
+    if history:
+        for msg in history[-6:]:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": query})
 
     try:
         raw = await client.chat(messages, temperature=0.1, max_tokens=1024)
@@ -136,16 +143,19 @@ async def create_plan(
     # Intent is api_query: proceed with plan creation
     client = get_kimi_client()
 
-    # Include base_url in the prompt context if available
-    base_url = ""
-    if context and context.get("base_url"):
-        base_url = context["base_url"]
-
     # Extract chat history from context for conversational continuity
     history = context.get("history") if context else None
 
-    logger.info("Creating plan for query: '%s' with %d endpoints", stripped[:80], len(endpoints))
-    steps = await client.plan_query(stripped, endpoints, history=history)
+    # Limit endpoints sent to LLM to avoid overflowing context window.
+    # Send only compact representations (method, path, summary) for planning.
+    compact_endpoints = [
+        {"method": ep.get("method", ""), "path": ep.get("path", ""),
+         "summary": ep.get("summary", "")}
+        for ep in endpoints[:15]  # max 15 endpoints in planner prompt
+    ]
+
+    logger.info("Creating plan for query: '%s' with %d endpoints", stripped[:80], len(compact_endpoints))
+    steps = await client.plan_query(stripped, compact_endpoints, history=history)
 
     # Validate step numbers are sequential
     for i, step in enumerate(steps):

@@ -114,6 +114,7 @@ class TestResultResponse:
 
     def test_with_metadata(self):
         r = ResultResponse(type="text", data={"key": "val"}, metadata={"steps": 3})
+        assert r.metadata is not None
         assert r.metadata["steps"] == 3
 
     def test_metadata_optional(self):
@@ -128,6 +129,7 @@ class TestOrchestrationRequest:
 
     def test_with_context(self):
         r = OrchestrationRequest(query="test", endpoints=[], context={"base_url": "https://example.com"})
+        assert r.context is not None
         assert r.context["base_url"] == "https://example.com"
 
     def test_empty_query_invalid(self):

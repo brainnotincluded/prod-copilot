@@ -3,7 +3,6 @@
 Covers: table structure, relationships, state constraints.
 """
 
-import pytest
 
 from app.db.models import ScenarioRun, ScenarioStep
 

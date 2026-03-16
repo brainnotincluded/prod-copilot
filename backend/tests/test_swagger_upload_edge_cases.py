@@ -183,7 +183,6 @@ class TestUploadParameters:
     @pytest.mark.asyncio
     async def test_url_with_custom_name(self, client, fake_db):
         """Upload from URL with custom name."""
-        import httpx
 
         spec = {
             "openapi": "3.0.0",

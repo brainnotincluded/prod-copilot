@@ -89,6 +89,7 @@ class TestCreatePlan:
 
         assert len(steps) == 1
         assert steps[0].action == "chat_response"
+        assert steps[0].result is not None
         assert steps[0].result["content"] == "I am doing great!"
         # Verify only one LLM call was made (classifier only, no enrichment)
         assert mock_client.chat.call_count == 1

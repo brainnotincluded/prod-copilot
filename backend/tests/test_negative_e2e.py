@@ -14,7 +14,6 @@ from __future__ import annotations
 import io
 import json
 from datetime import datetime, timezone
-from typing import AsyncGenerator
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -23,7 +22,6 @@ from httpx import ASGITransport, AsyncClient
 from app.db.models import ActionConfirmation, ApiEndpoint, SwaggerSource
 from app.schemas.models import ResultResponse
 from tests.conftest import (
-    FakeAsyncSession,
     PETSTORE_OPENAPI3,
     make_result,
 )

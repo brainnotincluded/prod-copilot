@@ -1,6 +1,5 @@
 """Pure unit tests for SwaggerParser — no DB, no network, no mocking."""
 
-import pytest
 
 from app.services.swagger_parser import ParsedEndpoint, SwaggerParser
 
@@ -126,6 +125,7 @@ class TestExtractBaseUrl:
     def test_trailing_slash_stripped(self):
         spec = {"servers": [{"url": "https://api.example.com/"}]}
         url = SwaggerParser.extract_base_url(spec)
+        assert url is not None
         assert not url.endswith("/")
 
 

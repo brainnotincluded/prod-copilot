@@ -13,12 +13,12 @@ from __future__ import annotations
 import io
 import json
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from app.db.models import ApiEndpoint, SwaggerSource
-from tests.conftest import PETSTORE_OPENAPI3, PETSTORE_SWAGGER2, make_result
+from tests.conftest import PETSTORE_OPENAPI3, make_result
 
 
 # -----------------------------------------------------------------------

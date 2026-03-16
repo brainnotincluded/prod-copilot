@@ -212,7 +212,7 @@ async def translate_query(request: dict) -> dict:
                 result = quotes[-1]
             else:
                 # Take the last non-empty line that's short enough
-                lines = [l.strip() for l in result.split("\n") if l.strip() and len(l.strip()) < 100]
+                lines = [line.strip() for line in result.split("\n") if line.strip() and len(line.strip()) < 100]
                 result = lines[-1] if lines else query
 
         # Final sanity checks
@@ -330,11 +330,57 @@ async def orchestrate_stream(request: OrchestrationRequest):
 
     async def event_generator() -> AsyncGenerator[dict, None]:
         try:
+            # Step 1: Classify intent FIRST (no endpoints needed)
+            from app.orchestrator.planner import _classify_intent, _INSTANT_GREETINGS, _INSTANT_GREETING_RESPONSE
+
+            query = request.query.strip()[:2000]  # Truncate excessively long queries
+            normalized = query.lower().rstrip("!?./)")
+
+            # Fast-path greetings
+            if normalized in _INSTANT_GREETINGS:
+                yield {
+                    "event": "result",
+                    "data": json.dumps({
+                        "type": "text",
+                        "data": {"content": _INSTANT_GREETING_RESPONSE},
+                        "metadata": {"status": "completed", "mode": "chat"},
+                    }, ensure_ascii=False),
+                }
+                return
+
+            # LLM classification (with chat history for context)
+            chat_history = (request.context or {}).get("history")
+            classification = await _classify_intent(query, history=chat_history)
+
+            if classification.get("intent") == "chat":
+                chat_resp = classification.get("response", "Hello! How can I help you with your APIs today?")
+                yield {
+                    "event": "result",
+                    "data": json.dumps({
+                        "type": "text",
+                        "data": {"content": chat_resp},
+                        "metadata": {"status": "completed", "mode": "chat"},
+                    }, ensure_ascii=False),
+                }
+                return
+
+            # Step 2: Intent is api_query — use RAG to find relevant endpoints
+            endpoints = request.endpoints  # legacy fallback
+            if not endpoints and request.swagger_source_ids is not None:
+                from app.rag.search import search_endpoints as rag_search
+                rag_results = await rag_search(
+                    query=query,
+                    swagger_source_ids=request.swagger_source_ids or None,
+                    limit=20,
+                )
+                endpoints = [r["endpoint"] for r in rag_results]
+                logger.info("RAG found %d relevant endpoints for query: '%s'", len(endpoints), query[:80])
+
             if settings.orchestration_mode == "agent":
                 from app.orchestrator.agent_loop import run_agent_loop_stream
                 async for event in run_agent_loop_stream(
-                    query=request.query,
-                    endpoints=request.endpoints,
+                    query=query,
+                    endpoints=endpoints,
                     context=request.context,
                 ):
                     yield {
@@ -344,17 +390,21 @@ async def orchestrate_stream(request: OrchestrationRequest):
                 return
 
             # Default: plan-execute flow
-            # Create plan
             plan = await create_plan(
-                query=request.query,
-                endpoints=request.endpoints,
+                query=query,
+                endpoints=endpoints,
                 context=request.context,
             )
+
+            # Build execution context with endpoints available for format_output
+            exec_context = dict(request.context or {})
+            if endpoints:
+                exec_context["available_endpoints"] = endpoints
 
             # Stream execution events
             async for event in execute_plan_stream(
                 plan=plan,
-                context=request.context or {},
+                context=exec_context,
             ):
                 yield {
                     "event": event.event,

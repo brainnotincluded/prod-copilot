@@ -4,7 +4,6 @@ Verifies table names, columns, relationships, constraints, and defaults
 without connecting to a real database.
 """
 
-import pytest
 
 from app.db.models import ApiEndpoint, Base, SwaggerSource
 

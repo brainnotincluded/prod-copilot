@@ -37,7 +37,10 @@ class SearchResponse(BaseModel):
 class OrchestrationRequest(BaseModel):
     query: str = Field(..., min_length=1, description="Natural language query")
     endpoints: list[dict] = Field(
-        default_factory=list, description="Available API endpoints"
+        default_factory=list, description="Available API endpoints (legacy, prefer swagger_source_ids)"
+    )
+    swagger_source_ids: list[int] | None = Field(
+        default=None, description="Swagger source IDs for RAG endpoint search"
     )
     context: dict | None = Field(
         default=None, description="Additional context for orchestration"

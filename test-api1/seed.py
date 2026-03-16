@@ -5,7 +5,7 @@ import sqlite3
 import json
 import random
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "marketing.db")
 
@@ -178,7 +178,7 @@ def create_tables(conn: sqlite3.Connection):
 
 def seed_users(conn: sqlite3.Connection, count: int = 500):
     cur = conn.cursor()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     users = []
     emails_seen = set()
 
@@ -235,7 +235,7 @@ def seed_users(conn: sqlite3.Connection, count: int = 500):
 
 def seed_segments(conn: sqlite3.Connection):
     cur = conn.cursor()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     for seg in SEGMENTS_DATA:
         created = (now - timedelta(days=random.randint(5, 60))).isoformat()
@@ -250,7 +250,7 @@ def seed_segments(conn: sqlite3.Connection):
 
 def seed_audiences(conn: sqlite3.Connection):
     cur = conn.cursor()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     audiences_data = [
         {"segment_id": 1, "name": "Premium Q1 2026", "filters": {"region": "all"}},
@@ -296,7 +296,7 @@ def seed_audiences(conn: sqlite3.Connection):
 
 def seed_campaigns(conn: sqlite3.Connection):
     cur = conn.cursor()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     campaigns_data = [
         {
@@ -339,7 +339,7 @@ def seed_campaigns(conn: sqlite3.Connection):
 def seed_campaign_metrics(conn: sqlite3.Connection):
     """Seed 7 days of metrics for the completed campaign (id=1)."""
     cur = conn.cursor()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     for day_offset in range(7):
         date = (now - timedelta(days=7 - day_offset)).strftime("%Y-%m-%d")

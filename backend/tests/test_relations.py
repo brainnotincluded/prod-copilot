@@ -22,7 +22,7 @@ import pytest
 
 from app.api.relations import _extract_schema_fields, _format_field_mapping
 from app.db.models import ApiEndpoint, EntityRelation, SwaggerSource
-from tests.conftest import FakeAsyncSession, make_result
+from tests.conftest import make_result
 
 
 # ---------------------------------------------------------------------------

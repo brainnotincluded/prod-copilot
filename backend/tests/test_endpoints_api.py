@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from app.db.models import ApiEndpoint, SwaggerSource
+from app.db.models import ApiEndpoint
 from tests.conftest import make_result
 
 

@@ -86,8 +86,8 @@ def _build_retry_decorator(max_retries: int, retry_delay: float):
     """Build a tenacity retry decorator from settings."""
     return retry(
         retry=retry_if_exception_type((RateLimitError, APIConnectionError, APITimeoutError)),
-        stop=stop_after_attempt(max_retries),
-        wait=wait_exponential(multiplier=retry_delay, min=1, max=30),
+        stop=stop_after_attempt(min(max_retries, 2)),
+        wait=wait_exponential(multiplier=retry_delay, min=1, max=10),
         reraise=True,
     )
 
@@ -118,7 +118,7 @@ class LLMClient:
         messages: list[dict],
         tools: list[dict] | None = None,
         temperature: float = 0.3,
-        max_tokens: int = 4096,
+        max_tokens: int = 2048,
     ) -> str:
         """Send a chat completion request and return the response text.
 
@@ -139,6 +139,10 @@ class LLMClient:
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
+            # Disable Qwen3 thinking mode for faster responses
+            "extra_body": {
+                "chat_template_kwargs": {"enable_thinking": False},
+            },
         }
         if tools:
             kwargs["tools"] = tools
@@ -194,7 +198,7 @@ class LLMClient:
                     return useful_quotes[-1]
 
                 # Take last short non-empty line
-                lines = [l.strip() for l in reasoning.split('\n') if l.strip() and 5 < len(l.strip()) < 150]
+                lines = [line.strip() for line in reasoning.split('\n') if line.strip() and 5 < len(line.strip()) < 150]
                 if lines:
                     return lines[-1]
                 return reasoning[:500]
@@ -225,7 +229,7 @@ class LLMClient:
         messages: list[dict],
         tools: list[dict] | None = None,
         temperature: float = 0.3,
-        max_tokens: int = 4096,
+        max_tokens: int = 2048,
     ) -> AsyncGenerator[str, None]:
         """Send a streaming chat completion request and yield response chunks.
 
@@ -244,6 +248,9 @@ class LLMClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
             "stream": True,
+            "extra_body": {
+                "chat_template_kwargs": {"enable_thinking": False},
+            },
         }
         if tools:
             kwargs["tools"] = tools
@@ -273,7 +280,7 @@ class LLMClient:
         cleaned = text.strip()
         if cleaned.startswith("```"):
             lines = cleaned.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
+            lines = [line for line in lines if not line.strip().startswith("```")]
             cleaned = "\n".join(lines).strip()
         return cleaned
 
@@ -316,7 +323,7 @@ class LLMClient:
         """
         for attempt in range(max_retries):
             # Thinking models need more tokens for reasoning + answer
-            response_text = await self.chat(messages, temperature=temperature, max_tokens=8192)
+            response_text = await self.chat(messages, temperature=temperature, max_tokens=2048)
 
             try:
                 return self._parse_json_robust(response_text)

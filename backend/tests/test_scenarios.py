@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -23,9 +23,8 @@ from app.db.models import (
     ApiEndpoint,
     ScenarioRun,
     ScenarioStep,
-    SwaggerSource,
 )
-from tests.conftest import FakeAsyncSession, make_result
+from tests.conftest import make_result
 
 
 # ---------------------------------------------------------------------------

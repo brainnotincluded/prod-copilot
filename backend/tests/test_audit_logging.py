@@ -5,8 +5,6 @@ Covers: log format, correlation IDs, sensitive data handling.
 
 import pytest
 import logging
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
 
 from app.services.orchestration import OrchestrationService, OrchestrationContext
 from tests.conftest import FakeAsyncSession, make_result
@@ -66,6 +64,7 @@ class TestCorrelationIdPropagation:
         service = OrchestrationService(fake_db)
         result = await service.execute(query="test")
 
+        assert result.metadata is not None
         assert "correlation_id" in result.metadata
         assert len(result.metadata["correlation_id"]) > 0
 
@@ -84,6 +83,8 @@ class TestCorrelationIdPropagation:
         result1 = await service1.execute(query="test1")
         result2 = await service2.execute(query="test2")
 
+        assert result1.metadata is not None
+        assert result2.metadata is not None
         id1 = result1.metadata["correlation_id"]
         id2 = result2.metadata["correlation_id"]
         assert id1 != id2

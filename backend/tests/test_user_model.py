@@ -3,7 +3,6 @@
 Covers: table structure, constraints, defaults, and relationships.
 """
 
-import pytest
 
 from app.db.models import User
 

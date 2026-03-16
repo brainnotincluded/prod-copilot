@@ -10,7 +10,7 @@ and user data. Uses SQLite for persistence.
 import json
 import os
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List
 
 from fastapi import FastAPI, HTTPException, Query
@@ -176,7 +176,7 @@ def get_segment(segment_id: int):
 )
 def create_segment(body: SegmentCreate):
     db = get_db()
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     estimated = _count_segment_users(db, body.criteria)
     cur = db.execute(
         "INSERT INTO segments (name, description, criteria, estimated_size, status, created_at) VALUES (?, ?, ?, ?, 'active', ?)",
@@ -279,7 +279,7 @@ def create_audience(body: AudienceCreate):
 
     criteria = json.loads(seg["criteria"]) if seg["criteria"] else {}
     matching_users = _get_segment_user_ids(db, criteria)
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
 
     cur = db.execute(
         "INSERT INTO audiences (segment_id, name, size, status, created_at, filters) VALUES (?, ?, ?, 'ready', ?, ?)",
@@ -423,7 +423,7 @@ def create_campaign(body: CampaignCreate):
         db.close()
         raise HTTPException(404, "Audience not found")
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     cur = db.execute(
         "INSERT INTO campaigns (audience_id, title, channel, status, message_variants, created_at, scheduled_at) VALUES (?, ?, ?, 'draft', ?, ?, ?)",
         (body.audience_id, body.title, body.channel, json.dumps(body.message_variants), now, body.scheduled_at),
@@ -595,7 +595,7 @@ def overall_kpis():
     active = db.execute("SELECT COUNT(*) as cnt FROM users WHERE status = 'active'").fetchone()["cnt"]
     avg_check = db.execute("SELECT AVG(avg_check) as val FROM users WHERE status = 'active'").fetchone()["val"] or 0
     # Retention: active users who made a purchase in last 30 days
-    thirty_days_ago = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
+    thirty_days_ago = (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30)).strftime("%Y-%m-%d")
     retained = db.execute(
         "SELECT COUNT(*) as cnt FROM users WHERE status = 'active' AND last_active >= ?", (thirty_days_ago,)
     ).fetchone()["cnt"]
@@ -777,7 +777,7 @@ def list_users(
         conditions.append("avg_check >= ?")
         params.append(min_check)
     if last_active_days is not None:
-        cutoff = (datetime.utcnow() - timedelta(days=last_active_days)).strftime("%Y-%m-%d")
+        cutoff = (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=last_active_days)).strftime("%Y-%m-%d")
         conditions.append("last_active >= ?")
         params.append(cutoff)
 
@@ -898,15 +898,15 @@ def _build_user_conditions(criteria: dict) -> tuple:
         conditions.append("total_purchases >= ?")
         params.append(criteria["total_purchases_min"])
     if "last_active_days_min" in criteria:
-        cutoff = (datetime.utcnow() - timedelta(days=criteria["last_active_days_min"])).strftime("%Y-%m-%d")
+        cutoff = (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=criteria["last_active_days_min"])).strftime("%Y-%m-%d")
         conditions.append("last_active <= ?")
         params.append(cutoff)
     if "last_active_days_max" in criteria:
-        cutoff = (datetime.utcnow() - timedelta(days=criteria["last_active_days_max"])).strftime("%Y-%m-%d")
+        cutoff = (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=criteria["last_active_days_max"])).strftime("%Y-%m-%d")
         conditions.append("last_active >= ?")
         params.append(cutoff)
     if "registered_days_max" in criteria:
-        cutoff = (datetime.utcnow() - timedelta(days=criteria["registered_days_max"])).strftime("%Y-%m-%d")
+        cutoff = (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=criteria["registered_days_max"])).strftime("%Y-%m-%d")
         conditions.append("last_active >= ?")
         params.append(cutoff)
 

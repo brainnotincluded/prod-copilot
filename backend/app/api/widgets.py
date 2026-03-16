@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import WidgetConfig, ScenarioRun, ScenarioStep, ApiEndpoint
+from app.db.models import WidgetConfig, ScenarioRun, ApiEndpoint
 from app.db.session import get_db
 
 logger = logging.getLogger(__name__)
@@ -274,7 +274,7 @@ async def _generate_widgets_for_scenario(
     return widgets
 
 
-def _detect_widget_type(data: dict[str, Any]) -> str:
+def _detect_widget_type(data: Any) -> str:
     """Detect appropriate widget type from data structure."""
     if isinstance(data, list):
         if len(data) > 0 and isinstance(data[0], dict):
@@ -306,12 +306,6 @@ def _generate_description(scenario: ScenarioRun) -> str:
     """Generate human-readable description of the scenario."""
     steps_count = len(scenario.steps)
     completed = sum(1 for s in scenario.steps if s.status == "completed")
-    apis = set()
-    for step in scenario.steps:
-        if step.endpoint_id:
-            # Would need to fetch endpoint to get source name
-            pass
-
     return (
         f"Query: {scenario.query}\n"
         f"Steps: {completed}/{steps_count} completed\n"
@@ -390,7 +384,7 @@ def _generate_mock_widget_data(
 
 def _suggest_for_endpoint(
     endpoint: ApiEndpoint,
-    response_data: dict[str, Any],
+    response_data: Any,
 ) -> list[dict[str, Any]]:
     """Suggest widgets based on endpoint and its response structure."""
     suggestions = []

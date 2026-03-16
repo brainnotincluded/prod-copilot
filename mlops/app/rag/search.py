@@ -201,17 +201,17 @@ async def search_endpoints(
     sql = f"""
         SELECT
             endpoint_data,
-            1 - (embedding <=> :query_embedding::vector) AS similarity
+            1 - (embedding <=> '{emb_str}'::vector) AS similarity
         FROM endpoint_embeddings
         {filter_clause}
-        ORDER BY embedding <=> :query_embedding::vector
+        ORDER BY embedding <=> '{emb_str}'::vector
         LIMIT :limit
     """
 
     async with get_session() as session:
         result = await session.execute(
             sa_text(sql),
-            {"query_embedding": emb_str, "limit": limit},
+            {"limit": limit},
         )
         rows = result.fetchall()
 

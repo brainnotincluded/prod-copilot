@@ -7,7 +7,6 @@ These tests MUST fail on the old code and pass on the fixed code.
 from __future__ import annotations
 
 import io
-import json
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -57,7 +56,7 @@ class TestBug1_SqlInjectionRag:
             with pytest.raises((ValueError, TypeError)):
                 await rag.search(
                     query="test", limit=5,
-                    swagger_source_ids=["1; DROP TABLE api_endpoints;--"]
+                    swagger_source_ids=["1; DROP TABLE api_endpoints;--"]  # type: ignore[arg-type]
                 )
 
 
@@ -309,6 +308,8 @@ class TestUniversality_MultiSpec:
         # Different base URLs extracted
         url1 = SwaggerParser.extract_base_url(spec_users)
         url2 = SwaggerParser.extract_base_url(spec_payments)
+        assert url1 is not None
+        assert url2 is not None
         assert url1 != url2
         assert "users.example.com" in url1
         assert "payments.example.com" in url2

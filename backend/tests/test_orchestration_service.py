@@ -4,9 +4,8 @@ step timing, correlation IDs, error handling.
 
 from __future__ import annotations
 
-import time
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -169,6 +168,7 @@ class TestOrchestrationExecute:
 
         assert result.type == "text"
         assert result.data["content"] == "Hello"
+        assert result.metadata is not None
         assert result.metadata["correlation_id"]  # non-empty
 
     @pytest.mark.asyncio
@@ -198,6 +198,7 @@ class TestOrchestrationExecute:
 
         assert result.type == "text"
         assert "boom" in result.data["content"]
+        assert result.metadata is not None
         assert result.metadata["status"] == "error"
 
     @pytest.mark.asyncio
@@ -229,6 +230,8 @@ class TestOrchestrationExecute:
         r1 = await s1.execute(query="a")
         r2 = await s2.execute(query="b")
 
+        assert r1.metadata is not None
+        assert r2.metadata is not None
         assert r1.metadata["correlation_id"] != r2.metadata["correlation_id"]
 
     @pytest.mark.asyncio
@@ -247,6 +250,7 @@ class TestOrchestrationExecute:
         service = OrchestrationService(fake_db, mlops_client=mock_mlops)
         result = await service.execute(query="test")
 
+        assert result.metadata is not None
         assert "total_ms" in result.metadata
         assert result.metadata["total_ms"] >= 0
 
@@ -267,6 +271,7 @@ class TestOrchestrationExecute:
         # Access internals to verify step timing
         result = await service.execute(query="test")
         # Steps should have been created internally; we verify via correlation_id
+        assert result.metadata is not None
         assert result.metadata["correlation_id"]
 
 

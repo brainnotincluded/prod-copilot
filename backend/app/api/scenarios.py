@@ -16,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import ScenarioRun, ScenarioStep, ApiEndpoint, ActionConfirmation
 from app.db.session import get_db
-from app.schemas.models import ResultResponse
 from app.services.orchestration import OrchestrationService
 
 logger = logging.getLogger(__name__)
@@ -87,8 +86,7 @@ async def create_scenario(
 
     # Run orchestration (this will populate steps)
     service = OrchestrationService(db)
-    result = await service.execute_scenario(
-        scenario_id=scenario.id,
+    await service.execute(
         query=request.query,
         swagger_source_ids=request.swagger_source_ids,
     )
@@ -352,6 +350,6 @@ async def confirm_scenario_step(
 
     # Resume scenario execution
     service = OrchestrationService(db)
-    await service.resume_scenario(scenario_id, from_step_id=step_id)
+    await service.execute(query=scenario.query)
 
     return {"message": "Step confirmed and scenario resumed", "step_id": step_id}

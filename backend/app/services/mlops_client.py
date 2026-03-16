@@ -80,23 +80,19 @@ class MLOpsClient:
         endpoints: list[dict[str, Any]],
         base_url: str | None = None,
         history: list[dict] | None = None,
+        swagger_source_ids: list[int] | None = None,
     ) -> AsyncGenerator[dict[str, Any], None]:
         """Stream orchestration events from the MLOps service via SSE.
 
         Parses SSE format (event: + data:) and yields dicts with
         'event_type' key added for the consumer to dispatch on.
-
-        Yielded events:
-          {"event_type": "plan", "steps": [...], "total": N}
-          {"event_type": "step_start", "step": N, "action": "...", "description": "..."}
-          {"event_type": "step_complete", "step": N, "result": {...}}
-          {"event_type": "step_error", "step": N, "error": "..."}
-          {"event_type": "result", "type": "...", "data": {...}, "metadata": {...}}
         """
         payload: dict[str, Any] = {
             "query": query,
             "endpoints": endpoints,
         }
+        if swagger_source_ids is not None:
+            payload["swagger_source_ids"] = swagger_source_ids
         ctx: dict[str, Any] = {}
         if base_url:
             ctx["base_url"] = base_url

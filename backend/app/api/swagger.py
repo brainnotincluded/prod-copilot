@@ -109,9 +109,7 @@ async def upload_swagger(
     base_url = SwaggerParser.extract_base_url(spec_dict)
 
     # Deduplication: check if a source with the same name + base_url already exists
-    import hashlib
     raw_json_str = json.dumps(spec_dict, ensure_ascii=False, sort_keys=True)
-    spec_hash = hashlib.sha256(raw_json_str.encode()).hexdigest()[:16]
 
     existing = await db.execute(
         select(SwaggerSource).where(

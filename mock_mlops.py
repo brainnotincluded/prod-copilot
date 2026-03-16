@@ -6,8 +6,6 @@ Start: python mock_mlops.py  (runs on port 8001)
 
 import json
 import random
-import time
-import uuid
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,7 +68,6 @@ async def orchestrate(request: Request):
     body = await request.json()
     query = body.get("query", "")
     endpoints = body.get("endpoints", [])
-    ctx = body.get("context", {})
 
     # Pick relevant endpoints (top 3)
     chosen = endpoints[:3] if endpoints else []
@@ -112,7 +109,6 @@ async def orchestrate_stream(request: Request):
     body = await request.json()
     query = body.get("query", "")
     endpoints = body.get("endpoints", [])
-    ctx = body.get("context", {})
 
     async def event_generator():
         chosen = endpoints[:5] if endpoints else []

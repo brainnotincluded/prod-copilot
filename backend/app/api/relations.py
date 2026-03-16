@@ -223,7 +223,7 @@ async def analyze_relations(
     }
 
 
-def _format_field_mapping(mapping: dict[str, str]) -> str:
+def _format_field_mapping(mapping: dict[str, str] | None) -> str:
     """Format field mapping for display."""
     if not mapping:
         return "→"
@@ -232,7 +232,7 @@ def _format_field_mapping(mapping: dict[str, str]) -> str:
     return f"{src} → {tgt}"
 
 
-def _extract_schema_fields(schema: dict[str, Any], prefix: str = "") -> list[str]:
+def _extract_schema_fields(schema: Any, prefix: str = "") -> list[str]:
     """Recursively extract field names from JSON schema."""
     fields: list[str] = []
     if not isinstance(schema, dict):
