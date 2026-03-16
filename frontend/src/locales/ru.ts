@@ -117,6 +117,15 @@ export default {
   'results.locations': '{0} точек',
   'results.generatedImage': 'Сгенерированное изображение',
 
+  // Settings
+  'settings.language': 'Язык',
+  'settings.languageDesc': 'Выберите язык интерфейса.',
+  'settings.theme': 'Тема',
+  'settings.themeDesc': 'Выберите оформление приложения.',
+  'settings.themeLight': 'Светлая',
+  'settings.themeDark': 'Тёмная',
+  'settings.themeSystem': 'Системная',
+
   // Errors (store level)
   'error.noData': 'Данные не были возвращены.',
   'error.generic': 'Произошла ошибка',
