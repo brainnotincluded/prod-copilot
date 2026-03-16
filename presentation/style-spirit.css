@@ -1,0 +1,784 @@
+/* ================= FONTS SETUP ================= */
+/* Убедись, что шрифты лежат в папке fonts/ */
+@font-face {
+    font-family: 'Monument Extended';
+    src: url('fonts/PPMonumentExtended-Black.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Monument Extended';
+    src: url('fonts/PPMonumentExtended-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter_18pt-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter_18pt-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* ================= VARIABLES ================= */
+:root {
+    --bg-dark: #080808;
+    --bg-card: #0c0c0c;
+    --text-main: #e0e0e0;
+    --text-muted: #888;
+    
+    /* === КИСЛОТНЫЙ ЗЕЛЕНЫЙ TEAM SPIRIT === */
+    --accent: #C6FF00; 
+    
+    --border: #333;
+    
+    --font-head: 'Monument Extended', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+/* ================= RESET & BASE ================= */
+* { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    /* ЖЕСТКАЯ ФИКСАЦИЯ FULL HD */
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Убирает скролл у всего окна */
+    
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    position: relative;
+}
+
+/* ================= TYPOGRAPHY (Обновленные размеры) ================= */
+h1 { 
+    font-family: var(--font-head); 
+    font-size: 3.2rem; /* Чуть увеличили */
+    line-height: 1; 
+    font-weight: 900; 
+    text-transform: uppercase; 
+    margin-bottom: 15px; 
+    text-shadow: 0 0 25px rgba(198, 255, 0, 0.25);
+}
+
+h2 { 
+    font-family: var(--font-head); 
+    font-size: 2rem; /* Было 1.8rem */
+    font-weight: 900; 
+    text-transform: uppercase; 
+    margin-bottom: 20px; 
+    border-left: 6px solid var(--accent); 
+    padding-left: 20px; 
+    display: inline-block; 
+    flex-shrink: 0; 
+}
+
+h3 { 
+    font-size: 1.6rem; /* Было 1.5rem */
+    margin-bottom: 10px; 
+}
+
+p, li { 
+    font-size: 1.4rem; /* ОСНОВНОЕ ИЗМЕНЕНИЕ (Было 1.25rem) */
+    line-height: 1.4; /* Более плотный текст для читаемости */
+    margin-bottom: 12px; 
+}
+
+ul { margin-bottom: 15px; }
+
+/* ================= LAYOUT & SLIDES ================= */
+.slide {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Центрируем контент по вертикали */
+    padding: 60px 80px 100px 80px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    overflow: hidden; 
+}
+
+.slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    z-index: 2;
+}
+
+.fill-height {
+    flex: 1;
+    min-height: 0; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-center { display: flex; justify-content: center; align-items: center; text-align: center; height: 100%; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+
+.chart-container-fix {
+    flex: 1;             
+    width: 100%;
+    min-height: 0;       
+    overflow: hidden;   
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================= CARDS & UI ================= */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 25px;
+    position: relative;
+    height: auto; 
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+.card:hover { 
+    border-color: #555; 
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+.card::before { 
+    content: ''; position: absolute; top: 0; left: 0; width: 15px; height: 2px; 
+    background: var(--accent); 
+    box-shadow: 0 0 10px var(--accent);
+}
+
+.big-stat { 
+    font-family: var(--font-head); 
+    font-size: 3.5rem; /* Увеличили */
+    font-weight: 900; 
+    color: var(--accent); 
+    display: block; 
+    line-height: 1; 
+    margin-bottom: 10px; 
+    text-shadow: 0 0 15px rgba(198, 255, 0, 0.2);
+}
+.stat-label { font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
+
+.tag { 
+    display: inline-block; 
+    padding: 5px 10px; 
+    border: 1px solid var(--accent); 
+    font-size: 1.4rem; 
+    font-weight: 700; 
+    margin-right: 5px; 
+    margin-bottom: 5px; 
+    text-transform: uppercase; 
+    color: var(--accent); 
+    background: rgba(198, 255, 0, 0.05);
+}
+
+/* --- CODE BLOCK STYLE --- */
+.code-block {
+    background: #0f0f0f;
+    border: 1px solid #333;
+    border-left: 4px solid var(--accent);
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.3rem; /* Увеличено */
+    color: #ccc;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 20px 0;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* --- NAVIGATION --- */
+.slide-counter { 
+    position: fixed; bottom: 30px; left: 40px; 
+    font-weight: 900; font-size: 1.4rem; z-index: 20; 
+    background: rgba(0,0,0,0.8); padding: 5px 15px; 
+    border-left: 2px solid var(--accent);
+}
+
+/* --- WATERMARK --- */
+.watermark-container { position: fixed; top: 30px; right: 40px; display: flex; align-items: center; gap: 15px; opacity: 0.8; z-index: 10; }
+.watermark-text { font-family: var(--font-head); font-weight: 900; border: 2px solid #fff; padding: 5px 12px; font-size: 1.2rem; }
+.logo-watermark-img { width: 40px; }
+
+/* --- IMAGES PLACEHOLDERS --- */
+.team-photo-box {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #222;
+    margin-bottom: 15px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #444;
+    filter: grayscale(0%); 
+    position: relative;
+    overflow: visible; 
+    transition: filter 0.5s, border-color 0.5s, transform 0.5s, box-shadow 0.5s;
+}
+
+/* --- STATES --- */
+/* STATE 1: DEAD */
+.team-photo-box.dead {
+    filter: grayscale(100%);
+    border-color: #333;
+}
+.team-photo-box.dead::before {
+    content: '';
+    position: absolute;
+    bottom: 60px;
+    right: -40px;
+    width: 200px;
+    height: 30px;
+    background: #000;
+    transform: rotate(-45deg);
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    z-index: 5;
+    pointer-events: none;
+    animation: fadeIn 0.5s forwards;
+}
+.team-photo-box.dead::after {
+    content: '🕯️';
+    font-size: 6rem;
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    pointer-events: none;
+    animation: fadeIn 0.5s forwards;
+    filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.8)) hue-rotate(15deg);
+}
+
+/* STATE 2: RESURRECTED */
+.team-photo-box.resurrected {
+    filter: grayscale(0%);
+    border-color: var(--accent);
+    box-shadow: 0 0 30px var(--accent);
+    transform: scale(1.05);
+    z-index: 10;
+}
+.team-photo-box.resurrected::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -50px;
+    width: 70px;
+    height: 100px;
+    background: linear-gradient(to bottom right, #fff, #ddd);
+    border-radius: 100% 0 20% 50%; 
+    transform-origin: bottom right;
+    transform: rotate(20deg); 
+    z-index: -1;
+    animation: wingFlapLeft 0.8s infinite alternate ease-in-out;
+    filter: drop-shadow(0 0 15px #fff);
+    border: 1px solid #fff;
+}
+.team-photo-box.resurrected::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -50px;
+    width: 70px;
+    height: 100px;
+    background: linear-gradient(to bottom left, #fff, #ddd);
+    border-radius: 0 100% 50% 20%;
+    transform-origin: bottom left;
+    transform: rotate(-20deg); 
+    z-index: -1;
+    animation: wingFlapRight 0.8s infinite alternate ease-in-out;
+    filter: drop-shadow(0 0 15px #fff);
+    border: 1px solid #fff;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wingFlapLeft {
+    from { transform: rotate(20deg); }
+    to { transform: rotate(0deg) translateY(-5px); }
+}
+@keyframes wingFlapRight {
+    from { transform: rotate(-20deg); }
+    to { transform: rotate(0deg) translateY(-5px); }
+}
+
+/* EXPLOSION OVERLAY */
+#resurrection-explosion {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle, 
+        rgba(255, 255, 255, 1) 0%, 
+        rgba(255, 255, 0, 1) 15%, 
+        rgba(255, 140, 0, 1) 30%, 
+        rgba(255, 0, 0, 0.8) 50%, 
+        transparent 70%
+    );
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0);
+    mix-blend-mode: screen; 
+}
+.explode-anim {
+    animation: explosion 1s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+@keyframes explosion {
+    0% { opacity: 1; transform: scale(0); }
+    20% { opacity: 1; transform: scale(1.2); }
+    50% { opacity: 0.8; transform: scale(1.8); filter: blur(5px); }
+    100% { opacity: 0; transform: scale(2.5); filter: blur(20px); }
+}
+
+/* ================= PRINT SETTINGS ================= */
+@media print {
+    body, html {
+        height: auto !important;
+        overflow: visible !important;
+        background: #080808 !important; 
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact;
+    }
+    .slide {
+        position: relative !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        display: block !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        page-break-after: always; 
+        break-after: page;
+        overflow: hidden !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        padding-top: 40px !important; 
+    }
+    .controls, .slide-counter, .watermark-container { display: none !important; }
+    .apexcharts-canvas { width: 100% !important; height: 100% !important; }
+}
+
+/* ================= CASINO MODE ================= */
+@keyframes casinoShake {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-10px, -10px) rotate(-2deg); }
+    20% { transform: translate(10px, 10px) rotate(2deg); }
+    30% { transform: translate(-10px, 10px) rotate(-2deg); }
+    40% { transform: translate(10px, -10px) rotate(2deg); }
+    50% { transform: translate(-5px, -5px) rotate(-1deg); }
+    60% { transform: translate(5px, 5px) rotate(1deg); }
+    70% { transform: translate(-5px, 5px) rotate(-1deg); }
+    80% { transform: translate(5px, -5px) rotate(1deg); }
+    90% { transform: translate(0, 0); }
+    100% { transform: translate(0, 0); }
+}
+.casino-shake { animation: casinoShake 0.5s ease-in-out; }
+
+.casino-btn {
+    background: linear-gradient(45deg, #ff0000, #ffaa00);
+    border: 4px solid #fff;
+    color: #fff;
+    font-family: 'Monument Extended', sans-serif;
+    font-size: 2rem;
+    padding: 15px 40px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px #ff0000;
+    transition: all 0.2s;
+    border-radius: 50px;
+    animation: pulseBtn 1s infinite alternate;
+}
+.casino-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px #ffaa00; }
+.casino-btn:active { transform: scale(0.95); }
+
+@keyframes pulseBtn {
+    from { box-shadow: 0 0 20px #ff0000; }
+    to { box-shadow: 0 0 40px #ffaa00, 0 0 10px #fff; }
+}
+
+.money {
+    position: fixed;
+    top: -50px;
+    font-size: 2rem;
+    animation: fall linear forwards;
+    z-index: 999;
+    color: #85bb65;
+}
+@keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+/* ================= CASINO STYLE ================= */
+
+/* 1. SLOT MACHINE FRAME */
+.slot-machine-frame {
+    background: #111;
+    border: 8px solid #333;
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 30px #000;
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+/* 2. GRID */
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 155px);
+    grid-template-rows: repeat(3, 150px);
+    gap: 10px;
+    background: #000;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #444;
+}
+/* Контейнер для цепочки */
+.logic-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0; /* Убираем отступы, чтобы рисовать линии */
+    margin-top: 15px;
+}
+
+/* Блок внутри цепочки */
+.logic-step {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    padding: 15px 20px;
+    width: 100%;
+    text-align: center; /* Или left, как больше нравится */
+    position: relative;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+/* Линия-связка между блоками */
+.logic-connector {
+    height: 20px;
+    width: 2px;
+    background: #444; /* Серый цвет линии */
+    position: relative;
+}
+
+/* Стрелочка на линии */
+.logic-connector::after {
+    content: '▼';
+    color: #444;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    background: var(--bg-card); /* Чтобы перекрыть линию под стрелкой */
+}
+
+/* Стиль для последнего блока (ВЫВОД) */
+.logic-step.final {
+    border: 1px solid var(--accent);
+    background: rgba(198, 255, 0, 0.05); /* Легкий зеленый фон */
+    box-shadow: 0 0 15px rgba(198, 255, 0, 0.1);
+}
+
+.logic-step.final p {
+    color: #fff;
+    font-weight: bold;
+    margin: 0;
+}
+/* 3. CELLS & IMAGES */
+.slot-cell {
+    background: #222;
+    border: 2px solid #555;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: border-color 0.2s;
+}
+
+.slot-cell.active-row {
+    border-color: var(--accent); /* Зеленая рамка для центрального ряда */
+    box-shadow: 0 0 15px rgba(198, 255, 0, 0.2);
+}
+
+.slot-img {
+    width: 85%;
+    height: 85%;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    border: none; /* Убираем бордер из общих стилей фото */
+    filter: none;
+}
+
+.role-label {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 900;
+    text-align: center;
+    padding: 5px 0;
+    z-index: 2;
+}
+
+/* 4. BUTTON */
+.casino-btn {
+    background: linear-gradient(45deg, #ff0000, #ffaa00);
+    border: 4px solid #fff;
+    color: #fff;
+    font-family: 'Monument Extended', sans-serif;
+    font-size: 2rem;
+    padding: 15px 40px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px #ff0000;
+    transition: all 0.2s;
+    border-radius: 50px;
+    animation: pulseBtn 1s infinite alternate;
+}
+.casino-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px #ffaa00; }
+.casino-btn:active { transform: scale(0.95); }
+.casino-btn:disabled { filter: grayscale(1); transform: scale(1); cursor: not-allowed; }
+
+@keyframes pulseBtn {
+    from { box-shadow: 0 0 20px #ff0000; }
+    to { box-shadow: 0 0 40px #ffaa00, 0 0 10px #fff; }
+}
+
+/* 5. SPINNING ANIMATION (Blur) */
+@keyframes spinBlur {
+    0% { transform: translateY(0); filter: blur(0); }
+    25% { transform: translateY(150%); filter: blur(5px); }
+    25.001% { transform: translateY(-150%); filter: blur(5px); }
+    100% { transform: translateY(0); filter: blur(0); }
+}
+.spinning .slot-img { animation: spinBlur 0.1s linear infinite; }
+
+/* 6. WIN ANIMATION (Cell Pulse) */
+@keyframes winPulse {
+    0% { transform: scale(1); box-shadow: 0 0 10px #FFD700; border-color: #FFD700; }
+    50% { transform: scale(1.05); box-shadow: 0 0 30px #FFD700, inset 0 0 20px #FFD700; border-color: #fff; }
+    100% { transform: scale(1); box-shadow: 0 0 10px #FFD700; border-color: #FFD700; }
+}
+.slot-cell.win { animation: winPulse 0.8s infinite; z-index: 10; border-color: #FFD700 !important; }
+
+/* 7. DECORATIVE LIGHTS */
+.lights-top, .lights-bottom {
+    position: absolute; left: 0; width: 100%; height: 10px;
+    background: repeating-linear-gradient(90deg, #f00 0, #f00 10px, #333 10px, #333 20px);
+    animation: lightsMove 1s linear infinite;
+}
+.lights-top { top: -10px; border-radius: 10px 10px 0 0; }
+.lights-bottom { bottom: -10px; border-radius: 0 0 10px 10px; }
+@keyframes lightsMove { from { background-position: 0 0; } to { background-position: 40px 0; } }
+
+/* 8. SCREEN SHAKE (Start) */
+@keyframes casinoShake {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-5px, 5px); }
+    50% { transform: translate(5px, -5px); }
+    75% { transform: translate(-5px, -5px); }
+    100% { transform: translate(0, 0); }
+}
+.casino-shake { animation: casinoShake 0.5s ease-in-out; }
+
+/* 9. MONEY RAIN */
+.money {
+    position: fixed;
+    top: -100px;
+    font-size: 2rem;
+    animation: fall linear forwards;
+    z-index: 1500;
+    pointer-events: none;
+}
+@keyframes fall { to { transform: translateY(120vh) rotate(360deg); } }
+
+/* ================= MAX WIN / JACKPOT ANIMATIONS ================= */
+
+/* Психоделический фон (RGB Party) */
+@keyframes rgb-party {
+    0% { filter: hue-rotate(0deg) contrast(1.2) saturate(1.5); }
+    50% { filter: hue-rotate(180deg) contrast(1.5) saturate(2); }
+    100% { filter: hue-rotate(360deg) contrast(1.2) saturate(1.5); }
+}
+
+/* Радужная обводка слота */
+@keyframes rainbow-border {
+    0% { border-color: #ff0000; box-shadow: 0 0 50px #ff0000; }
+    20% { border-color: #ffff00; box-shadow: 0 0 80px #ffff00; }
+    40% { border-color: #00ff00; box-shadow: 0 0 50px #00ff00; }
+    60% { border-color: #00ffff; box-shadow: 0 0 80px #00ffff; }
+    80% { border-color: #0000ff; box-shadow: 0 0 50px #0000ff; }
+    100% { border-color: #ff00ff; box-shadow: 0 0 80px #ff00ff; }
+}
+
+/* Жесткая тряска текста */
+@keyframes violent-shake {
+    0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    25% { transform: translate(calc(-50% - 10px), calc(-50% + 10px)) scale(1.2) rotate(-5deg); }
+    50% { transform: translate(calc(-50% + 10px), calc(-50% - 10px)) scale(1.2) rotate(5deg); }
+    75% { transform: translate(calc(-50% - 10px), calc(-50% - 10px)) scale(1.2) rotate(-5deg); }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+
+/* Классы для активации в JS */
+.body-max-win {
+    animation: rgb-party 0.5s infinite linear;
+    overflow: hidden !important;
+}
+
+.frame-max-win {
+    animation: rainbow-border 0.2s infinite linear !important;
+    background: #000 !important;
+    z-index: 1000 !important;
+}
+
+.text-max-win {
+    animation: violent-shake 0.3s infinite ease-in-out !important;
+    font-size: 7rem !important;
+    color: #fff !important;
+    text-shadow: 5px 5px 0px #ff0000, -5px -5px 0px #0000ff !important;
+    white-space: nowrap;
+}
+
+/* Стиль золотых элементов дождя */
+.money.gold {
+    z-index: 2000;
+    text-shadow: 0 0 20px gold;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+
+/* ================= GAME HUB LAYOUT ================= */
+
+/* Сетка: Игровое поле занимает остаток, Меню фикс 280px */
+.game-hub-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    gap: 30px;
+}
+
+.game-stage {
+    flex: 1;
+    position: relative;
+    height: 100%;
+    /* border: 1px dashed #333;  для отладки */
+}
+
+.game-mode {
+    width: 100%;
+    height: 100%;
+    animation: fadeInMode 0.5s ease;
+}
+
+@keyframes fadeInMode {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* SIDEBAR MENU */
+.game-menu-sidebar {
+    width: 280px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.game-select-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: transparent;
+    border: 1px solid #444;
+    color: #888;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    font-family: 'Monument Extended', sans-serif; /* Или Inter */
+}
+
+.game-select-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #666;
+    color: #fff;
+    transform: translateX(-5px);
+}
+
+.game-select-btn.active {
+    background: rgba(198, 255, 0, 0.1); /* Прозрачный зеленый */
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(198, 255, 0, 0.1);
+}
+
+.game-select-btn .g-icon {
+    font-size: 1.8rem;
+}
+
+.game-select-btn .g-text {
+    font-size: 1.1rem; /* Чуть меньше для длинных названий */
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Адаптация для слот-машины внутри контейнера */
+.slot-machine-frame {
+    /* Максимальная ширина, чтобы влезала в новый layout */
+    max-width: 100%; 
+    max-height: 75vh; /* Ограничение по высоте */
+    overflow: hidden;
+}
+
+/* Custom Legend Style for Robustness Chart (Slide 17) */
+#chart-robustness .apexcharts-legend {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border: 1px solid var(--accent) !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    
+    /* Force position and size */
+    position: absolute !important;
+    bottom: auto !important;
+    right: auto !important;
+    left: 80px !important;
+    top: 50px !important;
+    width: max-content !important;  
+    
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+}
+#chart-robustness .apexcharts-legend-marker {
+    margin-right: 10px !important;
+}

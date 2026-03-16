@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" font-family="Inter, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bar1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C6FF00"/>
+      <stop offset="100%" stop-color="#8BB800"/>
+    </linearGradient>
+    <linearGradient id="bar2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffcc44"/>
+      <stop offset="100%" stop-color="#cc9900"/>
+    </linearGradient>
+    <linearGradient id="cardgrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#111"/>
+      <stop offset="100%" stop-color="#0c0c0c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="700" fill="#080808"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="1200" height="50" fill="#0c0c0c"/>
+  <rect x="0" y="49" width="1200" height="1" fill="#333"/>
+  <text x="30" y="32" fill="#C6FF00" font-size="14" font-weight="900" letter-spacing="2">PROD COPILOT</text>
+  <text x="200" y="32" fill="#888" font-size="13">Результаты запроса: "Покажи KPI по кампаниям за март"</text>
+
+  <!-- KPI Cards Row -->
+  <rect x="30" y="70" width="270" height="90" rx="6" fill="url(#cardgrad)" stroke="#333" stroke-width="1"/>
+  <rect x="30" y="70" width="270" height="3" rx="1" fill="#C6FF00"/>
+  <text x="50" y="105" fill="#C6FF00" font-size="32" font-weight="900" font-family="Monument Extended, sans-serif">24 580</text>
+  <text x="50" y="140" fill="#888" font-size="13" letter-spacing="1">ВСЕГО ОТПРАВЛЕНО</text>
+
+  <rect x="320" y="70" width="270" height="90" rx="6" fill="url(#cardgrad)" stroke="#333" stroke-width="1"/>
+  <rect x="320" y="70" width="270" height="3" rx="1" fill="#C6FF00"/>
+  <text x="340" y="105" fill="#C6FF00" font-size="32" font-weight="900" font-family="Monument Extended, sans-serif">18.7%</text>
+  <text x="340" y="140" fill="#888" font-size="13" letter-spacing="1">OPEN RATE</text>
+
+  <rect x="610" y="70" width="270" height="90" rx="6" fill="url(#cardgrad)" stroke="#333" stroke-width="1"/>
+  <rect x="610" y="70" width="270" height="3" rx="1" fill="#C6FF00"/>
+  <text x="630" y="105" fill="#C6FF00" font-size="32" font-weight="900" font-family="Monument Extended, sans-serif">4.2%</text>
+  <text x="630" y="140" fill="#888" font-size="13" letter-spacing="1">CTR</text>
+
+  <rect x="900" y="70" width="270" height="90" rx="6" fill="url(#cardgrad)" stroke="#333" stroke-width="1"/>
+  <rect x="900" y="70" width="270" height="3" rx="1" fill="#ffaa00"/>
+  <text x="920" y="105" fill="#ffcc44" font-size="32" font-weight="900" font-family="Monument Extended, sans-serif">3</text>
+  <text x="920" y="140" fill="#888" font-size="13" letter-spacing="1">АКТИВНЫЕ КАМПАНИИ</text>
+
+  <!-- Chart area -->
+  <rect x="30" y="180" width="730" height="350" rx="6" fill="#0c0c0c" stroke="#333" stroke-width="1"/>
+  <text x="50" y="210" fill="#e0e0e0" font-size="14" font-weight="700">Эффективность кампаний - Март 2026</text>
+  <text x="50" y="230" fill="#666" font-size="11">Показатели по каждой кампании</text>
+
+  <!-- Y-axis labels -->
+  <text x="75" y="260" fill="#666" font-size="10" text-anchor="end">25k</text>
+  <text x="75" y="310" fill="#666" font-size="10" text-anchor="end">20k</text>
+  <text x="75" y="360" fill="#666" font-size="10" text-anchor="end">15k</text>
+  <text x="75" y="410" fill="#666" font-size="10" text-anchor="end">10k</text>
+  <text x="75" y="460" fill="#666" font-size="10" text-anchor="end">5k</text>
+  <text x="75" y="510" fill="#666" font-size="10" text-anchor="end">0</text>
+
+  <!-- Grid lines -->
+  <line x1="85" y1="255" x2="740" y2="255" stroke="#222" stroke-width="1"/>
+  <line x1="85" y1="305" x2="740" y2="305" stroke="#222" stroke-width="1"/>
+  <line x1="85" y1="355" x2="740" y2="355" stroke="#222" stroke-width="1"/>
+  <line x1="85" y1="405" x2="740" y2="405" stroke="#222" stroke-width="1"/>
+  <line x1="85" y1="455" x2="740" y2="455" stroke="#222" stroke-width="1"/>
+  <line x1="85" y1="505" x2="740" y2="505" stroke="#222" stroke-width="1"/>
+
+  <!-- Bar group 1: Реактивация Премиум -->
+  <rect x="120" y="265" width="55" height="240" rx="3" fill="url(#bar1)" opacity="0.9"/>
+  <rect x="180" y="355" width="55" height="150" rx="3" fill="url(#bar2)" opacity="0.9"/>
+  <text x="177" y="520" fill="#aaa" font-size="10" text-anchor="middle">Реактивация</text>
+  <text x="177" y="532" fill="#aaa" font-size="10" text-anchor="middle">Премиум</text>
+
+  <!-- Bar group 2: Весенняя акция -->
+  <rect x="290" y="305" width="55" height="200" rx="3" fill="url(#bar1)" opacity="0.9"/>
+  <rect x="350" y="375" width="55" height="130" rx="3" fill="url(#bar2)" opacity="0.9"/>
+  <text x="347" y="520" fill="#aaa" font-size="10" text-anchor="middle">Весенняя</text>
+  <text x="347" y="532" fill="#aaa" font-size="10" text-anchor="middle">акция</text>
+
+  <!-- Bar group 3: Welcome серия -->
+  <rect x="460" y="385" width="55" height="120" rx="3" fill="url(#bar1)" opacity="0.9"/>
+  <rect x="520" y="425" width="55" height="80" rx="3" fill="url(#bar2)" opacity="0.9"/>
+  <text x="517" y="520" fill="#aaa" font-size="10" text-anchor="middle">Welcome</text>
+  <text x="517" y="532" fill="#aaa" font-size="10" text-anchor="middle">серия</text>
+
+  <!-- Legend -->
+  <rect x="600" y="248" width="12" height="12" rx="2" fill="#C6FF00"/>
+  <text x="618" y="259" fill="#ccc" font-size="11">Отправлено</text>
+  <rect x="600" y="268" width="12" height="12" rx="2" fill="#ffcc44"/>
+  <text x="618" y="279" fill="#ccc" font-size="11">Открыто</text>
+
+  <!-- Table area -->
+  <rect x="780" y="180" width="390" height="350" rx="6" fill="#0c0c0c" stroke="#333" stroke-width="1"/>
+  <text x="800" y="210" fill="#e0e0e0" font-size="14" font-weight="700">Детали кампаний</text>
+
+  <!-- Table header -->
+  <rect x="790" y="225" width="370" height="30" fill="#161616"/>
+  <text x="805" y="245" fill="#C6FF00" font-size="11" font-weight="700">Кампания</text>
+  <text x="950" y="245" fill="#C6FF00" font-size="11" font-weight="700">Sent</text>
+  <text x="1010" y="245" fill="#C6FF00" font-size="11" font-weight="700">Open%</text>
+  <text x="1080" y="245" fill="#C6FF00" font-size="11" font-weight="700">CTR%</text>
+
+  <!-- Row 1 -->
+  <rect x="790" y="257" width="370" height="28" fill="#0f0f0f"/>
+  <text x="805" y="276" fill="#e0e0e0" font-size="12">Реактивация Премиум</text>
+  <text x="950" y="276" fill="#e0e0e0" font-size="12">12 400</text>
+  <text x="1010" y="276" fill="#C6FF00" font-size="12">21.3%</text>
+  <text x="1080" y="276" fill="#C6FF00" font-size="12">5.1%</text>
+
+  <!-- Row 2 -->
+  <rect x="790" y="287" width="370" height="28" fill="#111"/>
+  <text x="805" y="306" fill="#e0e0e0" font-size="12">Весенняя акция</text>
+  <text x="950" y="306" fill="#e0e0e0" font-size="12">8 200</text>
+  <text x="1010" y="306" fill="#e0e0e0" font-size="12">17.8%</text>
+  <text x="1080" y="306" fill="#e0e0e0" font-size="12">4.0%</text>
+
+  <!-- Row 3 -->
+  <rect x="790" y="317" width="370" height="28" fill="#0f0f0f"/>
+  <text x="805" y="336" fill="#e0e0e0" font-size="12">Welcome серия</text>
+  <text x="950" y="336" fill="#e0e0e0" font-size="12">3 980</text>
+  <text x="1010" y="336" fill="#e0e0e0" font-size="12">14.2%</text>
+  <text x="1080" y="336" fill="#e0e0e0" font-size="12">3.1%</text>
+
+  <!-- Row separator -->
+  <line x1="790" y1="355" x2="1160" y2="355" stroke="#333" stroke-width="1"/>
+
+  <!-- Summary row -->
+  <rect x="790" y="357" width="370" height="28" fill="rgba(198,255,0,0.05)"/>
+  <text x="805" y="376" fill="#C6FF00" font-size="12" font-weight="700">Итого</text>
+  <text x="950" y="376" fill="#C6FF00" font-size="12" font-weight="700">24 580</text>
+  <text x="1010" y="376" fill="#C6FF00" font-size="12" font-weight="700">18.7%</text>
+  <text x="1080" y="376" fill="#C6FF00" font-size="12" font-weight="700">4.2%</text>
+
+  <!-- Reasoning box -->
+  <rect x="790" y="405" width="370" height="115" rx="4" fill="#111" stroke="#333" stroke-width="1"/>
+  <rect x="790" y="405" width="3" height="115" rx="1" fill="#ffaa00"/>
+  <text x="810" y="425" fill="#ffcc44" font-size="11" font-weight="700">Reasoning</text>
+  <text x="810" y="445" fill="#aaa" font-size="11">Кампания "Реактивация Премиум"</text>
+  <text x="810" y="462" fill="#aaa" font-size="11">показывает лучший Open Rate</text>
+  <text x="810" y="479" fill="#aaa" font-size="11">(21.3%) и CTR (5.1%). Рекомендую</text>
+  <text x="810" y="496" fill="#aaa" font-size="11">масштабировать этот сегмент.</text>
+
+  <!-- Bottom: Steps timeline -->
+  <rect x="30" y="545" width="1140" height="55" rx="6" fill="#0c0c0c" stroke="#333" stroke-width="1"/>
+  <text x="50" y="570" fill="#888" font-size="11" font-weight="700">ШАГИ:</text>
+
+  <rect x="110" y="555" width="150" height="28" rx="4" fill="rgba(198,255,0,0.08)"/>
+  <circle cx="125" cy="569" r="6" fill="#C6FF00"/>
+  <text x="122" y="573" fill="#000" font-size="8" font-weight="900" text-anchor="middle">1</text>
+  <text x="138" y="573" fill="#ccc" font-size="11">search endpoints</text>
+
+  <text x="270" y="573" fill="#444" font-size="14">-&gt;</text>
+
+  <rect x="290" y="555" width="180" height="28" rx="4" fill="rgba(198,255,0,0.08)"/>
+  <circle cx="305" cy="569" r="6" fill="#C6FF00"/>
+  <text x="302" y="573" fill="#000" font-size="8" font-weight="900" text-anchor="middle">2</text>
+  <text x="318" y="573" fill="#ccc" font-size="11">api_call GET /campaigns</text>
+
+  <text x="480" y="573" fill="#444" font-size="14">-&gt;</text>
+
+  <rect x="500" y="555" width="180" height="28" rx="4" fill="rgba(198,255,0,0.08)"/>
+  <circle cx="515" cy="569" r="6" fill="#C6FF00"/>
+  <text x="512" y="573" fill="#000" font-size="8" font-weight="900" text-anchor="middle">3</text>
+  <text x="528" y="573" fill="#ccc" font-size="11">api_call GET /analytics</text>
+
+  <text x="690" y="573" fill="#444" font-size="14">-&gt;</text>
+
+  <rect x="710" y="555" width="150" height="28" rx="4" fill="rgba(198,255,0,0.08)"/>
+  <circle cx="725" cy="569" r="6" fill="#C6FF00"/>
+  <text x="722" y="573" fill="#000" font-size="8" font-weight="900" text-anchor="middle">4</text>
+  <text x="738" y="573" fill="#ccc" font-size="11">data_process</text>
+
+  <text x="870" y="573" fill="#444" font-size="14">-&gt;</text>
+
+  <rect x="890" y="555" width="150" height="28" rx="4" fill="rgba(198,255,0,0.08)" stroke="#C6FF00" stroke-width="0.5"/>
+  <circle cx="905" cy="569" r="6" fill="#C6FF00"/>
+  <text x="902" y="573" fill="#000" font-size="8" font-weight="900" text-anchor="middle">5</text>
+  <text x="918" y="573" fill="#ccc" font-size="11">format_output</text>
+
+  <!-- Footer -->
+  <rect x="0" y="615" width="1200" height="85" fill="#080808"/>
+  <rect x="0" y="614" width="1200" height="1" fill="#222"/>
+  <text x="30" y="650" fill="#444" font-size="11">Prod Copilot v1.0 | Marketing API Demo</text>
+  <text x="30" y="670" fill="#333" font-size="10">Время выполнения: 2.3 сек | 5 шагов | LLM: Kimi K2 | Mode: plan-execute</text>
+</svg>

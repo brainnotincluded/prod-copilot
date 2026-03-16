@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>White Tigers | Platform Copilot</title>
+    <link rel="stylesheet" href="style-spirit.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        .flow-step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 14px 12px;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .flow-step .step-num {
+            font-family: var(--font-head);
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: 900;
+        }
+        .flow-step .step-icon { display: none; }
+        .flow-step .step-label { font-size: 1.1rem; line-height: 1.2; }
+        .flow-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.4rem; }
+        .swot-cell {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .swot-cell h3 { font-size: 1.3rem; margin: 0; text-transform: uppercase; }
+        .swot-cell ul { list-style: none; padding: 0; margin: 0; font-size: 1.25rem; }
+        .swot-cell ul li { margin-bottom: 8px; padding-left: 14px; position: relative; }
+        .swot-cell ul li::before { content: '▸'; position: absolute; left: 0; }
+        .moscow-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #222;
+            font-size: 1.3rem;
+        }
+        .moscow-item:last-child { border-bottom: none; }
+        /* All slides flow from top — prevents content+итог gap */
+        .slide { justify-content: flex-start !important; }
+        .moscow-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="resurrection-explosion"></div>
+
+    <div class="watermark-container">
+        <div class="watermark-text">WHITE TIGERS</div>
+        <svg class="logo-watermark-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="white">
+            <ellipse cx="50" cy="57" rx="33" ry="30"/>
+            <polygon points="18,36 13,12 36,31"/>
+            <polygon points="82,36 87,12 64,31"/>
+        </svg>
+    </div>
+
+    <div class="slide-counter">
+        <span id="currSlide" style="color: var(--accent);">01</span> / <span id="totalSlide">17</span>
+    </div>
+
+    <!-- ======== 01. ТИТУЛЬНИК ======== -->
+    <div class="slide active flex-center">
+        <div>
+            <div style="display:flex; justify-content:center; margin-bottom:35px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+                    <ellipse cx="50" cy="57" rx="33" ry="30" fill="#C6FF00"/>
+                    <polygon points="18,36 13,12 36,31" fill="#C6FF00"/>
+                    <polygon points="82,36 87,12 64,31" fill="#C6FF00"/>
+                    <polygon points="21,34 17,17 33,31" fill="#000" opacity="0.25"/>
+                    <polygon points="79,34 83,17 67,31" fill="#000" opacity="0.25"/>
+                    <ellipse cx="44" cy="34" rx="2.2" ry="6.5" fill="#000" opacity="0.35" transform="rotate(-10 44 34)"/>
+                    <ellipse cx="50" cy="32" rx="2.2" ry="7.5" fill="#000" opacity="0.35"/>
+                    <ellipse cx="56" cy="34" rx="2.2" ry="6.5" fill="#000" opacity="0.35" transform="rotate(10 56 34)"/>
+                    <ellipse cx="23" cy="52" rx="2" ry="7" fill="#000" opacity="0.25" transform="rotate(25 23 52)"/>
+                    <ellipse cx="77" cy="52" rx="2" ry="7" fill="#000" opacity="0.25" transform="rotate(-25 77 52)"/>
+                    <ellipse cx="50" cy="65" rx="15" ry="11" fill="white" opacity="0.9"/>
+                    <ellipse cx="38" cy="49" rx="6.5" ry="7.5" fill="white"/>
+                    <ellipse cx="62" cy="49" rx="6.5" ry="7.5" fill="white"/>
+                    <ellipse cx="38" cy="50" rx="3" ry="5" fill="#000" opacity="0.8"/>
+                    <ellipse cx="62" cy="50" rx="3" ry="5" fill="#000" opacity="0.8"/>
+                    <circle cx="39.5" cy="47.5" r="1.2" fill="white"/>
+                    <circle cx="63.5" cy="47.5" r="1.2" fill="white"/>
+                    <path d="M45 63 Q50 60 55 63 Q53 67 50 68 Q47 67 45 63Z" fill="#000" opacity="0.5"/>
+                    <line x1="50" y1="68" x2="50" y2="71" stroke="#000" stroke-width="1.5" opacity="0.4"/>
+                    <path d="M44 71 Q50 75 56 71" stroke="#000" stroke-width="1.5" fill="none" opacity="0.4"/>
+                </svg>
+            </div>
+            <p style="letter-spacing:4px; color:var(--accent); margin-bottom:15px; font-weight:700; font-size:1.4rem; text-shadow:0 0 10px rgba(198,255,0,0.4);">HACKATHON 2026 · WHITE TIGERS</p>
+            <h1 style="font-size:4.2rem; margin-bottom:10px;">PROD COPILOT</h1>
+            <p style="font-size:1.6rem; color:var(--text-muted); margin-bottom:30px; max-width:750px; margin-left:auto; margin-right:auto; line-height:1.4;">
+                Описываешь бизнес-задачу — получаешь исполнимый, прозрачный<br>и безопасный сценарий поверх любых внутренних API
+            </p>
+            <div style="width:80px; height:5px; background:var(--accent); margin:0 auto 30px; box-shadow:0 0 10px var(--accent);"></div>
+            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                <span class="tag">#API_ORCHESTRATION</span>
+                <span class="tag">#HUMAN_IN_LOOP</span>
+                <span class="tag">#AGENTIC_AI</span>
+                <span class="tag">#UNIVERSAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 02. ПРОБЛЕМА ======== -->
+    <div class="slide" style="justify-content:flex-start;">
+        <h2>ПРОБЛЕМА</h2>
+        <div style="flex:1; min-height:0; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:stretch; flex:1; min-height:0; margin-bottom:18px;">
+            <div class="card" style="border-left:4px solid #ff5555; background:rgba(255,85,85,0.04); padding:30px;">
+                <h3 style="color:#ff7777; margin-bottom:12px; font-size:1.5rem;">Прыжки между системами</h3>
+                <p>Чтобы решить одну задачу — нужно зайти в 3–5 разных систем и вручную склеить данные</p>
+            </div>
+            <div class="card" style="border-left:4px solid #ffaa00; background:rgba(255,170,0,0.04); padding:30px;">
+                <h3 style="color:#ffcc44; margin-bottom:12px; font-size:1.5rem;">Всё держится в голове</h3>
+                <p>Нужно помнить, какие API что умеют, какие сущности как связаны и в каком порядке вызывать</p>
+            </div>
+            <div class="card" style="border-left:4px solid #666; background:rgba(100,100,100,0.04); padding:30px;">
+                <h3 style="color:#aaa; margin-bottom:12px; font-size:1.5rem;">Чёрный ящик исполнения</h3>
+                <p>Непонятно, что уже выполнено, где ошибка и можно ли доверять результату без разработчика рядом</p>
+            </div>
+        </div>
+        <div class="card" style="flex-shrink:0; border:2px solid var(--accent); background:rgba(198,255,0,0.04); padding:18px 30px; text-align:center;">
+            <p style="font-size:1.55rem; margin:0; font-weight:700;">
+                Итог: высокий порог входа, медленное выполнение и постоянный риск ошибки при ручной оркестрации
+            </p>
+        </div>
+    </div>
+
+    <!-- ======== 03. РЕШЕНИЕ ======== -->
+    <div class="slide">
+        <h2>РЕШЕНИЕ: 3 УРОВНЯ + РЕЗУЛЬТАТ</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1; min-height:0;">
+            <div style="display:flex; flex-direction:column; gap:18px;">
+                <div class="card" style="flex:1; padding:22px; border-left:4px solid var(--accent);">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+                        <span style="background:var(--accent); color:#000; font-weight:900; font-family:var(--font-head); padding:3px 11px; font-size:1.3rem;">01</span>
+                        <h3 style="margin:0; font-size:1.5rem;">Карта API и сущностей</h3>
+                    </div>
+                    <p style="color:var(--text-muted);">Подключённые API, доступные действия, ограничения ролей и связи между блоками — всё видно до старта сценария</p>
+                </div>
+                <div class="card" style="flex:1; padding:22px; border-left:4px solid var(--accent);">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+                        <span style="background:var(--accent); color:#000; font-weight:900; font-family:var(--font-head); padding:3px 11px; font-size:1.3rem;">02</span>
+                        <h3 style="margin:0; font-size:1.5rem;">Визуальный сценарий</h3>
+                    </div>
+                    <p style="color:var(--text-muted);">Граф шагов с промежуточными результатами, статусами исполнения и историей запусков</p>
+                </div>
+                <div class="card" style="flex:1; padding:22px; border-left:4px solid var(--accent);">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+                        <span style="background:var(--accent); color:#000; font-weight:900; font-family:var(--font-head); padding:3px 11px; font-size:1.3rem;">03</span>
+                        <h3 style="margin:0; font-size:1.5rem;">Чат с оркестратором</h3>
+                    </div>
+                    <p style="color:var(--text-muted);">Описываешь задачу обычным языком — система строит план, уточняет параметры и запускает цепочку вызовов</p>
+                </div>
+            </div>
+            <div class="card" style="padding:30px; border:2px solid var(--accent); background:rgba(198,255,0,0.03); display:flex; flex-direction:column; justify-content:center;">
+                <div style="text-align:center; margin-bottom:22px;">
+                    <h3 style="color:var(--accent); font-size:1.6rem;">Авто-генерируемые интерфейсы</h3>
+                </div>
+                <p style="font-size:1.45rem; text-align:center; line-height:1.5; margin-bottom:22px;">После выполнения система <strong>автоматически собирает</strong> рабочий интерфейс под конкретный сценарий</p>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:10px; font-size:1.35rem;"><span style="color:var(--accent); font-size:1.6rem;">→</span>KPI-панели, таблицы, графики</div>
+                    <div style="display:flex; align-items:center; gap:10px; font-size:1.35rem;"><span style="color:var(--accent); font-size:1.6rem;">→</span>Журнал шагов и reasoning модели</div>
+                    <div style="display:flex; align-items:center; gap:10px; font-size:1.35rem;"><span style="color:var(--accent); font-size:1.6rem;">→</span>История запусков и повтор сценария</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 04. JTBD ======== -->
+    <div class="slide flex-center">
+        <div style="max-width:950px; text-align:center;">
+            <p style="letter-spacing:4px; color:var(--accent); margin-bottom:28px; font-weight:700; font-size:1.4rem; text-transform:uppercase;">Jobs To Be Done</p>
+            <div class="card" style="padding:45px 50px; border:2px solid var(--accent); background:rgba(198,255,0,0.03); margin-bottom:35px;">
+                <p style="font-size:1.85rem; line-height:1.65; font-weight:400;">
+                    Когда мне нужно <span style="color:var(--accent); font-weight:700;">решить бизнес-задачу</span> через несколько внутренних API,<br>
+                    я хочу <span style="color:var(--accent); font-weight:700;">описать её обычным языком</span> и получить исполнимый,<br>прозрачный и безопасный сценарий,<br>
+                    чтобы <span style="color:var(--accent); font-weight:700;">не склеивать вручную</span> системы, не ошибаться и быстро получать проверяемый результат.
+                </p>
+            </div>
+            <div style="display:flex; justify-content:center; gap:30px;">
+                <div class="card" style="padding:18px 28px; text-align:center;">
+                    <div class="big-stat" style="font-size:2.8rem;">Any API</div>
+                    <div class="stat-label">Домен не важен</div>
+                </div>
+                <div class="card" style="padding:18px 28px; text-align:center;">
+                    <div class="big-stat" style="font-size:2.8rem;">0</div>
+                    <div class="stat-label">Невозможных действий</div>
+                </div>
+                <div class="card" style="padding:18px 28px; text-align:center;">
+                    <div class="big-stat" style="font-size:2.8rem;">100%</div>
+                    <div class="stat-label">Прозрачность шагов</div>
+                </div>
+                <div class="card" style="padding:18px 28px; text-align:center;">
+                    <div class="big-stat" style="font-size:2.8rem;">Safe</div>
+                    <div class="stat-label">Approval flow</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 05. АРХИТЕКТУРА ======== -->
+    <div class="slide">
+        <h2>АРХИТЕКТУРА</h2>
+        <div style="flex:1; min-height:0; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:stretch;">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="text-align:center; padding:11px; background:rgba(255,170,0,0.1); border:1px solid #ffaa00;">
+                    <span style="color:#ffcc44; font-family:var(--font-head); font-weight:900; font-size:1.2rem; letter-spacing:2px;">ML LAYER</span>
+                </div>
+                <div class="card" style="flex:1; padding:22px; border-left:3px solid #ffaa00;">
+                    <h3 style="color:#ffcc44; font-size:1.35rem; margin-bottom:14px;">Оркестратор</h3>
+                    <ul style="list-style:none; padding:0; font-size:1.3rem; display:flex; flex-direction:column; gap:9px;">
+                        <li><span style="color:#ffcc44;">▸</span> Разбор бизнес-запроса</li>
+                        <li><span style="color:#ffcc44;">▸</span> Построение плана шагов</li>
+                        <li><span style="color:#ffcc44;">▸</span> Выбор действий из capabilities</li>
+                        <li><span style="color:#ffcc44;">▸</span> Reasoning и альтернативы</li>
+                        <li><span style="color:#ffcc44;">▸</span> Контекст = описания API</li>
+                        <li><span style="color:#ffcc44;">▸</span> Обработка неопределённости</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="text-align:center; padding:11px; background:rgba(198,255,0,0.1); border:1px solid var(--accent);">
+                    <span style="color:var(--accent); font-family:var(--font-head); font-weight:900; font-size:1.2rem; letter-spacing:2px;">BACKEND LAYER</span>
+                </div>
+                <div class="card" style="flex:1; padding:22px; border-left:3px solid var(--accent);">
+                    <h3 style="color:var(--accent); font-size:1.35rem; margin-bottom:14px;">Исполнитель</h3>
+                    <ul style="list-style:none; padding:0; font-size:1.3rem; display:flex; flex-direction:column; gap:9px;">
+                        <li><span style="color:var(--accent);">▸</span> Оркестрация вызовов API</li>
+                        <li><span style="color:var(--accent);">▸</span> Контроль ролей и прав</li>
+                        <li><span style="color:var(--accent);">▸</span> Approval для state-changing</li>
+                        <li><span style="color:var(--accent);">▸</span> Логирование каждого шага</li>
+                        <li><span style="color:var(--accent);">▸</span> Модель данных и состояния</li>
+                        <li><span style="color:var(--accent);">▸</span> Декларативное подключение API</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="text-align:center; padding:11px; background:rgba(100,150,255,0.1); border:1px solid #6496ff;">
+                    <span style="color:#8ab4ff; font-family:var(--font-head); font-weight:900; font-size:1.2rem; letter-spacing:2px;">UI LAYER</span>
+                </div>
+                <div class="card" style="flex:1; padding:22px; border-left:3px solid #6496ff;">
+                    <h3 style="color:#8ab4ff; font-size:1.35rem; margin-bottom:14px;">Интерфейс</h3>
+                    <ul style="list-style:none; padding:0; font-size:1.3rem; display:flex; flex-direction:column; gap:9px;">
+                        <li><span style="color:#8ab4ff;">▸</span> Чат с оркестратором</li>
+                        <li><span style="color:#8ab4ff;">▸</span> Карта API и возможностей</li>
+                        <li><span style="color:#8ab4ff;">▸</span> Визуальный граф сценария</li>
+                        <li><span style="color:#8ab4ff;">▸</span> Авто-интерфейс результата</li>
+                        <li><span style="color:#8ab4ff;">▸</span> История запусков</li>
+                        <li><span style="color:#8ab4ff;">▸</span> Экран согласования</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 06. MECE ======== -->
+    <div class="slide">
+        <h2>MECE: 5 ФАЗ ПРОДУКТА</h2>
+        <div style="display:flex; gap:0; flex:1; min-height:0;">
+            <div class="card" style="flex:1; padding:22px 18px; border-left:none; border-top:4px solid var(--accent); display:flex; flex-direction:column;">
+                <div style="color:var(--accent); font-family:var(--font-head); font-size:2.8rem; font-weight:900; line-height:1; margin-bottom:8px;">01</div>
+                <h3 style="font-size:1.25rem; margin-bottom:12px; text-transform:uppercase;">Понимание возможностей</h3>
+                <ul style="list-style:none; padding:0; font-size:1.2rem; color:var(--text-muted); flex:1; display:flex; flex-direction:column; gap:6px;">
+                    <li>• Подключённые API</li>
+                    <li>• Capabilities</li>
+                    <li>• Роли и ограничения</li>
+                    <li>• Карта сущностей</li>
+                </ul>
+            </div>
+            <div class="card" style="flex:1; padding:22px 18px; border-left:1px solid #333; border-top:4px solid var(--accent); display:flex; flex-direction:column;">
+                <div style="color:var(--accent); font-family:var(--font-head); font-size:2.8rem; font-weight:900; line-height:1; margin-bottom:8px;">02</div>
+                <h3 style="font-size:1.25rem; margin-bottom:12px; text-transform:uppercase;">Постановка задачи</h3>
+                <ul style="list-style:none; padding:0; font-size:1.2rem; color:var(--text-muted); flex:1; display:flex; flex-direction:column; gap:6px;">
+                    <li>• Бизнес-запрос в чате</li>
+                    <li>• Уточнение параметров</li>
+                    <li>• Перевод в структуру</li>
+                    <li>• Связь с capabilities</li>
+                </ul>
+            </div>
+            <div class="card" style="flex:1; padding:22px 18px; border-left:1px solid #333; border-top:4px solid var(--accent); display:flex; flex-direction:column;">
+                <div style="color:var(--accent); font-family:var(--font-head); font-size:2.8rem; font-weight:900; line-height:1; margin-bottom:8px;">03</div>
+                <h3 style="font-size:1.25rem; margin-bottom:12px; text-transform:uppercase;">Планирование сценария</h3>
+                <ul style="list-style:none; padding:0; font-size:1.2rem; color:var(--text-muted); flex:1; display:flex; flex-direction:column; gap:6px;">
+                    <li>• Пошаговый план</li>
+                    <li>• Выбор API</li>
+                    <li>• Проверка исполнимости</li>
+                    <li>• Отсев невозможного</li>
+                </ul>
+            </div>
+            <div class="card" style="flex:1; padding:22px 18px; border-left:1px solid #333; border-top:4px solid var(--accent); display:flex; flex-direction:column;">
+                <div style="color:var(--accent); font-family:var(--font-head); font-size:2.8rem; font-weight:900; line-height:1; margin-bottom:8px;">04</div>
+                <h3 style="font-size:1.25rem; margin-bottom:12px; text-transform:uppercase;">Безопасное исполнение</h3>
+                <ul style="list-style:none; padding:0; font-size:1.2rem; color:var(--text-muted); flex:1; display:flex; flex-direction:column; gap:6px;">
+                    <li>• Approval state-changing</li>
+                    <li>• Оркестрация вызовов</li>
+                    <li>• Статусы и ошибки</li>
+                    <li>• Устойчивость сценария</li>
+                </ul>
+            </div>
+            <div class="card" style="flex:1; padding:22px 18px; border-left:1px solid #333; border-top:4px solid var(--accent); display:flex; flex-direction:column;">
+                <div style="color:var(--accent); font-family:var(--font-head); font-size:2.8rem; font-weight:900; line-height:1; margin-bottom:8px;">05</div>
+                <h3 style="font-size:1.25rem; margin-bottom:12px; text-transform:uppercase;">Проверка результата</h3>
+                <ul style="list-style:none; padding:0; font-size:1.2rem; color:var(--text-muted); flex:1; display:flex; flex-direction:column; gap:6px;">
+                    <li>• Рабочий интерфейс</li>
+                    <li>• KPI и графики</li>
+                    <!-- <li>• Drill-down + reasoning</li> -->
+                    <li>• История и повтор</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 07. CJM ======== -->
+    <div class="slide">
+        <h2>CJM: КРИТИЧЕСКИЙ ПУТЬ (13 ШАГОВ)</h2>
+        <div style="flex:1; min-height:0; display:flex; flex-direction:column; gap:12px;">
+            <!-- Row 1: steps 1-7 -->
+            <div style="display:grid; grid-template-columns:repeat(13,1fr) repeat(6,auto); gap:0; align-items:stretch;">
+                <!-- реализуем как flex -->
+            </div>
+            <div style="display:flex; gap:6px; align-items:stretch;">
+                <div class="flow-step" style="flex:1;"><span class="step-num">01</span><span class="step-label">Возникновение задачи</span></div>
+                <div class="flow-arrow">›</div>
+                <div class="flow-step" style="flex:1;"><span class="step-num">02</span><span class="step-label">Ориентация в системе</span></div>
+                <div class="flow-arrow">›</div>
+                <div class="flow-step" style="flex:1;"><span class="step-num">03</span><span class="step-label">Изучение API и capabilities</span></div>
+                <div class="flow-arrow">›</div>
+                <div class="flow-step" style="flex:1;"><span class="step-num">04</span><span class="step-label">Карта сущностей</span></div>
+                <div class="flow-arrow">›</div>
+                <div class="flow-step" style="flex:1;"><span class="step-num">05</span><span class="step-label">Запрос в чате</span></div>
+                <div class="flow-arrow">›</div>
+                <div class="flow-step" style="flex:1;"><span class="step-num">06</span><span class="step-label">Уточнение параметров</span></div>
+                <div class="flow-arrow">›</div>
+                <div class="flow-step" style="flex:1; border-top:3px solid var(--accent);"><span class="step-num">07</span><span class="step-label">Получение плана</span></div>
+            </div>
+            <div style="display:flex; justify-content:flex-end;">
+                <div style="color:var(--accent); font-size:1.4rem; padding-right: 0; display:flex; align-items:center; gap:6px;">
+                    <span style="color:var(--text-muted); font-size:1.2rem;">продолжение</span> ↓
+                </div>
+            </div>
+            <div style="display:flex; gap:6px; align-items:stretch; flex-direction:row-reverse;">
+                <div class="flow-step" style="flex:1; border-top:3px solid var(--accent);"><span class="step-num">08</span><span class="step-label">Проверка исполнимости</span></div>
+                <div class="flow-arrow" style="transform:scaleX(-1);">›</div>
+                <div class="flow-step" style="flex:1; border-top:3px solid var(--accent);"><span class="step-num">09</span><span class="step-label">Approval state-changing</span></div>
+                <div class="flow-arrow" style="transform:scaleX(-1);">›</div>
+                <div class="flow-step" style="flex:1; border-top:3px solid var(--accent);"><span class="step-num">10</span><span class="step-label">Исполнение сценария</span></div>
+                <div class="flow-arrow" style="transform:scaleX(-1);">›</div>
+                <div class="flow-step" style="flex:1; border-top:3px solid var(--accent);"><span class="step-num">11</span><span class="step-label">Результат в интерфейсе</span></div>
+                <div class="flow-arrow" style="transform:scaleX(-1);">›</div>
+                <!-- <div class="flow-step" style="flex:1;"><span class="step-num">12</span><span class="step-label">Drill-down и reasoning</span></div> -->
+                <!-- <div class="flow-arrow" style="transform:scaleX(-1);">›</div> -->
+                <div class="flow-step" style="flex:1;"><span class="step-num">12</span><span class="step-label">История и повтор</span></div>
+            </div>
+            <div class="card" style="padding:12px 20px; border-left:4px solid var(--accent); background:rgba(198,255,0,0.04); flex-shrink:0;">
+                <p style="font-size:1.3rem; margin:0; color:var(--text-muted);">
+                    <span style="color:var(--accent); font-weight:700;">Критический путь:</span> шаги 07–11 — от получения плана до результата в бизнес-представлении. Именно здесь создаётся вся ценность продукта.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 08. ФИЧА: КАРТА API ======== -->
+    <div class="slide">
+        <h2>ФИЧА: КАРТА API И СУЩНОСТЕЙ</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1; min-height:0;">
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div class="card" style="padding:22px; border-left:4px solid var(--accent);">
+                    <h3 style="color:var(--accent); margin-bottom:12px;">Что видит пользователь</h3>
+                    <ul style="list-style:none; padding:0; font-size:1.35rem; display:flex; flex-direction:column; gap:8px;">
+                        <li><span style="color:var(--accent);">▸</span> Все подключённые API и их возможности</li>
+                        <li><span style="color:var(--accent);">▸</span> Какие действия доступны именно ему (по роли)</li>
+                        <li><span style="color:var(--accent);">▸</span> Read / Write разграничение</li>
+                        <li><span style="color:var(--accent);">▸</span> Визуальная схема связей между сущностями</li>
+                        <li><span style="color:var(--accent);">▸</span> Подсказки по комбинированию блоков</li>
+                    </ul>
+                </div>
+                <div class="card" style="padding:22px; flex:1;">
+                    <h3 style="color:#aaa; margin-bottom:12px;">Зачем это важно</h3>
+                    <p style="font-size:1.35rem;">Пользователь видит реальные границы возможного <strong>до старта</strong> сценария — система не обещает невозможного и не создаёт ложных ожиданий</p>
+                    <div style="margin-top:15px; padding:12px; border-left:3px solid var(--accent); background:rgba(198,255,0,0.04);">
+                        <p style="font-size:1.3rem; margin:0; color:var(--text-muted);">Новые capabilities подключаются <strong style="color:#fff;">декларативно</strong> или через ограниченное расширение кода</p>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <img src="img/demo-apimap.svg" style="width:100%;max-width:700px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                <div class="card" style="padding:14px 18px; background:rgba(198,255,0,0.04);">
+                    <p style="font-size:1.3rem; margin:0; text-align:center;">
+                        <span style="color:var(--accent); font-weight:700;">Vue Flow визуализация</span> — группировка по API, FK-связи, легенда методов
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 09. ДЕМО: ЧАТ С МАРКЕТИНГОВЫМ API ======== -->
+    <div class="slide">
+        <h2>ДЕМО: ЧАТ С МАРКЕТИНГОВЫМ API</h2>
+        <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:28px; flex:1; min-height:0;">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <img src="img/demo-chat.svg" style="width:100%;max-width:700px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div class="card" style="padding:20px; border-left:4px solid var(--accent);">
+                    <h3 style="color:var(--accent); margin-bottom:12px; font-size:1.35rem;">Marketing API (test-api1)</h3>
+                    <ul style="list-style:none; padding:0; font-size:1.25rem; display:flex; flex-direction:column; gap:8px;">
+                        <li><span style="color:var(--accent);">▸</span> 23 эндпоинта: сегменты, аудитории, кампании, push, аналитика</li>
+                        <li><span style="color:var(--accent);">▸</span> 500 пользователей, 5 сегментов, 3 аудитории</li>
+                        <li><span style="color:var(--accent);">▸</span> Запрос: <em>"Покажи все сегменты"</em></li>
+                    </ul>
+                </div>
+                <div class="card" style="padding:20px;">
+                    <h3 style="color:#aaa; margin-bottom:12px; font-size:1.35rem;">Шаги выполнения</h3>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:1.2rem;">
+                        <div style="display:flex; gap:10px; align-items:center;"><span style="color:var(--accent); font-weight:700; min-width:24px;">1</span>search — поиск эндпоинтов по эмбеддингам</div>
+                        <div style="display:flex; gap:10px; align-items:center;"><span style="color:var(--accent); font-weight:700; min-width:24px;">2</span>api_call — GET /segments</div>
+                        <div style="display:flex; gap:10px; align-items:center;"><span style="color:var(--accent); font-weight:700; min-width:24px;">3</span>format_output — таблица с 5 сегментами</div>
+                    </div>
+                </div>
+                <div class="card" style="padding:14px 18px; background:rgba(198,255,0,0.04); border:2px solid var(--accent);">
+                    <p style="font-size:1.25rem; margin:0; text-align:center;">
+                        <span style="color:var(--accent); font-weight:700;">7 типов результатов:</span> текст, таблица, график, карта, список, изображение, дашборд
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 10. ДЕМО: РЕЗУЛЬТАТЫ И KPI ======== -->
+    <div class="slide">
+        <h2>ДЕМО: РЕЗУЛЬТАТЫ И KPI</h2>
+        <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:28px; flex:1; min-height:0;">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <img src="img/demo-results.svg" style="width:100%;max-width:700px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div class="card" style="padding:20px; border-left:4px solid var(--accent);">
+                    <h3 style="color:var(--accent); margin-bottom:12px; font-size:1.35rem;">Типы результатов</h3>
+                    <ul style="list-style:none; padding:0; font-size:1.25rem; display:flex; flex-direction:column; gap:8px;">
+                        <li><span style="color:var(--accent);">▸</span> Таблица с фильтрацией и сортировкой</li>
+                        <li><span style="color:var(--accent);">▸</span> Интерактивные графики ECharts (bar, line, pie, radar)</li>
+                        <li><span style="color:var(--accent);">▸</span> KPI-панели с ключевыми метриками</li>
+                        <li><span style="color:var(--accent);">▸</span> Pandas data_process: merge, filter, aggregate</li>
+                        <li><span style="color:var(--accent);">▸</span> Code sandbox: matplotlib/plotly изображения</li>
+                    </ul>
+                </div>
+                <div class="card" style="padding:20px; flex:1;">
+                    <h3 style="color:#aaa; margin-bottom:12px; font-size:1.35rem;">Шаги сложного запроса</h3>
+                    <div style="display:flex; flex-direction:column; gap:6px; font-size:1.15rem;">
+                        <div style="display:flex; gap:8px; align-items:center;"><span style="color:var(--accent); font-weight:700;">1</span> search endpoints</div>
+                        <div style="display:flex; gap:8px; align-items:center;"><span style="color:var(--accent); font-weight:700;">2</span> api_call GET /campaigns</div>
+                        <div style="display:flex; gap:8px; align-items:center;"><span style="color:var(--accent); font-weight:700;">3</span> api_call GET /analytics</div>
+                        <div style="display:flex; gap:8px; align-items:center;"><span style="color:var(--accent); font-weight:700;">4</span> data_process (merge + aggregate)</div>
+                        <div style="display:flex; gap:8px; align-items:center;"><span style="color:var(--accent); font-weight:700;">5</span> format_output (dashboard)</div>
+                    </div>
+                </div>
+                <div class="card" style="padding:14px 18px; background:rgba(198,255,0,0.04); border:2px solid var(--accent);">
+                    <p style="font-size:1.25rem; margin:0; text-align:center; font-weight:700;">
+                        Не лог API-вызовов, а <span style="color:var(--accent);">бизнес-представление</span> результата
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 11. РЫНОК ======== -->
+    <div class="slide" id="slideMarket">
+        <h2>РЫНОК: TAM / SAM / SOM</h2>
+        <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:28px; flex:1; min-height:0;">
+            <div class="card" style="padding:10px; overflow:hidden;">
+                <div id="chart-market" style="width:100%; height:100%;"></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div class="card" style="padding:20px; border-left:4px solid var(--accent);">
+                    <div class="big-stat" style="font-size:2.6rem;">$16.9B</div>
+                    <div class="stat-label" style="margin-bottom:8px;">TAM · Global AI Copilot 2025</div>
+                    <p style="font-size:1.2rem; color:var(--text-muted); margin:0;">CAGR 27.4% · Agentic AI: $7.55B при CAGR 43.84%</p>
+                </div>
+                <div class="card" style="padding:20px; border-left:4px solid #ffaa00;">
+                    <div class="big-stat" style="font-size:2.6rem; color:#ffcc44;">$1.2B</div>
+                    <div class="stat-label" style="margin-bottom:8px;">SAM · Enterprise Automation RU/CIS</div>
+                    <p style="font-size:1.2rem; color:var(--text-muted); margin:0;">Западные вендоры ограничены → открытая ниша</p>
+                </div>
+                <div class="card" style="padding:20px; border-left:4px solid #8ab4ff; flex:1;">
+                    <div class="big-stat" style="font-size:2.6rem; color:#8ab4ff;">$5M</div>
+                    <div class="stat-label" style="margin-bottom:8px;">SOM · Реалистичный захват к 2028</div>
+                    <p style="font-size:1.2rem; color:var(--text-muted); margin:0;">Российский рынок внутренних платформ, без Zapier/n8n/Make</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 12. SWOT ======== -->
+    <div class="slide">
+        <h2>SWOT</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:16px; flex:1; min-height:0;">
+            <div class="swot-cell card" style="border-top:4px solid var(--accent);">
+                <h3 style="color:var(--accent);">Strengths · Сильные стороны</h3>
+                <ul>
+                    <li>Универсальность поверх любых API — не привязан к домену</li>
+                    <li>Human-in-the-loop подтверждения для state-changing шагов</li>
+                    <li>Авто-генерируемые рабочие интерфейсы — уникально vs Zapier/n8n</li>
+                    <li>Полная прозрачность шагов и reasoning модели</li>
+                    <li>Декларативное подключение новых capabilities</li>
+                </ul>
+            </div>
+            <div class="swot-cell card" style="border-top:4px solid #ff5555;">
+                <h3 style="color:#ff7777;">Weaknesses · Слабые стороны</h3>
+                <ul>
+                    <li>Требует качественного описания API для корректной работы ML</li>
+                    <li>Сложность UX при большом числе capabilities</li>
+                    <li>Зависимость качества от LLM — нужен fallback</li>
+                    <li>Cold-start: нет истории запусков при первом запуске</li>
+                </ul>
+            </div>
+            <div class="swot-cell card" style="border-top:4px solid #ffaa00;">
+                <h3 style="color:#ffcc44;">Opportunities · Возможности</h3>
+                <ul>
+                    <li>Уход западных вендоров — Microsoft Copilot Studio недоступен в РФ</li>
+                    <li>Взрывной рост agentic AI: CAGR 43.84% до 2030</li>
+                    <li>Растущий спрос на внутреннюю автоматизацию в корпорациях</li>
+                    <li>Шаблоны сценариев — переиспользование и быстрый onboarding</li>
+                </ul>
+            </div>
+            <div class="swot-cell card" style="border-top:4px solid #8ab4ff;">
+                <h3 style="color:#8ab4ff;">Threats · Угрозы</h3>
+                <ul>
+                    <li>Microsoft Copilot Studio — нативный multi-agent orchestration</li>
+                    <li>Собственные AI-платформы крупных игроков (Яндекс, Сбер)</li>
+                    <li>Галлюцинации LLM → риск выполнения некорректных шагов</li>
+                    <li>Сопротивление adoption: команды привыкли к ручному контролю</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 14. RICE ======== -->
+    <div class="slide" id="slideRice">
+        <h2>RICE: ПРИОРИТИЗАЦИЯ ФИЧЕЙ</h2>
+        <div style="display:grid; grid-template-columns:1.4fr 0.6fr; gap:28px; flex:1; min-height:0;">
+            <div class="card" style="padding:10px; overflow:hidden;">
+                <div id="chart-rice" style="width:100%; height:100%;"></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px; justify-content:center;">
+                <div class="card" style="padding:18px; border-left:4px solid var(--accent);">
+                    <div class="big-stat" style="font-size:2.8rem;">90</div>
+                    <div class="stat-label">Карта API · P0</div>
+                </div>
+                <div class="card" style="padding:18px;">
+                    <div class="big-stat" style="font-size:2rem; color:#ffcc44;">34</div>
+                    <div class="stat-label">История запусков · P1</div>
+                </div>
+                <div class="card" style="padding:18px;">
+                    <div class="big-stat" style="font-size:2rem; color:#ffcc44;">32</div>
+                    <div class="stat-label">Визуальный сценарий · P1</div>
+                </div>
+                <div class="card" style="padding:18px; border:1px solid #333;">
+                    <p style="font-size:1.3rem; margin:0; color:var(--text-muted); line-height:1.4;">
+                        Авто-интерфейс и расширяемость — P2, реализовать после стабилизации ядра
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 15. E2E DEMO ======== -->
+    <div class="slide">
+        <h2>E2E ДЕМО: МАРКЕТИНГОВАЯ ПЛАТФОРМА</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1; min-height:0;">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div class="card" style="padding:18px; border-left:4px solid var(--accent);">
+                    <h3 style="color:var(--accent); margin-bottom:10px; font-size:1.35rem;">Сценарий</h3>
+                    <p style="font-size:1.3rem;">Маркетолог описывает задачу в чате → система собирает E2E маршрут из 6 шагов</p>
+                </div>
+                <div class="card" style="flex:1; padding:18px;">
+                    <h3 style="margin-bottom:14px; font-size:1.35rem;">Шаги сценария</h3>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:1.25rem;">
+                        <div style="display:flex; gap:10px; align-items:flex-start;"><span style="color:var(--accent); font-weight:700; min-width:24px;">1</span>Поиск сегментов: Премиум + Неактивные 60+ + Высокий чек</div>
+                        <div style="display:flex; gap:10px; align-items:flex-start;"><span style="color:var(--accent); font-weight:700; min-width:24px;">2</span>Прогноз аудитории для разных логик пересечения</div>
+                        <div style="display:flex; gap:10px; align-items:flex-start;"><span style="color:#ff7777; font-weight:700; min-width:30px;">3[!]</span>Создание аудитории · <span style="color:#ff7777;">approval</span></div>
+                        <div style="display:flex; gap:10px; align-items:flex-start;"><span style="color:var(--accent); font-weight:700; min-width:24px;">4</span>Генерация 2–3 вариантов push-уведомления</div>
+                        <div style="display:flex; gap:10px; align-items:flex-start;"><span style="color:#ff7777; font-weight:700; min-width:30px;">5[!]</span>Создание черновика кампании · <span style="color:#ff7777;">approval</span></div>
+                        <div style="display:flex; gap:10px; align-items:flex-start;"><span style="color:var(--accent); font-weight:700; min-width:24px;">6</span>Авто-интерфейс: KPI, график, карточки, журнал</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div class="card" style="padding:18px; flex:1; border-left:4px solid #ffaa00;">
+                    <h3 style="color:#ffcc44; margin-bottom:14px; font-size:1.35rem;">Что проверяет демо</h3>
+                    <div style="display:flex; flex-direction:column; gap:10px; font-size:1.25rem;">
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="color:var(--accent); font-weight:700; min-width:20px;">—</span>Подключённые API и доступные действия</div>
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="color:var(--accent); font-weight:700; min-width:20px;">—</span>Карта блоков и связей между ними</div>
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="color:var(--accent); font-weight:700; min-width:20px;">—</span>Чат → план → уточнения</div>
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="color:var(--accent); font-weight:700; min-width:20px;">—</span>Approval от владельца API</div>
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="color:var(--accent); font-weight:700; min-width:20px;">—</span>Исполнение + рабочий интерфейс результата</div>
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="color:var(--accent); font-weight:700; min-width:20px;">—</span>Drill-down в сегмент / шаг / контент</div>
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="color:var(--accent); font-weight:700; min-width:20px;">—</span>Подключение новой capability (расширяемость)</div>
+                    </div>
+                </div>
+                <div class="card" style="padding:16px; background:rgba(198,255,0,0.04); border:2px solid var(--accent);">
+                    <p style="font-size:1.3rem; margin:0; text-align:center; font-weight:700;">
+                        Домен — пример, не ограничение.<br>
+                        <span style="color:var(--accent);">Система работает для любой платформы с описанными API</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 16. РОАДМАП ======== -->
+    <div class="slide">
+        <h2>ROADMAP: 3 ГОДА</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; flex:1; min-height:0;">
+            <div class="card" style="padding:28px; border-top:4px solid var(--accent); display:flex; flex-direction:column;">
+                <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+                    <span style="font-family:var(--font-head); color:var(--accent); font-size:2rem; font-weight:900;">2026</span>
+                    <span style="color:var(--text-muted); font-size:1.3rem;">Q1–Q2 MVP</span>
+                </div>
+                <ul style="list-style:none; padding:0; font-size:1.3rem; flex:1; display:flex; flex-direction:column; gap:10px;">
+                    <li><span style="color:var(--accent);">▸</span> Карта API + capabilities</li>
+                    <li><span style="color:var(--accent);">▸</span> Чат + построение плана</li>
+                    <li><span style="color:var(--accent);">▸</span> Approval flow</li>
+                    <li><span style="color:var(--accent);">▸</span> Исполнение сценария</li>
+                    <li><span style="color:var(--accent);">▸</span> Рабочий интерфейс результата</li>
+                    <li><span style="color:var(--accent);">▸</span> Маркетинговый демо-домен</li>
+                </ul>
+            </div>
+            <div class="card" style="padding:28px; border-top:4px solid #ffaa00; display:flex; flex-direction:column;">
+                <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+                    <span style="font-family:var(--font-head); color:#ffcc44; font-size:2rem; font-weight:900;">2027</span>
+                    <span style="color:var(--text-muted); font-size:1.3rem;">Масштабирование</span>
+                </div>
+                <ul style="list-style:none; padding:0; font-size:1.3rem; flex:1; display:flex; flex-direction:column; gap:10px;">
+                    <li><span style="color:#ffcc44;">▸</span> Шаблоны сценариев</li>
+                    <li><span style="color:#ffcc44;">▸</span> Несколько доменов из коробки</li>
+                    <li><span style="color:#ffcc44;">▸</span> История и сравнение запусков</li>
+                    <li><span style="color:#ffcc44;">▸</span> Рекомендации следующих шагов</li>
+                    <li><span style="color:#ffcc44;">▸</span> Улучшенный ML-оркестратор</li>
+                    <li><span style="color:#ffcc44;">▸</span> Мобильный клиент</li>
+                </ul>
+            </div>
+            <div class="card" style="padding:28px; border-top:4px solid #8ab4ff; display:flex; flex-direction:column;">
+                <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+                    <span style="font-family:var(--font-head); color:#8ab4ff; font-size:2rem; font-weight:900;">2028</span>
+                    <span style="color:var(--text-muted); font-size:1.3rem;">Платформа</span>
+                </div>
+                <ul style="list-style:none; padding:0; font-size:1.3rem; flex:1; display:flex; flex-direction:column; gap:10px;">
+                    <li><span style="color:#8ab4ff;">▸</span> Self-healing сценариев</li>
+                    <li><span style="color:#8ab4ff;">▸</span> Enterprise governance и audit</li>
+                    <li><span style="color:#8ab4ff;">▸</span> Marketplace capabilities</li>
+                    <li><span style="color:#8ab4ff;">▸</span> Multi-agent оркестрация</li>
+                    <li><span style="color:#8ab4ff;">▸</span> SOM $5M · выход на рынок</li>
+                    <li><span style="color:#8ab4ff;">▸</span> White-label для корпораций</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 17. КОМАНДА ======== -->
+    <div class="slide">
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:40px;">
+            <div style="width:6px; height:40px; background:var(--accent); box-shadow:0 0 10px var(--accent);"></div>
+            <h1 style="margin:0; font-size:3rem; text-transform:uppercase;">КОМАНДА</h1>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; align-items:start; flex:1; min-height:0;">
+            <div class="card" style="padding:0; background:transparent; border:none; display:flex; flex-direction:column;">
+                <div class="team-photo-box" style="background-image:url('img/sasha.jpg'); aspect-ratio:3/4; border:1px solid #333; border-bottom:4px solid var(--accent); margin-bottom:15px;"></div>
+                <div style="padding:0 5px;">
+                    <div style="font-family:var(--font-head); font-size:1.1rem; color:#fff; margin-bottom:5px; line-height:1.2;">АЛЕКСАНДР<br>КНЯЗЕВ</div>
+                    <div style="font-size:0.9rem; color:var(--accent); font-weight:700; letter-spacing:1px;">FRONTEND</div>
+                </div>
+            </div>
+            <div class="card" style="padding:0; background:transparent; border:none; display:flex; flex-direction:column;">
+                <div class="team-photo-box" style="background-image:url('img/ivan.jpg'); aspect-ratio:3/4; border:1px solid #333; border-bottom:4px solid var(--accent); margin-bottom:15px;"></div>
+                <div style="padding:0 5px;">
+                    <div style="font-family:var(--font-head); font-size:1.1rem; color:#fff; margin-bottom:5px; line-height:1.2;">ИВАН<br>ШАВАЛОВ</div>
+                    <div style="font-size:0.9rem; color:var(--accent); font-weight:700; letter-spacing:1px;">ML</div>
+                </div>
+            </div>
+            <div class="card" style="padding:0; background:transparent; border:none; display:flex; flex-direction:column;">
+                <div class="team-photo-box" style="background-image:url('img/nana.jpg'); aspect-ratio:3/4; border:1px solid #333; border-bottom:4px solid var(--accent); margin-bottom:15px;"></div>
+                <div style="padding:0 5px;">
+                    <div style="font-family:var(--font-head); font-size:1.1rem; color:#fff; margin-bottom:5px; line-height:1.2;">АНАСТАСИЯ<br>ЛОПАТИНА</div>
+                    <div style="font-size:0.9rem; color:var(--accent); font-weight:700; letter-spacing:1px;">PRODUCT</div>
+                </div>
+            </div>
+            <div class="card" style="padding:0; background:transparent; border:none; display:flex; flex-direction:column;">
+                <div class="team-photo-box" style="background-image:url('img/valeria.jpg'); aspect-ratio:3/4; border:1px solid #333; border-bottom:4px solid var(--accent); margin-bottom:15px;"></div>
+                <div style="padding:0 5px;">
+                    <div style="font-family:var(--font-head); font-size:1.1rem; color:#fff; margin-bottom:5px; line-height:1.2;">ВАЛЕРИЯ<br>МОКИНА</div>
+                    <div style="font-size:0.9rem; color:var(--accent); font-weight:700; letter-spacing:1px;">BACKEND</div>
+                </div>
+            </div>
+            <!-- <div class="card" style="padding:0; background:transparent; border:none; display:flex; flex-direction:column;">
+                <div class="team-photo-box" style="background-image:url('img/danil.jpg'); aspect-ratio:3/4; border:1px solid #333; border-bottom:4px solid var(--accent); margin-bottom:15px;"></div>
+                <div style="padding:0 5px;">
+                    <div style="font-family:var(--font-head); font-size:1.1rem; color:#fff; margin-bottom:5px; line-height:1.2;">ДАНИЛ<br>ВОРОБЬЕВ</div>
+                    <div style="font-size:0.9rem; color:var(--accent); font-weight:700; letter-spacing:1px;">MOBILE</div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+
+    <!-- ======== 17. Q&A ======== -->
+    <div class="slide flex-center">
+        <div style="text-align:center;">
+            <div style="display:flex; justify-content:center; margin-bottom:35px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+                    <ellipse cx="50" cy="57" rx="33" ry="30" fill="#C6FF00"/>
+                    <polygon points="18,36 13,12 36,31" fill="#C6FF00"/>
+                    <polygon points="82,36 87,12 64,31" fill="#C6FF00"/>
+                    <polygon points="21,34 17,17 33,31" fill="#000" opacity="0.25"/>
+                    <polygon points="79,34 83,17 67,31" fill="#000" opacity="0.25"/>
+                    <ellipse cx="38" cy="49" rx="6.5" ry="7.5" fill="white"/>
+                    <ellipse cx="62" cy="49" rx="6.5" ry="7.5" fill="white"/>
+                    <ellipse cx="38" cy="50" rx="3" ry="5" fill="#000" opacity="0.8"/>
+                    <ellipse cx="62" cy="50" rx="3" ry="5" fill="#000" opacity="0.8"/>
+                    <circle cx="39.5" cy="47.5" r="1.2" fill="white"/>
+                    <circle cx="63.5" cy="47.5" r="1.2" fill="white"/>
+                    <ellipse cx="50" cy="65" rx="15" ry="11" fill="white" opacity="0.9"/>
+                    <path d="M45 63 Q50 60 55 63 Q53 67 50 68 Q47 67 45 63Z" fill="#000" opacity="0.5"/>
+                    <path d="M44 71 Q50 75 56 71" stroke="#000" stroke-width="1.5" fill="none" opacity="0.4"/>
+                </svg>
+            </div>
+            <h1 style="font-size:4rem; margin-bottom:20px; color:var(--accent);">СПАСИБО!</h1>
+            <p style="font-size:1.8rem; color:var(--text-muted); margin-bottom:30px;">Вопросы?</p>
+            <div style="width:80px; height:5px; background:var(--accent); margin:0 auto 30px; box-shadow:0 0 10px var(--accent);"></div>
+            <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap;">
+                <div class="card" style="padding:18px 28px; text-align:center;">
+                    <div class="big-stat" style="font-size:1.6rem;">132 теста</div>
+                    <div class="stat-label">pytest coverage</div>
+                </div>
+                <div class="card" style="padding:18px 28px; text-align:center;">
+                    <div class="big-stat" style="font-size:1.6rem;">30+ endpoints</div>
+                    <div class="stat-label">проиндексировано</div>
+                </div>
+                <div class="card" style="padding:18px 28px; text-align:center;">
+                    <div class="big-stat" style="font-size:1.6rem;">7 типов</div>
+                    <div class="stat-label">результатов</div>
+                </div>
+            </div>
+            <p style="font-size:1.3rem; color:var(--text-muted); margin-top:30px;">
+                gitlab.prodcontest.com/team-55/copilot-1
+            </p>
+        </div>
+    </div>
+
+<script>
+    // ==========================================
+    // НАВИГАЦИЯ
+    // ==========================================
+    let savedSlide = localStorage.getItem('copilot_current_slide');
+    let currentSlide = savedSlide ? parseInt(savedSlide) : 0;
+
+    const slides = document.querySelectorAll('.slide');
+    const totalSlidesEl = document.getElementById('totalSlide');
+    const currSlideEl = document.getElementById('currSlide');
+    const slideCounter = document.querySelector('.slide-counter');
+
+    totalSlidesEl.innerText = slides.length;
+
+    function updateCounter() {
+        let num = currentSlide + 1;
+        currSlideEl.innerText = num < 10 ? '0' + num : num;
+    }
+
+    function showSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= slides.length) index = slides.length - 1;
+        currentSlide = index;
+        localStorage.setItem('copilot_current_slide', currentSlide);
+
+        if (index === 0 || index >= slides.length - 1) slideCounter.style.display = 'none';
+        else slideCounter.style.display = '';
+
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            if (i === index) { slide.classList.add('active'); slide.scrollTop = 0; }
+        });
+        updateCounter();
+    }
+
+    function nextSlide() { showSlide((currentSlide + 1) % slides.length); }
+    function prevSlide() { showSlide((currentSlide - 1 + slides.length) % slides.length); }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') { e.preventDefault(); nextSlide(); }
+        else if (e.key === 'ArrowRight') nextSlide();
+        else if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    // Team photo interactions
+    const teamPhotos = document.querySelectorAll('.team-photo-box');
+    const explosionOverlay = document.getElementById('resurrection-explosion');
+    if (teamPhotos.length > 0 && explosionOverlay) {
+        teamPhotos.forEach(photo => {
+            photo.addEventListener('mouseenter', () => {
+                if (!photo.classList.contains('dead') && !photo.classList.contains('resurrected')) {
+                    photo.classList.add('dead');
+                } else if (photo.classList.contains('dead')) {
+                    triggerResurrection(photo);
+                }
+            });
+        });
+    }
+    function triggerResurrection(element) {
+        explosionOverlay.classList.add('explode-anim');
+        setTimeout(() => { element.classList.remove('dead'); element.classList.add('resurrected'); }, 400);
+        setTimeout(() => { explosionOverlay.classList.remove('explode-anim'); }, 800);
+    }
+
+    // ==========================================
+    // CHARTS
+    // ==========================================
+    const ACCENT = '#C6FF00';
+    const commonChart = {
+        background: 'transparent',
+        toolbar: { show: false },
+        animations: { enabled: true, speed: 800 }
+    };
+    const commonGrid = { borderColor: '#333', strokeDashArray: 4 };
+
+    // MARKET CHART (slide 11)
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.querySelector('#chart-market')) {
+            new ApexCharts(document.querySelector('#chart-market'), {
+                chart: { ...commonChart, type: 'bar', height: '100%' },
+                series: [{ name: 'Млрд $', data: [16.9, 1.2, 0.005] }],
+                xaxis: {
+                    categories: ['TAM · Global AI Copilot', 'SAM · Enterprise RU/CIS', 'SOM · Захват к 2028'],
+                    labels: { style: { colors: '#aaa', fontSize: '14px', fontFamily: 'Inter, sans-serif' } }
+                },
+                yaxis: {
+                    title: { text: 'Млрд $', style: { color: '#888', fontSize: '14px', fontFamily: 'Inter, sans-serif' } },
+                    labels: { style: { colors: '#888', fontSize: '14px' }, formatter: v => v >= 1 ? v.toFixed(1) + 'B' : (v * 1000).toFixed(0) + 'M' }
+                },
+                plotOptions: { bar: { borderRadius: 3, columnWidth: '50%', dataLabels: { position: 'top' } } },
+                dataLabels: {
+                    enabled: true,
+                    offsetY: -20,
+                    style: { fontSize: '15px', colors: ['#fff'], fontWeight: 700, fontFamily: 'Inter, sans-serif' },
+                    formatter: v => v >= 1 ? '$' + v.toFixed(1) + 'B' : '$' + (v * 1000).toFixed(0) + 'M'
+                },
+                colors: [ACCENT, '#ffcc44', '#8ab4ff'],
+                grid: commonGrid,
+                tooltip: { theme: 'dark', y: { formatter: v => v >= 1 ? '$' + v.toFixed(1) + 'B' : '$' + (v * 1000).toFixed(0) + 'M' } },
+                legend: { show: false }
+            }).render();
+        }
+
+        // RICE CHART (slide 14)
+        if (document.querySelector('#chart-rice')) {
+            new ApexCharts(document.querySelector('#chart-rice'), {
+                chart: { ...commonChart, type: 'bar', height: '100%' },
+                series: [{ name: 'RICE Score', data: [90, 34, 32, 28, 24, 18, 15] }],
+                xaxis: {
+                    categories: ['Карта API', 'История запусков', 'Визуальный сценарий', 'Чат + план', 'Согласование', 'Расширяемость', 'Авто-интерфейс'],
+                    labels: { style: { colors: '#aaa', fontSize: '13px', fontFamily: 'Inter, sans-serif' } }
+                },
+                yaxis: { labels: { style: { colors: '#888', fontSize: '13px' } } },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        borderRadius: 3,
+                        dataLabels: { position: 'top' },
+                        distributed: true
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    offsetX: 5,
+                    style: { fontSize: '14px', colors: ['#fff'], fontWeight: 700, fontFamily: 'Inter, sans-serif' }
+                },
+                colors: [ACCENT, '#ffcc44', '#ffcc44', '#8ab4ff', '#8ab4ff', '#666', '#666'],
+                grid: { ...commonGrid, padding: { right: 30 } },
+                tooltip: { theme: 'dark' },
+                legend: { show: false }
+            }).render();
+        }
+
+        showSlide(currentSlide);
+    });
+</script>
+</body>
+</html>

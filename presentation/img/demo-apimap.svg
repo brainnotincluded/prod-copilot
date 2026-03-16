@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" font-family="Inter, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+    </marker>
+    <marker id="arrowhead-accent" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#C6FF00" opacity="0.6"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="700" fill="#080808"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.06">
+    <line x1="0" y1="50" x2="1200" y2="50" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="100" x2="1200" y2="100" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="150" x2="1200" y2="150" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="200" x2="1200" y2="200" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="250" x2="1200" y2="250" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="300" x2="1200" y2="300" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="350" x2="1200" y2="350" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="400" x2="1200" y2="400" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="450" x2="1200" y2="450" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="500" x2="1200" y2="500" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="550" x2="1200" y2="550" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="600" x2="1200" y2="600" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="650" x2="1200" y2="650" stroke="#fff" stroke-width="0.5"/>
+    <line x1="50" y1="0" x2="50" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="100" y1="0" x2="100" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="150" y1="0" x2="150" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="200" y1="0" x2="200" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="250" y1="0" x2="250" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="300" y1="0" x2="300" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="350" y1="0" x2="350" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="400" y1="0" x2="400" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="450" y1="0" x2="450" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="500" y1="0" x2="500" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="550" y1="0" x2="550" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="600" y1="0" x2="600" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="650" y1="0" x2="650" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="700" y1="0" x2="700" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="750" y1="0" x2="750" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="800" y1="0" x2="800" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="850" y1="0" x2="850" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="900" y1="0" x2="900" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="950" y1="0" x2="950" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="1000" y1="0" x2="1000" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="1050" y1="0" x2="1050" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="1100" y1="0" x2="1100" y2="700" stroke="#fff" stroke-width="0.5"/>
+    <line x1="1150" y1="0" x2="1150" y2="700" stroke="#fff" stroke-width="0.5"/>
+  </g>
+
+  <!-- Header bar -->
+  <rect x="0" y="0" width="1200" height="50" fill="#0c0c0c"/>
+  <rect x="0" y="49" width="1200" height="1" fill="#333"/>
+  <text x="30" y="32" fill="#C6FF00" font-size="14" font-weight="900" letter-spacing="2">PROD COPILOT</text>
+  <text x="200" y="32" fill="#e0e0e0" font-size="14" font-weight="700">API Maps</text>
+  <text x="320" y="32" fill="#888" font-size="13">Marketing API v2.1</text>
+
+  <!-- Toolbar -->
+  <rect x="900" y="10" width="80" height="30" rx="4" fill="#161616" stroke="#C6FF00" stroke-width="1"/>
+  <text x="920" y="30" fill="#C6FF00" font-size="11" font-weight="700">Zoom +</text>
+  <rect x="990" y="10" width="80" height="30" rx="4" fill="#161616" stroke="#333" stroke-width="1"/>
+  <text x="1012" y="30" fill="#888" font-size="11">Zoom -</text>
+  <rect x="1080" y="10" width="90" height="30" rx="4" fill="#161616" stroke="#333" stroke-width="1"/>
+  <text x="1098" y="30" fill="#888" font-size="11">Fit View</text>
+
+  <!-- Group container: Marketing API -->
+  <rect x="40" y="70" width="1120" height="610" rx="12" fill="rgba(198,255,0,0.02)" stroke="#C6FF00" stroke-width="1" stroke-opacity="0.2" stroke-dasharray="8 4"/>
+  <text x="60" y="95" fill="#C6FF00" font-size="12" font-weight="700" letter-spacing="2" opacity="0.6">MARKETING API v2.1</text>
+
+  <!-- Connection lines (drawn first, behind nodes) -->
+  <!-- Segments -> Audiences -->
+  <path d="M 330 200 C 430 200, 370 350, 470 350" fill="none" stroke="#C6FF00" stroke-width="1.5" opacity="0.4" marker-end="url(#arrowhead-accent)"/>
+  <!-- Audiences -> Campaigns -->
+  <path d="M 660 350 C 760 350, 700 200, 800 200" fill="none" stroke="#C6FF00" stroke-width="1.5" opacity="0.4" marker-end="url(#arrowhead-accent)"/>
+  <!-- Campaigns -> Push Notifications -->
+  <path d="M 990 270 C 1020 320, 1020 380, 990 430" fill="none" stroke="#555" stroke-width="1" marker-end="url(#arrowhead)"/>
+  <!-- Campaigns -> Analytics -->
+  <path d="M 800 270 C 750 350, 600 480, 550 500" fill="none" stroke="#555" stroke-width="1" marker-end="url(#arrowhead)"/>
+  <!-- Segments -> Analytics -->
+  <path d="M 200 270 C 250 400, 350 500, 400 510" fill="none" stroke="#555" stroke-width="1" marker-end="url(#arrowhead)"/>
+
+  <!-- Resource Node 1: Segments -->
+  <rect x="80" y="120" width="260" height="170" rx="8" fill="#0c0c0c" stroke="#C6FF00" stroke-width="1.5" filter="url(#glow)"/>
+  <rect x="80" y="120" width="260" height="35" rx="8" fill="rgba(198,255,0,0.1)"/>
+  <rect x="80" y="147" width="260" height="8" rx="0" fill="#0c0c0c"/>
+  <text x="100" y="144" fill="#C6FF00" font-size="15" font-weight="900">Segments</text>
+  <text x="305" y="144" fill="#888" font-size="10" text-anchor="end">5 endpoints</text>
+
+  <!-- Endpoint badges for Segments -->
+  <rect x="95" y="170" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="106" y="184" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="148" y="184" fill="#ccc" font-size="11">/segments</text>
+
+  <rect x="95" y="198" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="106" y="212" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="148" y="212" fill="#ccc" font-size="11">/segments/{id}</text>
+
+  <rect x="95" y="226" width="50" height="20" rx="3" fill="rgba(33,150,243,0.2)" stroke="#2196F3" stroke-width="0.5"/>
+  <text x="106" y="240" fill="#2196F3" font-size="9" font-weight="700">POST</text>
+  <text x="153" y="240" fill="#ccc" font-size="11">/segments/search</text>
+
+  <rect x="95" y="254" width="50" height="20" rx="3" fill="rgba(255,152,0,0.2)" stroke="#FF9800" stroke-width="0.5"/>
+  <text x="105" y="268" fill="#FF9800" font-size="9" font-weight="700">POST</text>
+  <text x="153" y="268" fill="#ccc" font-size="11">/segments</text>
+  <text x="225" y="268" fill="#ff5555" font-size="9">[approval]</text>
+
+  <!-- Resource Node 2: Audiences -->
+  <rect x="420" y="280" width="260" height="155" rx="8" fill="#0c0c0c" stroke="#ffaa00" stroke-width="1.5"/>
+  <rect x="420" y="280" width="260" height="35" rx="8" fill="rgba(255,170,0,0.1)"/>
+  <rect x="420" y="307" width="260" height="8" rx="0" fill="#0c0c0c"/>
+  <text x="440" y="304" fill="#ffcc44" font-size="15" font-weight="900">Audiences</text>
+  <text x="645" y="304" fill="#888" font-size="10" text-anchor="end">4 endpoints</text>
+
+  <rect x="435" y="325" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="446" y="339" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="488" y="339" fill="#ccc" font-size="11">/audiences</text>
+
+  <rect x="435" y="353" width="50" height="20" rx="3" fill="rgba(33,150,243,0.2)" stroke="#2196F3" stroke-width="0.5"/>
+  <text x="446" y="367" fill="#2196F3" font-size="9" font-weight="700">POST</text>
+  <text x="493" y="367" fill="#ccc" font-size="11">/audiences/forecast</text>
+
+  <rect x="435" y="381" width="50" height="20" rx="3" fill="rgba(255,152,0,0.2)" stroke="#FF9800" stroke-width="0.5"/>
+  <text x="445" y="395" fill="#FF9800" font-size="9" font-weight="700">POST</text>
+  <text x="493" y="395" fill="#ccc" font-size="11">/audiences</text>
+  <text x="575" y="395" fill="#ff5555" font-size="9">[approval]</text>
+
+  <!-- FK badge -->
+  <rect x="435" y="410" width="110" height="18" rx="3" fill="rgba(198,255,0,0.08)" stroke="#C6FF00" stroke-width="0.5"/>
+  <text x="445" y="423" fill="#C6FF00" font-size="9">FK: segment_ids</text>
+
+  <!-- Resource Node 3: Campaigns -->
+  <rect x="770" y="110" width="260" height="170" rx="8" fill="#0c0c0c" stroke="#8ab4ff" stroke-width="1.5"/>
+  <rect x="770" y="110" width="260" height="35" rx="8" fill="rgba(100,150,255,0.1)"/>
+  <rect x="770" y="137" width="260" height="8" rx="0" fill="#0c0c0c"/>
+  <text x="790" y="134" fill="#8ab4ff" font-size="15" font-weight="900">Campaigns</text>
+  <text x="995" y="134" fill="#888" font-size="10" text-anchor="end">5 endpoints</text>
+
+  <rect x="785" y="155" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="796" y="169" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="838" y="169" fill="#ccc" font-size="11">/campaigns</text>
+
+  <rect x="785" y="183" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="796" y="197" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="838" y="197" fill="#ccc" font-size="11">/campaigns/{id}/kpi</text>
+
+  <rect x="785" y="211" width="50" height="20" rx="3" fill="rgba(255,152,0,0.2)" stroke="#FF9800" stroke-width="0.5"/>
+  <text x="795" y="225" fill="#FF9800" font-size="9" font-weight="700">POST</text>
+  <text x="843" y="225" fill="#ccc" font-size="11">/campaigns/draft</text>
+  <text x="965" y="225" fill="#ff5555" font-size="9">[approval]</text>
+
+  <rect x="785" y="243" width="110" height="18" rx="3" fill="rgba(198,255,0,0.08)" stroke="#C6FF00" stroke-width="0.5"/>
+  <text x="795" y="256" fill="#C6FF00" font-size="9">FK: audience_id</text>
+
+  <!-- Resource Node 4: Push Notifications -->
+  <rect x="810" y="430" width="240" height="130" rx="8" fill="#0c0c0c" stroke="#ff77aa" stroke-width="1.5"/>
+  <rect x="810" y="430" width="240" height="35" rx="8" fill="rgba(255,119,170,0.1)"/>
+  <rect x="810" y="457" width="240" height="8" rx="0" fill="#0c0c0c"/>
+  <text x="830" y="454" fill="#ff99bb" font-size="15" font-weight="900">Push</text>
+  <text x="1015" y="454" fill="#888" font-size="10" text-anchor="end">3 endpoints</text>
+
+  <rect x="825" y="475" width="50" height="20" rx="3" fill="rgba(33,150,243,0.2)" stroke="#2196F3" stroke-width="0.5"/>
+  <text x="836" y="489" fill="#2196F3" font-size="9" font-weight="700">POST</text>
+  <text x="883" y="489" fill="#ccc" font-size="11">/push/send</text>
+  <text x="960" y="489" fill="#ff5555" font-size="9">[approval]</text>
+
+  <rect x="825" y="503" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="836" y="517" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="878" y="517" fill="#ccc" font-size="11">/push/templates</text>
+
+  <rect x="825" y="531" width="110" height="18" rx="3" fill="rgba(198,255,0,0.08)" stroke="#C6FF00" stroke-width="0.5"/>
+  <text x="835" y="544" fill="#C6FF00" font-size="9">FK: campaign_id</text>
+
+  <!-- Resource Node 5: Analytics -->
+  <rect x="350" y="480" width="260" height="150" rx="8" fill="#0c0c0c" stroke="#666" stroke-width="1.5"/>
+  <rect x="350" y="480" width="260" height="35" rx="8" fill="rgba(100,100,100,0.1)"/>
+  <rect x="350" y="507" width="260" height="8" rx="0" fill="#0c0c0c"/>
+  <text x="370" y="504" fill="#aaa" font-size="15" font-weight="900">Analytics</text>
+  <text x="575" y="504" fill="#888" font-size="10" text-anchor="end">3 endpoints</text>
+
+  <rect x="365" y="525" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="376" y="539" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="418" y="539" fill="#ccc" font-size="11">/analytics/summary</text>
+
+  <rect x="365" y="553" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="376" y="567" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="418" y="567" fill="#ccc" font-size="11">/analytics/trends</text>
+
+  <rect x="365" y="581" width="45" height="20" rx="3" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="0.5"/>
+  <text x="376" y="595" fill="#4CAF50" font-size="9" font-weight="700">GET</text>
+  <text x="418" y="595" fill="#ccc" font-size="11">/analytics/campaigns/{id}</text>
+
+  <!-- Legend -->
+  <rect x="60" y="620" width="300" height="45" rx="6" fill="#0c0c0c" stroke="#333" stroke-width="1"/>
+  <text x="80" y="640" fill="#888" font-size="10" font-weight="700">LEGEND:</text>
+  <rect x="140" y="630" width="10" height="10" rx="2" fill="#4CAF50"/>
+  <text x="155" y="640" fill="#888" font-size="10">GET</text>
+  <rect x="185" y="630" width="10" height="10" rx="2" fill="#2196F3"/>
+  <text x="200" y="640" fill="#888" font-size="10">POST</text>
+  <rect x="235" y="630" width="10" height="10" rx="2" fill="#FF9800"/>
+  <text x="250" y="640" fill="#888" font-size="10">PUT</text>
+  <line x1="280" y1="640" x2="320" y2="640" stroke="#C6FF00" stroke-width="1.5" opacity="0.4" marker-end="url(#arrowhead-accent)"/>
+  <text x="325" y="643" fill="#888" font-size="10">FK</text>
+
+  <!-- Minimap -->
+  <rect x="1040" y="580" width="120" height="80" rx="4" fill="#0c0c0c" stroke="#333" stroke-width="1"/>
+  <rect x="1050" y="590" width="20" height="15" rx="2" fill="#C6FF00" opacity="0.3"/>
+  <rect x="1075" y="605" width="20" height="12" rx="2" fill="#ffaa00" opacity="0.3"/>
+  <rect x="1100" y="590" width="20" height="15" rx="2" fill="#8ab4ff" opacity="0.3"/>
+  <rect x="1105" y="615" width="18" height="12" rx="2" fill="#ff77aa" opacity="0.3"/>
+  <rect x="1070" y="625" width="20" height="12" rx="2" fill="#666" opacity="0.3"/>
+  <rect x="1045" y="585" width="110" height="70" rx="3" fill="none" stroke="#C6FF00" stroke-width="1" opacity="0.5"/>
+</svg>
