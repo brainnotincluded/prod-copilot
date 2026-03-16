@@ -138,21 +138,31 @@ def _reshape_output_data(output_type: str, data: dict | list | None, config: dic
     elif output_type == "text":
         # Ensure {"content": "..."}
         if "content" in data and isinstance(data["content"], str):
-            # Guard against serialized empty objects like "{}" or "null"
             if data["content"] in ("{}", "null", "[]", ""):
                 return {"content": "The operation completed but returned no data."}
             return data
-        # Check for error info passed through from failed API calls
         if "error" in data:
             return {"content": f"API error: {data['error']}"}
-        # Try to create a text summary
+        # Aggregate results: {"aggregate": "mean", "column": "avg_check", "value": 7500}
+        if "value" in data and ("aggregate" in data or "column" in data):
+            col = data.get("column", "")
+            func = data.get("aggregate", data.get("function", ""))
+            val = data["value"]
+            if isinstance(val, float):
+                val = round(val, 2)
+            return {"content": f"**{func}({col})** = {val}"}
+        # Single key-value pairs — format nicely
         content = data.get("content", data.get("message", ""))
         if not content:
-            serialized = json.dumps(data, default=str, ensure_ascii=False)
-            # Don't show empty/meaningless JSON to the user
-            if serialized in ("{}", "null", "[]"):
+            # Format dict as key: value lines
+            lines = []
+            for k, v in data.items():
+                if isinstance(v, float):
+                    v = round(v, 2)
+                lines.append(f"**{k}**: {v}")
+            content = "\n".join(lines) if lines else json.dumps(data, default=str, ensure_ascii=False)
+            if content in ("{}", "null", "[]"):
                 return {"content": "The operation completed but returned no data."}
-            content = serialized
         return {"content": str(content)}
 
     elif output_type == "image":
@@ -375,8 +385,8 @@ async def _execute_single_step(
             # Use step parameters hint if available
             output_type = (step.parameters or {}).get("output_type", "")
 
-            # Auto-detect from data structure if no hint or hint is generic
-            if not output_type or output_type == "text":
+            # Auto-detect from data structure if no hint
+            if not output_type:
                 if isinstance(latest_data, list):
                     if latest_data and isinstance(latest_data[0], dict):
                         output_type = "table"
@@ -384,7 +394,6 @@ async def _execute_single_step(
                         output_type = "list"
                 elif isinstance(latest_data, dict):
                     if "error" in latest_data and len(latest_data) == 1:
-                        # Error from a failed API call -- show as text
                         output_type = "text"
                     elif any(k in latest_data for k in ("markers", "center", "coordinates")):
                         output_type = "map"
@@ -392,6 +401,10 @@ async def _execute_single_step(
                         output_type = "chart"
                     elif any(k in latest_data for k in ("columns", "rows")):
                         output_type = "table"
+                    elif "value" in latest_data and ("aggregate" in latest_data or "column" in latest_data):
+                        output_type = "text"  # aggregate result
+                    elif len(latest_data) <= 5 and not any(isinstance(v, (list, dict)) for v in latest_data.values()):
+                        output_type = "text"  # small dict with scalar values
                     elif "items" in latest_data and isinstance(latest_data.get("items"), list):
                         items = latest_data["items"]
                         output_type = "table" if items and isinstance(items[0], dict) else "list"

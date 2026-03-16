@@ -51,7 +51,18 @@ data_process operations:
 - {"type":"group_by","columns":["status"],"aggregations":{"id":"count"}}
 - {"type":"merge","source":"1","left_on":"userId","right_on":"id","how":"inner"}
 
-output_type: table | chart | text | list | image
+output_type values:
+- "table" — for lists of records/rows
+- "text" — for single values, summaries, counts, averages
+- "chart" — for comparing values across categories (use with transform_to_chart_data in data_process)
+- "list" — for simple lists of items/names
+- "image" — for generated images
+
+Choose the RIGHT output_type for the query:
+- "How many users?" → text
+- "Show all campaigns" → table
+- "Average check by segment" → chart or table
+- "List segment names" → list
 
 Example — list all campaigns:
 [

@@ -25,7 +25,22 @@ def _to_dataframe(data: Any) -> pd.DataFrame:
             return pd.DataFrame(data["rows"], columns=data["columns"])
         # Check if it's column-oriented: {"col1": [...], "col2": [...]}
         if data and all(isinstance(v, (list, tuple)) for v in data.values()):
-            return pd.DataFrame(data)
+            lengths = [len(v) for v in data.values()]
+            if len(set(lengths)) == 1:
+                # All same length — normal column-oriented dict
+                return pd.DataFrame(data)
+            else:
+                # Different lengths — pick the longest list that contains dicts
+                best_key = max(data.keys(), key=lambda k: len(data[k]) if isinstance(data[k], list) else 0)
+                best = data[best_key]
+                if best and isinstance(best[0], dict):
+                    return pd.DataFrame(best)
+                return pd.DataFrame({"value": best})
+        # Check if values are lists of dicts (nested structure like {by_segment: [{...}], by_status: [{...}]})
+        list_keys = [k for k, v in data.items() if isinstance(v, list) and v and isinstance(v[0], dict)]
+        if list_keys:
+            # Use the first list of dicts found
+            return pd.DataFrame(data[list_keys[0]])
         # Check if it has items/results/data key with a list
         for key in ("items", "results", "data", "records", "body"):
             if key in data and isinstance(data[key], list):
