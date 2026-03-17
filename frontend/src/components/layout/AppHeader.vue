@@ -118,11 +118,6 @@ const toggleUserMenu = (event: MouseEvent) => {
         <i :class="isAdmin ? 'pi pi-shield' : 'pi pi-user'"></i>
         <span class="role-text">{{ role }}</span>
       </div>
-      <div class="connection-status" :class="{ connected: queryStore.isConnected }">
-        <span class="status-dot"></span>
-        <span class="status-text">{{ queryStore.isConnected ? t('common.connected') : t('common.disconnected') }}</span>
-      </div>
-      
       <!-- Confirmations Bell -->
       <ConfirmationsPanel />
 
