@@ -118,3 +118,60 @@ async def live_dashboard(
                 dashboard["all_campaign_performance"] = all_perf
 
     return dashboard
+
+
+# ── Individual proxy endpoints ──
+# These provide direct access to specific data types from connected APIs.
+
+
+async def _get_first_base_url(db: AsyncSession) -> str | None:
+    """Return the first available base_url from SwaggerSource records."""
+    result = await db.execute(select(SwaggerSource))
+    for s in result.scalars().all():
+        if s.base_url:
+            return s.base_url.rstrip("/")
+    return None
+
+
+@router.get("/dashboard/kpi")
+async def dashboard_kpi(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+    """Proxy KPI data from connected API (test-api1)."""
+    base = await _get_first_base_url(db)
+    if not base:
+        return {"status": "no_sources", "data": None}
+    async with httpx.AsyncClient(verify=False) as client:
+        data = await _fetch(client, f"{base}/api/analytics/kpi")
+    return {"status": "ok", "data": data} if data else {"status": "empty", "data": None}
+
+
+@router.get("/dashboard/segments")
+async def dashboard_segments(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+    """Proxy segments list from connected API."""
+    base = await _get_first_base_url(db)
+    if not base:
+        return {"status": "no_sources", "data": []}
+    async with httpx.AsyncClient(verify=False) as client:
+        data = await _fetch(client, f"{base}/api/segments")
+    return {"status": "ok", "data": data if isinstance(data, list) else []}
+
+
+@router.get("/dashboard/campaigns")
+async def dashboard_campaigns(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+    """Proxy campaigns list from connected API."""
+    base = await _get_first_base_url(db)
+    if not base:
+        return {"status": "no_sources", "data": []}
+    async with httpx.AsyncClient(verify=False) as client:
+        data = await _fetch(client, f"{base}/api/campaigns")
+    return {"status": "ok", "data": data if isinstance(data, list) else []}
+
+
+@router.get("/dashboard/user-stats")
+async def dashboard_user_stats(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+    """Proxy user stats from connected API."""
+    base = await _get_first_base_url(db)
+    if not base:
+        return {"status": "no_sources", "data": None}
+    async with httpx.AsyncClient(verify=False) as client:
+        data = await _fetch(client, f"{base}/api/users/stats")
+    return {"status": "ok", "data": data} if data else {"status": "empty", "data": None}

@@ -45,6 +45,38 @@ export const useQueryStore = defineStore('query', () => {
   const currentMessageId = ref<string | null>(null)
   const selectedSourceIds = ref<number[]>([])
   const conversationId = ref<number | null>(null)
+  const pendingConfirmation = ref<{
+    step: number
+    confirmation_id: number
+    action: string
+    endpoint_method: string
+    endpoint_path: string
+    payload_summary: string
+    timestamp: number
+  } | null>(null)
+
+  let timeoutTimer: ReturnType<typeof setTimeout> | null = null
+
+  function clearTimeoutTimer() {
+    if (timeoutTimer) {
+      clearTimeout(timeoutTimer)
+      timeoutTimer = null
+    }
+  }
+
+  function startTimeoutTimer() {
+    clearTimeoutTimer()
+    timeoutTimer = setTimeout(() => {
+      if (isLoading.value && currentMessageId.value) {
+        const chatStore = useChatStore()
+        chatStore.updateMessage(currentMessageId.value, {
+          content: t('error.timeout'),
+        })
+        isLoading.value = false
+        currentMessageId.value = null
+      }
+    }, 60_000)
+  }
 
   const { send, onMessage, isConnected } = useWebSocket('/api/v1/ws/query')
 
@@ -53,6 +85,7 @@ export const useQueryStore = defineStore('query', () => {
 
     switch (msg.type) {
       case 'chat_token': {
+        clearTimeoutTimer()
         const token = msg.data.token as string
         if (currentMessageId.value && token) {
           chatStore.appendToMessage(currentMessageId.value, token)
@@ -64,6 +97,41 @@ export const useQueryStore = defineStore('query', () => {
         if (currentMessageId.value && content) {
           chatStore.updateMessage(currentMessageId.value, {
             reasoning: content,
+          })
+        }
+        break
+      }
+      case 'confirmation_required': {
+        // A mutating action needs user approval — notify the ConfirmationsPanel
+        // Cancel the timeout timer since we're waiting for user input (up to 5 min)
+        clearTimeoutTimer()
+        pendingConfirmation.value = {
+          step: msg.data.step,
+          confirmation_id: msg.data.confirmation_id,
+          action: msg.data.action,
+          endpoint_method: msg.data.endpoint_method,
+          endpoint_path: msg.data.endpoint_path,
+          payload_summary: msg.data.payload_summary,
+          timestamp: Date.now(),
+        }
+        // Add a "waiting for confirmation" step indicator in the chat
+        if (currentMessageId.value) {
+          const waitStep: OrchestrationStep = {
+            step: msg.data.step,
+            action: 'confirmation',
+            description: `Awaiting approval: ${msg.data.endpoint_method} ${msg.data.endpoint_path}`,
+            status: 'running',
+          }
+          const existingIdx = orchestrationSteps.value.findIndex(
+            (s) => s.step === msg.data.step
+          )
+          if (existingIdx !== -1) {
+            orchestrationSteps.value[existingIdx] = waitStep
+          } else {
+            orchestrationSteps.value.push(waitStep)
+          }
+          chatStore.updateMessage(currentMessageId.value, {
+            steps: [...orchestrationSteps.value],
           })
         }
         break
@@ -86,6 +154,7 @@ export const useQueryStore = defineStore('query', () => {
         break
       }
       case 'result': {
+        clearTimeoutTimer()
         currentResult.value = msg.data as QueryResult
         if (currentMessageId.value) {
           const isChatMode = currentResult.value.metadata?.mode === 'chat'
@@ -145,15 +214,23 @@ export const useQueryStore = defineStore('query', () => {
         break
       }
       case 'error': {
+        clearTimeoutTimer()
         if (currentMessageId.value) {
+          const rawMsg = msg.data.message || ''
+          const friendly = rawMsg.includes('timeout') || rawMsg.includes('Timeout')
+            ? t('error.timeout')
+            : rawMsg.includes('connect') || rawMsg.includes('Connection')
+            ? t('error.connection')
+            : t('error.generic')
           chatStore.updateMessage(currentMessageId.value, {
-            content: `Error: ${msg.data.message || t('error.generic')}`,
+            content: `Error: ${friendly}`,
           })
         }
         isLoading.value = false
         break
       }
       case 'done': {
+        clearTimeoutTimer()
         // Auto-save scenario if there were orchestration steps (non-chat query)
         if (orchestrationSteps.value.length > 0 && currentResult.value) {
           const token = localStorage.getItem('auth_token')
@@ -230,6 +307,7 @@ export const useQueryStore = defineStore('query', () => {
     }
 
     send(payload)
+    startTimeoutTimer()
   }
 
   function startNewConversation() {
@@ -244,6 +322,7 @@ export const useQueryStore = defineStore('query', () => {
     isConnected,
     selectedSourceIds,
     conversationId,
+    pendingConfirmation,
     sendQuery,
     startNewConversation,
   }

@@ -176,7 +176,9 @@ export default {
 
   // Errors (store level)
   'error.noData': 'Данные не были возвращены.',
-  'error.generic': 'Произошла ошибка',
+  'error.generic': 'Что-то пошло не так. Попробуйте ещё раз.',
+  'error.timeout': 'Время ожидания истекло. Сервер не ответил вовремя.',
+  'error.connection': 'Ошибка соединения. Проверьте сеть и попробуйте снова.',
 
   // ML Status
   'mlStatus.unavailableTitle': 'ML сервис недоступен',

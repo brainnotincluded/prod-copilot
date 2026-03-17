@@ -259,7 +259,20 @@ class OrchestrationService:
             ):
                 event_type = chunk.pop("event_type", "")
 
-                if event_type in ("step_start", "step_complete", "step_error"):
+                if event_type == "confirmation_required":
+                    yield {
+                        "type": "confirmation_required",
+                        "data": {
+                            "step": chunk.get("step"),
+                            "confirmation_id": chunk.get("confirmation_id"),
+                            "action": chunk.get("action", ""),
+                            "endpoint_method": chunk.get("endpoint_method", ""),
+                            "endpoint_path": chunk.get("endpoint_path", ""),
+                            "payload_summary": chunk.get("payload_summary", ""),
+                        },
+                    }
+
+                elif event_type in ("step_start", "step_complete", "step_error"):
                     step_num = chunk.get("step", step_counter)
 
                     if event_type == "step_start":

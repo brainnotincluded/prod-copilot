@@ -42,7 +42,7 @@ export interface SwaggerUploadResult {
 }
 
 export interface WebSocketMessage {
-  type: 'step' | 'result' | 'error' | 'done' | 'chat_token' | 'reasoning'
+  type: 'step' | 'result' | 'error' | 'done' | 'chat_token' | 'reasoning' | 'confirmation_required'
   data: any
 }
 

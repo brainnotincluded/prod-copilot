@@ -21,7 +21,8 @@ _auth = [Depends(require_auth)]
 api_router.include_router(swagger_router, prefix="/swagger", tags=["swagger"], dependencies=_auth)
 api_router.include_router(endpoints_router, prefix="/endpoints", tags=["endpoints"], dependencies=_auth)
 api_router.include_router(query_router, tags=["query"])  # WS auth handled separately
-api_router.include_router(confirmations_router, tags=["confirmations"], dependencies=_auth)
+# Confirmations: create/list are called by MLOps (no auth), resolve requires auth
+api_router.include_router(confirmations_router, tags=["confirmations"])
 api_router.include_router(relations_router, prefix="/relations", tags=["relations"], dependencies=_auth)
 api_router.include_router(scenarios_router, tags=["scenarios"], dependencies=_auth)
 api_router.include_router(widgets_router, tags=["widgets"], dependencies=_auth)

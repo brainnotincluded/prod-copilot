@@ -145,7 +145,7 @@ function handleInput() {
       <div class="source-selector-fade source-selector-fade-right"></div>
     </div>
 
-    <div class="chat-input-container">
+    <div class="chat-input-container" :class="{ 'input-disabled': disabled }">
       <textarea
         ref="textareaRef"
         v-model="inputText"
@@ -255,7 +255,13 @@ function handleInput() {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.chat-input-container:focus-within {
+.chat-input-container.input-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-bg-tertiary, #f5f5f5);
+}
+
+.chat-input-container:focus-within:not(.input-disabled) {
   border-color: var(--color-accent);
   box-shadow: var(--shadow-input), 0 0 0 1px var(--color-accent-light);
 }
@@ -279,7 +285,9 @@ function handleInput() {
 }
 
 .chat-textarea:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--color-text-tertiary);
 }
 
 .send-btn {
@@ -306,7 +314,8 @@ function handleInput() {
 }
 
 .send-btn:disabled {
-  cursor: default;
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .send-btn i {

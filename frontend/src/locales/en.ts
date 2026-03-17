@@ -176,7 +176,9 @@ export default {
 
   // Errors (store level)
   'error.noData': 'No data was returned.',
-  'error.generic': 'An error occurred',
+  'error.generic': 'Something went wrong. Please try again.',
+  'error.timeout': 'Request timed out. The server took too long to respond.',
+  'error.connection': 'Connection error. Please check your network and try again.',
 
   // ML Status
   'mlStatus.unavailableTitle': 'ML Service Unavailable',

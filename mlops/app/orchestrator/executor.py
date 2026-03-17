@@ -24,11 +24,10 @@ _CONFIRM_TIMEOUT = 300.0  # max wait time for confirmation (5 min)
 _BACKEND_URL = "http://backend:8000"
 
 
-async def _request_confirmation(step: OrchestrationStep, context: dict) -> str:
-    """Request confirmation for a mutating API action.
+async def _create_confirmation(step: OrchestrationStep, context: dict) -> dict | None:
+    """Create a confirmation record in the backend.
 
-    Creates a confirmation record in the backend and polls until
-    approved or rejected. Returns 'approved', 'rejected', or 'error'.
+    Returns the confirmation data dict on success, or None on failure.
     """
     import httpx
 
@@ -39,7 +38,6 @@ async def _request_confirmation(step: OrchestrationStep, context: dict) -> str:
 
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            # Create confirmation request
             resp = await client.post(
                 f"{_BACKEND_URL}/api/v1/confirmations",
                 json={
@@ -52,12 +50,24 @@ async def _request_confirmation(step: OrchestrationStep, context: dict) -> str:
             )
             if resp.status_code != 201:
                 logger.warning("Failed to create confirmation: %s", resp.text)
-                return "error"
+                return None
+            data = resp.json()
+            logger.info("Confirmation %d created for %s %s", data.get("id"), method, path)
+            return data
+    except Exception as exc:
+        logger.warning("Confirmation creation failed: %s", exc)
+        return None
 
-            confirmation_id = resp.json().get("id")
-            logger.info("Confirmation %d created for %s %s, polling...", confirmation_id, method, path)
 
-            # Poll for resolution
+async def _poll_confirmation(confirmation_id: int) -> str:
+    """Poll for confirmation resolution.
+
+    Returns 'approved', 'rejected', or 'error'.
+    """
+    import httpx
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
             elapsed = 0.0
             while elapsed < _CONFIRM_TIMEOUT:
                 await asyncio.sleep(_CONFIRM_POLL_INTERVAL)
@@ -68,10 +78,8 @@ async def _request_confirmation(step: OrchestrationStep, context: dict) -> str:
                     continue
 
                 pending = check.json()
-                # If our confirmation is no longer pending, it was resolved
                 still_pending = any(c["id"] == confirmation_id for c in pending)
                 if not still_pending:
-                    # Check if it was approved or rejected
                     for status in ("approved", "rejected"):
                         resolved = await client.get(f"{_BACKEND_URL}/api/v1/confirmations?status={status}")
                         if resolved.status_code == 200:
@@ -79,15 +87,25 @@ async def _request_confirmation(step: OrchestrationStep, context: dict) -> str:
                                 if c["id"] == confirmation_id:
                                     logger.info("Confirmation %d resolved: %s", confirmation_id, status)
                                     return status
-                    # If we can't find it in either, assume approved
                     return "approved"
 
             logger.warning("Confirmation %d timed out after %.0fs", confirmation_id, _CONFIRM_TIMEOUT)
             return "error"
-
     except Exception as exc:
-        logger.warning("Confirmation request failed: %s", exc)
+        logger.warning("Confirmation polling failed: %s", exc)
         return "error"
+
+
+async def _request_confirmation(step: OrchestrationStep, context: dict) -> str:
+    """Request confirmation for a mutating API action.
+
+    Creates a confirmation record in the backend and polls until
+    approved or rejected. Returns 'approved', 'rejected', or 'error'.
+    """
+    confirmation = await _create_confirmation(step, context)
+    if not confirmation:
+        return "error"
+    return await _poll_confirmation(confirmation["id"])
 
 
 def _truncate_for_llm(context: dict, max_chars: int = 50000) -> dict:
@@ -308,10 +326,12 @@ async def _execute_single_step(
                 return step
 
             # Check if this is a mutating action that needs confirmation
+            # (skip if already handled by streaming path)
+            pre_approved = context.get("_confirmation_approved_steps", set())
             method = "GET"
             if step.endpoint:
                 method = step.endpoint.get("method", "GET").upper()
-            if method in ("POST", "PUT", "PATCH", "DELETE"):
+            if method in ("POST", "PUT", "PATCH", "DELETE") and step.step not in pre_approved:
                 confirmation = await _request_confirmation(step, context)
                 if confirmation == "rejected":
                     step.status = "error"
@@ -1024,6 +1044,54 @@ async def execute_plan_stream(
             event="step_start",
             data={"step": step.step, "action": step.action, "description": step.description},
         )
+
+        # For mutating API calls, emit confirmation_required event before executing
+        _needs_confirmation = False
+        if step.action == "api_call" and step.endpoint:
+            method = step.endpoint.get("method", "GET").upper()
+            if method in ("POST", "PUT", "PATCH", "DELETE"):
+                _needs_confirmation = True
+
+        if _needs_confirmation:
+            confirmation_data = await _create_confirmation(step, context)
+            if confirmation_data:
+                yield OrchestrationStreamEvent(
+                    event="confirmation_required",
+                    data={
+                        "step": step.step,
+                        "confirmation_id": confirmation_data["id"],
+                        "action": confirmation_data.get("action", step.description),
+                        "endpoint_method": confirmation_data.get("endpoint_method", ""),
+                        "endpoint_path": confirmation_data.get("endpoint_path", ""),
+                        "payload_summary": confirmation_data.get("payload_summary", ""),
+                    },
+                )
+                # Poll for user response (blocks until approved/rejected/timeout)
+                resolution = await _poll_confirmation(confirmation_data["id"])
+                if resolution == "rejected":
+                    step.status = "error"
+                    step.error = "Action rejected by user"
+                    step.result = {"error": step.error, "confirmation": "rejected"}
+                    context["step_results"][str(step.step)] = step.result
+                    yield OrchestrationStreamEvent(
+                        event="step_error",
+                        data={
+                            "step": step.step,
+                            "action": step.action,
+                            "description": step.description,
+                            "error": step.error,
+                            "result": step.result,
+                        },
+                    )
+                    continue
+                elif resolution == "approved":
+                    # Mark as pre-approved so _execute_single_step skips confirmation
+                    context["_confirmation_approved_steps"] = context.get("_confirmation_approved_steps", set())
+                    context["_confirmation_approved_steps"].add(step.step)
+                else:
+                    # Error/timeout — let executor decide (currently proceeds)
+                    context["_confirmation_approved_steps"] = context.get("_confirmation_approved_steps", set())
+                    context["_confirmation_approved_steps"].add(step.step)
 
         step = await _execute_single_step(step, context)
         context["step_results"][str(step.step)] = step.result

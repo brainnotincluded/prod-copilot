@@ -119,6 +119,32 @@ async def _execute_tool_call(name: str, arguments: dict, context: dict) -> dict:
     if name == "call_api":
         base_url = context.get("base_url", "")
         allowed = [base_url] if base_url else None
+
+        # Check if this is a mutating action that needs confirmation
+        # (skip if already handled by streaming path)
+        pre_approved = context.get("_confirmation_approved_steps", set())
+        current_step = context.get("_agent_step_counter", 1)
+        method = arguments.get("method", "GET").upper()
+        if method in ("POST", "PUT", "PATCH", "DELETE") and current_step not in pre_approved:
+            from app.orchestrator.executor import _request_confirmation
+            from app.schemas.models import OrchestrationStep
+
+            # Build a minimal OrchestrationStep for the confirmation API
+            confirm_step = OrchestrationStep(
+                step=current_step,
+                action="api_call",
+                description=f"{method} {arguments.get('url', '')}",
+                status="running",
+                endpoint={
+                    "method": method,
+                    "path": arguments.get("url", ""),
+                },
+            )
+            confirmation = await _request_confirmation(confirm_step, context)
+            if confirmation == "rejected":
+                return {"error": "Action rejected by user", "confirmation": "rejected", "success": False}
+            # On error/timeout, proceed (matches existing plan-execute behavior)
+
         try:
             result = await execute_api_call(
                 method=arguments.get("method", "GET"),
@@ -354,7 +380,54 @@ async def run_agent_loop_stream(
                 data={"step": step_counter, "action": fn_name, "description": f"Calling {fn_name}"},
             )
 
-            result = await _execute_tool_call(fn_name, fn_args, context or {})
+            # For mutating API calls, emit confirmation_required before executing
+            exec_context = context or {}
+            if fn_name == "call_api":
+                call_method = fn_args.get("method", "GET").upper()
+                if call_method in ("POST", "PUT", "PATCH", "DELETE"):
+                    from app.orchestrator.executor import _create_confirmation, _poll_confirmation
+                    from app.schemas.models import OrchestrationStep as _Step
+
+                    _confirm_step = _Step(
+                        step=step_counter,
+                        action="api_call",
+                        description=f"{call_method} {fn_args.get('url', '')}",
+                        status="running",
+                        endpoint={"method": call_method, "path": fn_args.get("url", "")},
+                    )
+                    _conf_data = await _create_confirmation(_confirm_step, exec_context)
+                    if _conf_data:
+                        yield OrchestrationStreamEvent(
+                            event="confirmation_required",
+                            data={
+                                "step": step_counter,
+                                "confirmation_id": _conf_data["id"],
+                                "action": _conf_data.get("action", ""),
+                                "endpoint_method": _conf_data.get("endpoint_method", ""),
+                                "endpoint_path": _conf_data.get("endpoint_path", ""),
+                                "payload_summary": _conf_data.get("payload_summary", ""),
+                            },
+                        )
+                        _resolution = await _poll_confirmation(_conf_data["id"])
+                        if _resolution == "rejected":
+                            result_str = json.dumps({"error": "Action rejected by user", "confirmation": "rejected"})
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.id,
+                                "content": result_str,
+                            })
+                            yield OrchestrationStreamEvent(
+                                event="step_error",
+                                data={"step": step_counter, "error": "Action rejected by user"},
+                            )
+                            step_counter += 1
+                            continue
+                        # Approved or timeout-fallthrough — mark step as pre-approved
+                        exec_context["_confirmation_approved_steps"] = exec_context.get("_confirmation_approved_steps", set())
+                        exec_context["_confirmation_approved_steps"].add(step_counter)
+
+            exec_context["_agent_step_counter"] = step_counter
+            result = await _execute_tool_call(fn_name, fn_args, exec_context)
 
             if fn_name == "format_result":
                 final_result = result

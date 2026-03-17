@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { marked } from 'marked'
 import type { ChatMessage } from '@/types'
 import { useLocale } from '@/composables/useLocale'
@@ -33,6 +33,41 @@ const hasContent = computed(() => {
 })
 const isLoading = computed(() => {
   return !isUser.value && !hasContent.value && !hasResult.value
+})
+
+const isError = computed(() => {
+  return typeof props.message.content === 'string' && props.message.content.startsWith('Error:')
+})
+
+// Elapsed time counter for the thinking state
+const elapsedSeconds = ref(0)
+let elapsedTimer: ReturnType<typeof setInterval> | null = null
+
+function startElapsedTimer() {
+  stopElapsedTimer()
+  elapsedSeconds.value = 0
+  elapsedTimer = setInterval(() => {
+    elapsedSeconds.value++
+  }, 1000)
+}
+
+function stopElapsedTimer() {
+  if (elapsedTimer) {
+    clearInterval(elapsedTimer)
+    elapsedTimer = null
+  }
+}
+
+watch(isLoading, (loading) => {
+  if (loading) {
+    startElapsedTimer()
+  } else {
+    stopElapsedTimer()
+  }
+}, { immediate: true })
+
+onUnmounted(() => {
+  stopElapsedTimer()
 })
 
 const renderedContent = computed(() => {
@@ -92,7 +127,7 @@ watch(
           <span class="message-time">{{ formattedTime }}</span>
         </div>
 
-        <div class="message-content" v-if="hasContent" v-html="renderedContent"></div>
+        <div class="message-content" :class="{ 'message-error': isError }" v-if="hasContent" v-html="renderedContent"></div>
 
         <!-- Loading state: no content, no result, is assistant -->
         <div v-if="isLoading && !hasSteps" class="message-thinking">
@@ -102,6 +137,7 @@ watch(
             <span></span>
           </div>
           <span class="thinking-text">{{ t('chat.thinking') }}</span>
+          <span v-if="elapsedSeconds > 0" class="thinking-elapsed">{{ elapsedSeconds }}s</span>
         </div>
 
         <!-- Model Reasoning (Chain of Thought) -->
@@ -298,6 +334,23 @@ watch(
 .thinking-text {
   font-size: 13px;
   color: var(--color-text-tertiary);
+}
+
+.thinking-elapsed {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Error message styling */
+.message-error {
+  color: var(--color-error, #e53e3e) !important;
+  background: var(--color-error-bg, #fff5f5);
+  border-left: 3px solid var(--color-error, #e53e3e);
+  border-radius: 0 var(--radius-md, 6px) var(--radius-md, 6px) 0;
+  padding: 10px 14px;
+  margin-top: 2px;
 }
 
 /* Reasoning (CoT) */

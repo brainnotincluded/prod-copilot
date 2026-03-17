@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useLocale } from '@/composables/useLocale'
+import { useQueryStore } from '@/stores/query'
 
 interface Confirmation {
   id: string
@@ -22,6 +23,7 @@ interface ResolveResult {
 
 const { getAuthHeaders, canApprove, user } = useAuth()
 const { t } = useLocale()
+const queryStore = useQueryStore()
 
 const isOpen = ref(false)
 const confirmations = ref<Confirmation[]>([])
@@ -125,6 +127,16 @@ function handleClickOutside(e: MouseEvent) {
     closePanel()
   }
 }
+
+// When a new confirmation_required event arrives via WebSocket, refresh immediately and auto-open
+watch(() => queryStore.pendingConfirmation, (newVal) => {
+  if (newVal) {
+    fetchConfirmations()
+    isOpen.value = true
+    // Clear the signal so future identical events still trigger
+    queryStore.pendingConfirmation = null
+  }
+})
 
 onMounted(() => {
   fetchConfirmations()

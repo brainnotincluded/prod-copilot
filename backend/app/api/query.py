@@ -210,6 +210,19 @@ async def ws_query(websocket: WebSocket, token: str | None = None) -> None:
                             "data": {"content": chunk.get("content", "")}
                         })
 
+                    elif event_type == "confirmation_required":
+                        await websocket.send_json({
+                            "type": "confirmation_required",
+                            "data": {
+                                "step": chunk.get("step"),
+                                "confirmation_id": chunk.get("confirmation_id"),
+                                "action": chunk.get("action", ""),
+                                "endpoint_method": chunk.get("endpoint_method", ""),
+                                "endpoint_path": chunk.get("endpoint_path", ""),
+                                "payload_summary": chunk.get("payload_summary", ""),
+                            }
+                        })
+
                     elif event_type in ("step_start", "step_complete", "step_error"):
                         step_num = chunk.get("step", step_counter)
                         action_name = chunk.get("action", "")
