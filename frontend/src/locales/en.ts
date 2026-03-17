@@ -177,4 +177,15 @@ export default {
   // Errors (store level)
   'error.noData': 'No data was returned.',
   'error.generic': 'An error occurred',
+
+  // ML Status
+  'mlStatus.unavailableTitle': 'ML Service Unavailable',
+  'mlStatus.degradedTitle': 'Partially Available',
+  'mlStatus.checking': 'Checking service status...',
+  'mlStatus.allServicesDown': 'Database and ML service are down. Please check connection.',
+  'mlStatus.mlopsDown': 'ML service is not responding. AI features are temporarily unavailable.',
+  'mlStatus.dbDown': 'Database is unavailable. Application is running in limited mode.',
+  'mlStatus.unknownIssue': 'Issue detected with services.',
+  'mlStatus.basicFeaturesAvailable': 'Basic features work, but AI responses are temporarily unavailable.',
+  'mlStatus.mlUnavailableForChat': 'AI is temporarily unavailable — you can view history but cannot get answers',
 } as Record<string, string>

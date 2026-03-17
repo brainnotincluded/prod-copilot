@@ -5,6 +5,7 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import Toast from '@/components/ui/Toast.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
+import MlStatusBanner from '@/components/ui/MlStatusBanner.vue'
 
 const route = useRoute()
 const sidebarCollapsed = ref(false)
@@ -73,6 +74,7 @@ function toggleSidebar() {
         :sidebar-collapsed="sidebarCollapsed"
         :is-mobile="isMobile"
       />
+      <MlStatusBanner v-if="!isPublicPage" />
       <main class="app-content" :class="{ 'auth-content': isPublicPage }">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">

@@ -177,4 +177,15 @@ export default {
   // Errors (store level)
   'error.noData': 'Данные не были возвращены.',
   'error.generic': 'Произошла ошибка',
+
+  // ML Status
+  'mlStatus.unavailableTitle': 'ML сервис недоступен',
+  'mlStatus.degradedTitle': 'Частичная доступность',
+  'mlStatus.checking': 'Проверяем статус сервисов...',
+  'mlStatus.allServicesDown': 'Не отвечают база данных и ML сервис. Проверьте подключение.',
+  'mlStatus.mlopsDown': 'ML сервис не отвечает. AI-функции временно недоступны.',
+  'mlStatus.dbDown': 'База данных недоступна. Приложение работает в ограниченном режиме.',
+  'mlStatus.unknownIssue': 'Обнаружена проблема с сервисами.',
+  'mlStatus.basicFeaturesAvailable': 'Базовые функции доступны, но AI-ответы временно недоступны.',
+  'mlStatus.mlUnavailableForChat': 'AI временно недоступен — можно просматривать историю, но ответы не получить',
 } as Record<string, string>

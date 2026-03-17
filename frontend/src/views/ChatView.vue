@@ -5,6 +5,7 @@ import { useChatStore } from '@/stores/chat'
 import { useQueryStore } from '@/stores/query'
 import { useSwaggerStore } from '@/stores/swagger'
 import { useLocale } from '@/composables/useLocale'
+import { useMlStatus } from '@/composables/useMlStatus'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 
@@ -13,6 +14,7 @@ const queryStore = useQueryStore()
 const swaggerStore = useSwaggerStore()
 const route = useRoute()
 const { t } = useLocale()
+const { isUnavailable: isMlUnavailable, isDegraded: isMlDegraded } = useMlStatus()
 const messagesContainer = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
@@ -126,7 +128,10 @@ watch(
     </div>
 
     <div class="chat-input-area">
-      <ChatInput @send="handleSend" :disabled="queryStore.isLoading" />
+      <ChatInput 
+        @send="handleSend" 
+        :disabled="queryStore.isLoading || isMlUnavailable()" 
+      />
     </div>
   </div>
 </template>
