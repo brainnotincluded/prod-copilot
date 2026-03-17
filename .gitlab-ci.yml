@@ -6,36 +6,47 @@ deploy:
     - echo "$SSH_PRIVATE_KEY" > /tmp/ssh_key
     - chmod 600 /tmp/ssh_key
     - ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key $SSH_USER@$SSH_HOST << 'EOF'
-        set -e
+        set -ex
         
         DEPLOY_PATH="/opt/$CI_PROJECT_NAME"
-        echo "Deploying to $DEPLOY_PATH"
+        echo "=== Deploying to $DEPLOY_PATH ==="
         
         if [ ! -d "$DEPLOY_PATH" ]; then
-          echo "Creating directory..."
+          echo "=== Creating directory ==="
           sudo mkdir -p "$DEPLOY_PATH"
           sudo chown $USER:$USER "$DEPLOY_PATH"
         fi
         
-        
         cd "$DEPLOY_PATH"
+        pwd
+        ls -la
         
         if [ ! -d ".git" ]; then
-          echo "Cloning repo..."
+          echo "=== Cloning repo ==="
           git clone "$CI_REPOSITORY_URL" .
         else
-          echo "Pulling changes..."
+          echo "=== Pulling changes ==="
           git fetch origin
           git reset --hard "origin/$CI_COMMIT_BRANCH"
         fi
         
-        echo "Starting containers..."
-        docker compose up -d --build
+        echo "=== Checking .env ==="
+        if [ ! -f ".env" ]; then
+          echo "ERROR: .env not found!"
+          exit 1
+        fi
         
-        echo "Containers status:"
-        docker compose ps
+        echo "=== Docker version ==="
+        docker --version
+        docker compose version || docker-compose version
         
-        echo "Done!"
+        echo "=== Starting containers ==="
+        docker compose up -d --build 2>&1 || docker-compose up -d --build 2>&1
+        
+        echo "=== Containers status ==="
+        docker compose ps 2>&1 || docker-compose ps 2>&1
+        
+        echo "=== Done ==="
       EOF
   only:
     - main
