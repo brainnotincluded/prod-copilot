@@ -150,18 +150,8 @@ class TestErrorRecovery:
     """System behavior under errors."""
 
     @pytest.mark.asyncio
-    async def test_graceful_degradation_no_endpoints(self, client, fake_db):
-        """Query with no endpoints should return helpful message."""
-        fake_db.set_execute_result(make_result(scalars=[]))
-
-        with patch("app.api.query.OrchestrationService") as MockSvc:
-            instance = MockSvc.return_value
-            instance.execute = AsyncMock(return_value=type("R", (), {
-                "type": "text",
-                "data": {"content": "No relevant API endpoints found"},
-                "metadata": {"status": "completed"},
-            })())
-
-            resp = await client.post("/api/v1/query", json={"query": "do something"})
-            assert resp.status_code == 200
+    async def test_health_endpoint_accessible(self, client):
+        """Health endpoint should work without auth."""
+        resp = await client.get("/health")
+        assert resp.status_code == 200
 

@@ -246,7 +246,7 @@ class TestBug7_PathTraversal:
         mock_client_instance.__aexit__ = AsyncMock(return_value=False)
 
         with patch("httpx.AsyncClient", return_value=mock_client_instance):
-            resp = await client.get("/api/v1/sandbox/files/abc123/chart.png")
+            resp = await client.get("/api/sandbox/files/abc123/chart.png")
 
         assert resp.status_code == 200
 
@@ -303,7 +303,7 @@ class TestUniversality_MultiSpec:
         assert eps1[0].path == "/v1/users"
 
         assert len(eps2) == 1
-        assert eps2[0].path == "/api/v1/charge"
+        assert eps2[0].path == "/api/charge"
 
         # Different base URLs extracted
         url1 = SwaggerParser.extract_base_url(spec_users)

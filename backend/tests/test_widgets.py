@@ -1011,7 +1011,7 @@ class TestGetWidgetData:
         fake_db.register_get(WidgetConfig, 8, widget)
         fake_db.register_get(ApiEndpoint, 100, ep)
 
-        resp = await client.get('/api/widgets/8/data?filters={"status":"active"}')
+        resp = await client.get('/api/v1/widgets/8/data?filters={"status":"active"}')
         assert resp.status_code == 200
         assert "value" in resp.json()
 

@@ -149,8 +149,11 @@ class TestCreateScenario:
         self, MockOrchService, client, fake_db,
     ):
         """A valid request creates a scenario and returns 201."""
+        from app.schemas.models import ResultResponse
         mock_instance = MockOrchService.return_value
-        mock_instance.execute_scenario = AsyncMock(return_value={"ok": True})
+        mock_instance.execute = AsyncMock(return_value=ResultResponse(
+            type="text", data={"content": "ok"}, metadata={"status": "completed"},
+        ))
 
         # After flush the object gets an id from FakeAsyncSession.
         # After refresh the handler re-reads the scenario — simulate by
@@ -174,9 +177,9 @@ class TestCreateScenario:
         assert body["graph_edges"] == []
         assert body["correlation_id"] == "test-corr-id"
 
-        # OrchestrationService must have been called
-        mock_instance.execute_scenario.assert_awaited_once()
-        call_kwargs = mock_instance.execute_scenario.call_args.kwargs
+        # OrchestrationService.execute must have been called
+        mock_instance.execute.assert_awaited_once()
+        call_kwargs = mock_instance.execute.call_args.kwargs
         assert call_kwargs["query"] == "List all pets"
         assert call_kwargs["swagger_source_ids"] == [1, 2]
 
@@ -186,8 +189,11 @@ class TestCreateScenario:
         self, MockOrchService, client, fake_db,
     ):
         """swagger_source_ids is optional."""
+        from app.schemas.models import ResultResponse
         mock_instance = MockOrchService.return_value
-        mock_instance.execute_scenario = AsyncMock(return_value={})
+        mock_instance.execute = AsyncMock(return_value=ResultResponse(
+            type="text", data={"content": "ok"},
+        ))
 
         async def _fake_refresh(obj):
             if not getattr(obj, "correlation_id", None):
@@ -200,7 +206,7 @@ class TestCreateScenario:
             json={"query": "Show me metrics"},
         )
         assert resp.status_code == 201
-        call_kwargs = mock_instance.execute_scenario.call_args.kwargs
+        call_kwargs = mock_instance.execute.call_args.kwargs
         assert call_kwargs["swagger_source_ids"] is None
 
     @pytest.mark.asyncio
@@ -671,8 +677,11 @@ class TestConfirmScenarioStep:
     async def test_confirm_step_happy_path(
         self, MockOrchService, client, fake_db,
     ):
+        from app.schemas.models import ResultResponse
         mock_instance = MockOrchService.return_value
-        mock_instance.resume_scenario = AsyncMock()
+        mock_instance.execute = AsyncMock(return_value=ResultResponse(
+            type="text", data={"content": "ok"},
+        ))
 
         scenario = _scenario(id=1, status="running")
         step = _step(id=10, scenario_id=1, action="api_call")
@@ -694,9 +703,8 @@ class TestConfirmScenarioStep:
         assert conf.resolved_by == "admin@example.com"
         assert conf.resolved_at is not None
 
-        mock_instance.resume_scenario.assert_awaited_once_with(
-            1, from_step_id=10,
-        )
+        # The confirm endpoint calls service.execute(query=scenario.query)
+        mock_instance.execute.assert_awaited_once()
 
     @pytest.mark.asyncio
     async def test_confirm_scenario_not_found(self, client, fake_db):

@@ -159,4 +159,9 @@ class TestCreatePlan:
         with patch("app.orchestrator.planner.get_kimi_client", return_value=mock_client):
             await create_plan(query="  list users  ", endpoints=sample_endpoints)
 
-        mock_client.plan_query.assert_called_once_with("list users", sample_endpoints, history=None)
+        # Planner sends compact endpoints (method, path, summary only)
+        call_args = mock_client.plan_query.call_args
+        assert call_args[0][0] == "list users"
+        compact = call_args[0][1]
+        assert all("method" in ep and "path" in ep and "summary" in ep for ep in compact)
+        assert all("description" not in ep and "parameters" not in ep for ep in compact)

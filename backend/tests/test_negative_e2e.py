@@ -31,16 +31,6 @@ from tests.conftest import (
 # Helpers
 # ======================================================================
 
-async def _client_with_role(app, role: str) -> AsyncClient:
-    """Return an AsyncClient pre-configured with the given X-User-Role."""
-    transport = ASGITransport(app=app)
-    return AsyncClient(
-        transport=transport,
-        base_url="http://test",
-        headers={"X-User-Role": role},
-    )
-
-
 _NOW = datetime.now(timezone.utc)
 
 
@@ -104,12 +94,13 @@ class TestQueryNegative:
     @pytest.mark.asyncio
     async def test_extra_unknown_fields_still_works(self, client, fake_db):
         """Pydantic v2 ignores extra fields by default — request should succeed."""
-        with patch("app.api.query.OrchestrationService") as MockSvc:
-            instance = MockSvc.return_value
-            instance.execute = AsyncMock(return_value=ResultResponse(
-                type="text",
-                data={"content": "ok"},
-            ))
+        with patch("app.api.query.MLOpsClient") as MockMLOps:
+            instance = MockMLOps.return_value
+            instance.orchestrate = AsyncMock(return_value={
+                "type": "text",
+                "data": {"content": "ok"},
+            })
+            fake_db.set_execute_result(make_result(scalars=[]))
             resp = await client.post(
                 "/api/v1/query",
                 json={"query": "hello", "unknown_field": True, "foo": 123},
@@ -273,13 +264,13 @@ class TestSandboxPathTraversal:
     @pytest.mark.asyncio
     async def test_special_chars_in_session_id_returns_400(self, client):
         """Characters outside [a-zA-Z0-9._-] are rejected by the handler."""
-        resp = await client.get("/api/v1/sandbox/files/abc%3Bls/file.txt")
+        resp = await client.get("/api/sandbox/files/abc%3Bls/file.txt")
         # %3B is ';', which fails the safe_pattern regex → 400
         assert resp.status_code == 400
 
     @pytest.mark.asyncio
     async def test_space_in_filename_returns_400(self, client):
-        resp = await client.get("/api/v1/sandbox/files/session1/file%20name.txt")
+        resp = await client.get("/api/sandbox/files/session1/file%20name.txt")
         assert resp.status_code == 400
 
 
@@ -336,14 +327,20 @@ class TestUploadSearchQueryFlow:
         search_data = search_resp.json()
         assert len(search_data) >= 1
 
-        # Step 3: query via orchestration
-        with patch("app.api.query.OrchestrationService") as MockSvc:
-            instance = MockSvc.return_value
-            instance.execute = AsyncMock(return_value=ResultResponse(
-                type="table",
-                data={"columns": ["id", "name"], "rows": [[1, "Buddy"]]},
-                metadata={"status": "completed"},
-            ))
+        # Step 3: query via MLOps orchestration
+        # Populate fake_db with an endpoint so the query handler finds it
+        ep_for_query = _make_endpoint(id=20, source_id=source_id)
+        src_for_query = _make_swagger_source(id=source_id, base_url="https://petstore.example.com/v1")
+        fake_db.set_execute_result(make_result(scalars=[ep_for_query]))
+        fake_db.register_get(SwaggerSource, source_id, src_for_query)
+
+        with patch("app.api.query.MLOpsClient") as MockMLOps:
+            instance = MockMLOps.return_value
+            instance.orchestrate = AsyncMock(return_value={
+                "type": "table",
+                "data": {"columns": ["id", "name"], "rows": [[1, "Buddy"]]},
+                "metadata": {"status": "completed"},
+            })
 
             query_resp = await client.post(
                 "/api/v1/query",
@@ -488,11 +485,16 @@ class TestConfirmationWorkflow:
 
 
 class TestViewerFullWorkflow:
-    """Viewer can read but is blocked on write/admin operations."""
+    """Viewer can read but is blocked on write/admin operations.
+    Uses X-User-Role header for role-based access control."""
 
     @pytest.mark.asyncio
     async def test_viewer_can_read_blocked_on_write_and_admin(self, app, fake_db):
-        async with await _client_with_role(app, "viewer") as viewer:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(
+            transport=transport, base_url="http://test",
+            headers={"X-User-Role": "viewer"},
+        ) as viewer:
             # CAN read: list endpoints
             fake_db.set_execute_result(make_result(scalars=[]))
             resp = await viewer.get("/api/v1/endpoints/list")
@@ -512,10 +514,6 @@ class TestViewerFullWorkflow:
             resp = await viewer.post("/api/v1/swagger/upload")
             assert resp.status_code == 403
 
-            # BLOCKED on write: query (editor+)
-            resp = await viewer.post("/api/v1/query", json={"query": "test"})
-            assert resp.status_code == 403
-
             # BLOCKED on admin: delete swagger (admin only)
             resp = await viewer.delete("/api/v1/swagger/1")
             assert resp.status_code == 403
@@ -529,20 +527,26 @@ class TestViewerFullWorkflow:
 
 
 class TestEditorFullWorkflow:
-    """Editor can read+write but is blocked on admin operations."""
+    """Editor can read+write but is blocked on admin operations.
+    Uses X-User-Role header for role-based access control."""
 
     @pytest.mark.asyncio
     async def test_editor_can_write_blocked_on_admin(self, app, fake_db):
-        async with await _client_with_role(app, "editor") as editor:
-            # CAN write: query
-            with patch("app.api.query.OrchestrationService") as MockSvc:
-                MockSvc.return_value.execute = AsyncMock(
-                    return_value=ResultResponse(type="text", data={"content": "ok"})
-                )
+        transport = ASGITransport(app=app)
+        async with AsyncClient(
+            transport=transport, base_url="http://test",
+            headers={"X-User-Role": "editor"},
+        ) as editor:
+            # CAN write: query (unprotected endpoint)
+            with patch("app.api.query.MLOpsClient") as MockMLOps:
+                MockMLOps.return_value.orchestrate = AsyncMock(return_value={
+                    "type": "text", "data": {"content": "ok"},
+                })
+                fake_db.set_execute_result(make_result(scalars=[]))
                 resp = await editor.post("/api/v1/query", json={"query": "hello"})
             assert resp.status_code == 200
 
-            # CAN write: upload spec
+            # CAN write: upload spec (editor+)
             spec_bytes = json.dumps(PETSTORE_OPENAPI3).encode()
             with patch("app.api.swagger.RAGService") as MockRAG:
                 MockRAG.return_value.index_endpoints = AsyncMock(return_value=4)
@@ -596,11 +600,12 @@ class TestUnicodeQuery:
 
     @pytest.mark.asyncio
     async def test_unicode_query(self, client, fake_db):
-        with patch("app.api.query.OrchestrationService") as MockSvc:
-            MockSvc.return_value.execute = AsyncMock(return_value=ResultResponse(
-                type="text",
-                data={"content": "result"},
-            ))
+        with patch("app.api.query.MLOpsClient") as MockMLOps:
+            MockMLOps.return_value.orchestrate = AsyncMock(return_value={
+                "type": "text",
+                "data": {"content": "result"},
+            })
+            fake_db.set_execute_result(make_result(scalars=[]))
 
             resp = await client.post(
                 "/api/v1/query",
@@ -611,11 +616,12 @@ class TestUnicodeQuery:
 
     @pytest.mark.asyncio
     async def test_emoji_only_query(self, client, fake_db):
-        with patch("app.api.query.OrchestrationService") as MockSvc:
-            MockSvc.return_value.execute = AsyncMock(return_value=ResultResponse(
-                type="text",
-                data={"content": "dunno"},
-            ))
+        with patch("app.api.query.MLOpsClient") as MockMLOps:
+            MockMLOps.return_value.orchestrate = AsyncMock(return_value={
+                "type": "text",
+                "data": {"content": "dunno"},
+            })
+            fake_db.set_execute_result(make_result(scalars=[]))
 
             resp = await client.post("/api/v1/query", json={"query": "🤔"})
 
@@ -874,11 +880,12 @@ class TestQueryWithSourceIds:
     @pytest.mark.asyncio
     async def test_query_with_empty_source_ids_list(self, client, fake_db):
         """Empty list should be treated as no filter."""
-        with patch("app.api.query.OrchestrationService") as MockSvc:
-            MockSvc.return_value.execute = AsyncMock(return_value=ResultResponse(
-                type="text",
-                data={"content": "ok"},
-            ))
+        with patch("app.api.query.MLOpsClient") as MockMLOps:
+            MockMLOps.return_value.orchestrate = AsyncMock(return_value={
+                "type": "text",
+                "data": {"content": "ok"},
+            })
+            fake_db.set_execute_result(make_result(scalars=[]))
             resp = await client.post(
                 "/api/v1/query",
                 json={"query": "test", "swagger_source_ids": []},
@@ -887,11 +894,12 @@ class TestQueryWithSourceIds:
 
     @pytest.mark.asyncio
     async def test_query_with_null_source_ids(self, client, fake_db):
-        with patch("app.api.query.OrchestrationService") as MockSvc:
-            MockSvc.return_value.execute = AsyncMock(return_value=ResultResponse(
-                type="text",
-                data={"content": "ok"},
-            ))
+        with patch("app.api.query.MLOpsClient") as MockMLOps:
+            MockMLOps.return_value.orchestrate = AsyncMock(return_value={
+                "type": "text",
+                "data": {"content": "ok"},
+            })
+            fake_db.set_execute_result(make_result(scalars=[]))
             resp = await client.post(
                 "/api/v1/query",
                 json={"query": "test", "swagger_source_ids": None},

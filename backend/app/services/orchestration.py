@@ -36,15 +36,13 @@ class StepState(enum.Enum):
     ERROR = "error"
     SKIPPED = "skipped"
 
-    # Allowed transitions: from_state -> {to_states}
-    _TRANSITIONS: dict[str, set[str]] = {  # type: ignore[assignment]
-        "pending": {"running", "skipped"},
-        "running": {"completed", "error"},
-    }
-
     @classmethod
     def validate_transition(cls, from_state: StepState, to_state: StepState) -> None:
-        allowed = cls._TRANSITIONS.get(from_state.value, set())
+        _transitions: dict[str, set[str]] = {
+            "pending": {"running", "skipped"},
+            "running": {"completed", "error"},
+        }
+        allowed = _transitions.get(from_state.value, set())
         if to_state.value not in allowed:
             raise ValueError(
                 f"Invalid state transition: {from_state.value} -> {to_state.value}"

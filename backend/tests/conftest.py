@@ -153,6 +153,7 @@ def app(fake_db):
         yield
 
     from app.db.session import get_db
+    from app.api.auth import require_auth
     from app.main import app as real_app
 
     # Replace lifespan so it never touches real Postgres
@@ -161,7 +162,19 @@ def app(fake_db):
     async def _override_get_db() -> AsyncGenerator:
         yield fake_db
 
+    # Mock auth — return a fake admin user for all tests
+    _fake_user = MagicMock()
+    _fake_user.id = 1
+    _fake_user.email = "test@test.com"
+    _fake_user.name = "Test Admin"
+    _fake_user.role = "admin"
+    _fake_user.is_active = 1
+
+    async def _override_require_auth():
+        return _fake_user
+
     real_app.dependency_overrides[get_db] = _override_get_db
+    real_app.dependency_overrides[require_auth] = _override_require_auth
     yield real_app
     real_app.dependency_overrides.clear()
 
