@@ -1,6 +1,5 @@
 """Tests for app configuration and settings."""
 
-import os
 
 
 class TestSettings:

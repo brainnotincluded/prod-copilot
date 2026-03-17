@@ -58,6 +58,9 @@ def load_dataset(path: str = "dataset.json") -> list[dict]:
         "expected_endpoints", "expected_result_type", "difficulty", "tags",
     }
     for i, case in enumerate(dataset):
+        if not isinstance(case, dict):
+            print(f"ERROR: Test case {i} is not a dict", file=sys.stderr)
+            sys.exit(1)
         missing = required_fields - set(case.keys())
         if missing:
             print(

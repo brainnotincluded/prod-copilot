@@ -4,7 +4,6 @@ Covers: log format, correlation IDs, sensitive data handling, step timing.
 """
 
 import time
-import pytest
 import logging
 
 from app.services.orchestration import (

@@ -1,4 +1,6 @@
 import logging
+import time as _time
+import uuid
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -45,9 +47,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-import time as _time
-import uuid
 
 
 @app.middleware("http")

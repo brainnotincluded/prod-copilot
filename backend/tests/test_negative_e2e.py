@@ -20,7 +20,6 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.db.models import ActionConfirmation, ApiEndpoint, SwaggerSource
-from app.schemas.models import ResultResponse
 from tests.conftest import (
     PETSTORE_OPENAPI3,
     make_result,
