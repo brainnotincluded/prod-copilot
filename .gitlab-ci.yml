@@ -9,8 +9,10 @@ deploy:
         set -e
         
         DEPLOY_PATH="/opt/$CI_PROJECT_NAME"
+        echo "Deploying to $DEPLOY_PATH"
         
         if [ ! -d "$DEPLOY_PATH" ]; then
+          echo "Creating directory..."
           sudo mkdir -p "$DEPLOY_PATH"
           sudo chown $USER:$USER "$DEPLOY_PATH"
         fi
@@ -18,13 +20,21 @@ deploy:
         cd "$DEPLOY_PATH"
         
         if [ ! -d ".git" ]; then
+          echo "Cloning repo..."
           git clone "$CI_REPOSITORY_URL" .
         else
+          echo "Pulling changes..."
           git fetch origin
           git reset --hard "origin/$CI_COMMIT_BRANCH"
         fi
         
+        echo "Starting containers..."
         docker compose up -d --build
+        
+        echo "Containers status:"
+        docker compose ps
+        
+        echo "Done!"
       EOF
   only:
     - main
