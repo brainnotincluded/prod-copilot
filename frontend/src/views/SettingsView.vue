@@ -50,7 +50,7 @@ function handleLogout() {
                 <i class="pi pi-user"></i>
               </div>
               <div class="profile-info">
-                <div class="profile-name">{{ user?.name || user?.username || user?.email || 'Unknown User' }}</div>
+                <div class="profile-name">{{ user?.name || user?.email || 'Unknown User' }}</div>
                 <div class="profile-role">
                   <span class="role-badge" :class="`role-${role}`">{{ role }}</span>
                 </div>

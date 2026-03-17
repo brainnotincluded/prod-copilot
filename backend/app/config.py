@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     mlops_base_url: str = "http://mlops:8001"
     
     # Security settings
-    secret_key: str = secrets.token_urlsafe(32)
+    secret_key: str = "prod-copilot-jwt-secret-key-2026"
     access_token_expire_days: int = 7
 
     @property

@@ -154,11 +154,21 @@ def _reshape_output_data(output_type: str, data: dict | list | None, config: dic
         # Single key-value pairs — format nicely
         content = data.get("content", data.get("message", ""))
         if not content:
-            # Format dict as key: value lines
             lines = []
             for k, v in data.items():
                 if isinstance(v, float):
                     v = round(v, 2)
+                elif isinstance(v, list):
+                    # Summarize lists instead of dumping raw
+                    if v and isinstance(v[0], dict):
+                        items = []
+                        for item in v[:10]:
+                            label = item.get("name", item.get("segment", item.get("status", item.get("tier", ""))))
+                            count = item.get("count", item.get("value", ""))
+                            items.append(f"  - {label}: {count}")
+                        v = "\n" + "\n".join(items)
+                    else:
+                        v = ", ".join(str(x) for x in v[:10])
                 lines.append(f"**{k}**: {v}")
             content = "\n".join(lines) if lines else json.dumps(data, default=str, ensure_ascii=False)
             if content in ("{}", "null", "[]"):
@@ -433,7 +443,28 @@ async def _execute_single_step(
                         and "body" not in latest_data):
                     latest_data = [latest_data]
 
-            shaped_data = _reshape_output_data(output_type, latest_data, {})
+            # For text output, ask LLM to formulate a human answer
+            if output_type == "text" and latest_data is not None:
+                try:
+                    user_query = context.get("original_query", step.description)
+                    data_summary = json.dumps(latest_data, default=str, ensure_ascii=False)[:2000]
+                    answer = await asyncio.wait_for(
+                        client.chat(
+                            [
+                                {"role": "system", "content": "You are an API assistant. Answer the user's question based on the data. Be concise. Answer in the user's language."},
+                                {"role": "user", "content": f"Question: {user_query}\n\nData from API:\n{data_summary}\n\nAnswer the question directly."},
+                            ],
+                            temperature=0.2,
+                            max_tokens=512,
+                        ),
+                        timeout=30,
+                    )
+                    shaped_data = {"content": answer.strip()}
+                except Exception as e:
+                    logger.warning("LLM format failed, falling back to raw: %s", e)
+                    shaped_data = _reshape_output_data(output_type, latest_data, {})
+            else:
+                shaped_data = _reshape_output_data(output_type, latest_data, {})
 
             # Final guard: never store empty/meaningless data
             if shaped_data is None or shaped_data == {}:

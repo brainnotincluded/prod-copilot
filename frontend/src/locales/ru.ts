@@ -13,6 +13,8 @@ export default {
   'nav.apiSources': 'API-источники',
   'nav.apiMaps': 'Карта API',
   'nav.dashboard': 'Дашборд',
+  'nav.scenarios': 'Сценарии',
+  'nav.history': 'История',
   'nav.appName': 'Prod Copilot',
 
   // Chat
@@ -130,6 +132,33 @@ export default {
   'settings.canUpload': 'Загрузка API',
   'settings.canDelete': 'Удаление API',
   'settings.canView': 'Просмотр API',
+
+  // Scenarios
+  'scenarios.title': 'Сценарии',
+  'scenarios.description': 'Визуальная история выполнения с пошаговыми графами. Нажмите на сценарий, чтобы увидеть граф выполнения.',
+  'scenarios.loading': 'Загрузка сценариев...',
+  'scenarios.empty': 'Сценариев пока нет',
+  'scenarios.emptyHint': 'Выполните запрос в Чате, чтобы создать первый сценарий.',
+  'scenarios.goToChat': 'Перейти в Чат',
+  'scenarios.status': 'Статус',
+  'scenarios.steps': 'шагов',
+  'scenarios.completed': 'завершён',
+  'scenarios.running': 'выполняется',
+  'scenarios.error': 'ошибка',
+  'scenarios.cancelled': 'отменён',
+  'scenarios.graph': 'Граф выполнения',
+  'scenarios.details': 'Детали шага',
+  'scenarios.reasoning': 'Рассуждения',
+  'scenarios.alternatives': 'Рассмотренные альтернативы',
+  'scenarios.request': 'Запрос',
+  'scenarios.response': 'Ответ',
+  'scenarios.duration': 'Длительность',
+  'scenarios.confirmation': 'Подтверждение',
+  'scenarios.pending': 'Ожидает подтверждения',
+  'scenarios.approved': 'Подтверждён',
+  'scenarios.rejected': 'Отклонён',
+  'scenarios.noGraph': 'Граф выполнения недоступен',
+  'scenarios.filterAll': 'Все',
 
   // Errors (store level)
   'error.noData': 'Данные не были возвращены.',

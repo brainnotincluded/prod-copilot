@@ -1,0 +1,227 @@
+[
+  {
+    "query": "hi",
+    "expected_intent": "chat",
+    "expected_steps": ["chat_response"],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "easy",
+    "tags": ["greeting"]
+  },
+  {
+    "query": "привет",
+    "expected_intent": "chat",
+    "expected_steps": ["chat_response"],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "easy",
+    "tags": ["greeting"]
+  },
+  {
+    "query": "hello, how are you?",
+    "expected_intent": "chat",
+    "expected_steps": ["chat_response"],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "easy",
+    "tags": ["greeting"]
+  },
+  {
+    "query": "show all segments",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/segments"],
+    "expected_result_type": "table",
+    "difficulty": "easy",
+    "tags": ["segments"]
+  },
+  {
+    "query": "list campaigns",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/campaigns"],
+    "expected_result_type": "table",
+    "difficulty": "easy",
+    "tags": ["campaigns"]
+  },
+  {
+    "query": "покажи все аудитории",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/audiences"],
+    "expected_result_type": "table",
+    "difficulty": "easy",
+    "tags": ["audiences"]
+  },
+  {
+    "query": "show push notification templates",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/push/templates"],
+    "expected_result_type": "table",
+    "difficulty": "easy",
+    "tags": ["push"]
+  },
+  {
+    "query": "get user with id 5",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/users/5"],
+    "expected_result_type": "text",
+    "difficulty": "easy",
+    "tags": ["users"]
+  },
+  {
+    "query": "покажи общие KPI маркетинга",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/analytics/kpi"],
+    "expected_result_type": "text",
+    "difficulty": "medium",
+    "tags": ["kpi", "analytics"]
+  },
+  {
+    "query": "forecast audience size for segments 1 and 2 combined",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/analytics/audience-forecast"],
+    "expected_result_type": "text",
+    "difficulty": "medium",
+    "tags": ["audiences", "analytics"]
+  },
+  {
+    "query": "show performance metrics for campaign 1",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/analytics/campaign/1/performance"],
+    "expected_result_type": "table",
+    "difficulty": "medium",
+    "tags": ["campaigns", "analytics", "kpi"]
+  },
+  {
+    "query": "какие KPI у сегмента 3?",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/analytics/segments/3/kpi"],
+    "expected_result_type": "text",
+    "difficulty": "medium",
+    "tags": ["segments", "kpi", "analytics"]
+  },
+  {
+    "query": "show user statistics breakdown by segment and status",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/users/stats"],
+    "expected_result_type": "table",
+    "difficulty": "medium",
+    "tags": ["users", "analytics"]
+  },
+  {
+    "query": "find segments with more than 50 users, then create an audience from the largest one",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "data_process", "api_call", "format_output"],
+    "expected_endpoints": ["/api/segments", "/api/audiences"],
+    "expected_result_type": "text",
+    "difficulty": "hard",
+    "tags": ["segments", "audiences"]
+  },
+  {
+    "query": "покажи все сегменты, выбери самый большой и сгенерируй для него пуш-уведомление о распродаже",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "data_process", "api_call", "format_output"],
+    "expected_endpoints": ["/api/segments", "/api/push/generate"],
+    "expected_result_type": "text",
+    "difficulty": "hard",
+    "tags": ["segments", "push"]
+  },
+  {
+    "query": "get all campaigns, filter only active ones, and show their A/B test variant results",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "data_process", "api_call", "format_output"],
+    "expected_endpoints": ["/api/campaigns", "/api/campaigns/{campaign_id}/variants"],
+    "expected_result_type": "table",
+    "difficulty": "hard",
+    "tags": ["campaigns"]
+  },
+  {
+    "query": "compare KPIs between segment 1 and segment 2",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "api_call", "data_process", "format_output"],
+    "expected_endpoints": ["/api/analytics/segments/1/kpi", "/api/analytics/segments/2/kpi"],
+    "expected_result_type": "table",
+    "difficulty": "hard",
+    "tags": ["segments", "kpi", "analytics"]
+  },
+  {
+    "query": "find users with avg check above 5000, check which audiences they belong to, then calculate the overlap between the top 2 audiences",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "data_process", "api_call", "format_output"],
+    "expected_endpoints": ["/api/users", "/api/audiences/{audience_id}/overlap"],
+    "expected_result_type": "text",
+    "difficulty": "hard",
+    "tags": ["users", "audiences", "analytics"]
+  },
+  {
+    "query": "",
+    "expected_intent": "chat",
+    "expected_steps": [],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "easy",
+    "tags": ["edge_case"]
+  },
+  {
+    "query": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa this is a very long query that keeps going and going and going and going to test how the system handles extremely long inputs that might overflow context or cause issues with the LLM planner and executor pipeline in various ways that should be handled gracefully by the orchestration layer",
+    "expected_intent": "api_query",
+    "expected_steps": ["format_output"],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "medium",
+    "tags": ["edge_case"]
+  },
+  {
+    "query": "deploy the application to production",
+    "expected_intent": "chat",
+    "expected_steps": ["chat_response"],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "medium",
+    "tags": ["edge_case"]
+  },
+  {
+    "query": "сегменты или кампании... не знаю, что-нибудь покажи",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "format_output"],
+    "expected_endpoints": ["/api/segments"],
+    "expected_result_type": "table",
+    "difficulty": "medium",
+    "tags": ["edge_case"]
+  },
+  {
+    "query": "а их всего 5?",
+    "expected_intent": "chat",
+    "expected_steps": ["chat_response"],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "medium",
+    "tags": ["follow_up"]
+  },
+  {
+    "query": "filter those by status active",
+    "expected_intent": "api_query",
+    "expected_steps": ["api_call", "data_process", "format_output"],
+    "expected_endpoints": ["/api/segments"],
+    "expected_result_type": "table",
+    "difficulty": "medium",
+    "tags": ["follow_up"]
+  },
+  {
+    "query": "покажи подробнее про второй из списка",
+    "expected_intent": "chat",
+    "expected_steps": ["chat_response"],
+    "expected_endpoints": [],
+    "expected_result_type": "text",
+    "difficulty": "hard",
+    "tags": ["follow_up"]
+  }
+]

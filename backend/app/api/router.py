@@ -9,6 +9,7 @@ from app.api.relations import router as relations_router
 from app.api.scenarios import router as scenarios_router
 from app.api.widgets import router as widgets_router
 from app.api.history import router as history_router
+from app.api.dashboard_data import router as dashboard_data_router
 
 api_router = APIRouter()
 
@@ -25,3 +26,4 @@ api_router.include_router(relations_router, prefix="/relations", tags=["relation
 api_router.include_router(scenarios_router, tags=["scenarios"], dependencies=_auth)
 api_router.include_router(widgets_router, tags=["widgets"], dependencies=_auth)
 api_router.include_router(history_router, prefix="/history", tags=["history"], dependencies=_auth)
+api_router.include_router(dashboard_data_router, tags=["dashboard"], dependencies=_auth)

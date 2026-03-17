@@ -38,12 +38,18 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ApiMapsView.vue'),
     meta: { requiresAuth: true },
   },
-  // Dashboard temporarily hidden
-  // {
-  //   path: '/dashboard',
-  //   name: 'dashboard',
-  //   component: () => import('@/views/DashboardView.vue'),
-  // },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('@/views/DashboardView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/scenarios',
+    name: 'scenarios',
+    component: () => import('@/views/ScenariosView.vue'),
+    meta: { requiresAuth: true },
+  },
   {
     path: '/history',
     name: 'history',

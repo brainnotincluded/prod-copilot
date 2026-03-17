@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import logging
+import time
+import uuid
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -53,6 +55,23 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Kimi base URL: %s", settings.kimi_base_url)
     logger.info("Embedding model: %s", settings.rag_embedding_model)
 
+    # Initialize metrics state
+    app.state.start_time = time.time()
+    app.state.request_count = 0
+    app.state.orchestration_count = 0
+    app.state.orchestration_errors = 0
+    app.state.total_orchestration_ms = 0
+    app.state.embeddings_count = 0
+
+    # Initialize model version history
+    app.state.model_versions = [{
+        "version": "1.0.0",
+        "model": settings.llm_model,
+        "provider": settings.llm_provider,
+        "timestamp": time.time(),
+        "note": "Initial configuration"
+    }]
+
     if not settings.mock_mode:
         logger.info("Preloading embedding model...")
         from app.rag.embeddings import _get_model
@@ -85,14 +104,80 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def metrics_middleware(request, call_next):
+    app.state.request_count += 1
+
+    # Generate or propagate trace ID
+    trace_id = request.headers.get("x-trace-id") or str(uuid.uuid4())[:8]
+    request.state.trace_id = trace_id
+
+    start = time.time()
+    response = await call_next(request)
+    duration_ms = (time.time() - start) * 1000
+
+    # Add trace ID to response
+    response.headers["X-Trace-Id"] = trace_id
+
+    # Track orchestration-specific metrics
+    if "/api/orchestrate" in str(request.url):
+        app.state.orchestration_count += 1
+        app.state.total_orchestration_ms += duration_ms
+        if response.status_code >= 400:
+            app.state.orchestration_errors += 1
+
+    if "/api/embeddings" in str(request.url) and response.status_code == 200:
+        app.state.embeddings_count += 1
+
+    # Log non-health requests with trace ID
+    path = request.url.path
+    if path not in ("/health", "/api/metrics"):
+        logger.info(
+            "[%s] %s %s → %d (%.1fms)",
+            trace_id, request.method, path, response.status_code, duration_ms,
+            extra={"trace_id": trace_id, "method": request.method, "path": path, "status": response.status_code, "duration_ms": round(duration_ms, 1)},
+        )
+
+    return response
+
+
 # ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
 async def health_check() -> dict:
-    """Basic health check endpoint."""
-    return {"status": "ok", "service": "mlops"}
+    """Health check with dependency status."""
+    settings = get_settings()
+    llm_status = "unknown"
+    embedding_status = "unknown"
+
+    # Check LLM
+    try:
+        client = get_llm_client()
+        # Just verify client is configured, don't make actual call
+        llm_status = "ok" if client else "error"
+    except Exception:
+        llm_status = "error"
+
+    # Check embedding model
+    try:
+        from app.rag.embeddings import _get_model
+        model = _get_model()
+        embedding_status = "ok" if model else "error"
+    except Exception:
+        embedding_status = "error"
+
+    overall = "ok" if llm_status == "ok" and embedding_status == "ok" else "degraded"
+
+    return {
+        "status": overall,
+        "service": "mlops",
+        "version": settings.app_version,
+        "llm": llm_status,
+        "embeddings": embedding_status,
+        "orchestration_mode": settings.orchestration_mode,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -248,6 +333,127 @@ async def serve_sandbox_file(session_id: str, filename: str):
     if not os.path.isfile(filepath):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(filepath)
+
+
+# ---------------------------------------------------------------------------
+# Model info & Metrics
+# ---------------------------------------------------------------------------
+
+@app.get("/api/model/info")
+async def model_info() -> dict:
+    """Return current model configuration and capabilities."""
+    settings = get_settings()
+    return {
+        "llm": {
+            "provider": settings.llm_provider,
+            "model": settings.llm_model,
+            "base_url": settings.llm_base_url,
+            "max_tokens": 16384,
+            "capabilities": ["intent_classification", "plan_generation", "step_execution", "chat", "translation"],
+        },
+        "embeddings": {
+            "model": settings.rag_embedding_model,
+            "dimensions": 384,
+            "distance_metric": "cosine",
+            "index_type": "hnsw",
+        },
+        "orchestration": {
+            "mode": settings.orchestration_mode,
+            "max_steps": 10,
+            "step_timeout_seconds": 120,
+            "supported_actions": ["api_call", "data_process", "execute_code", "format_output"],
+        },
+        "version": settings.app_version,
+    }
+
+
+@app.post("/api/model/switch")
+async def switch_model(request: dict) -> dict:
+    """Switch the active LLM model configuration.
+
+    This demonstrates the model update/versioning capability.
+    In production, this would trigger a model reload.
+
+    Supported fields:
+    - model: new model name (e.g. "Qwen/Qwen3-32B-AWQ")
+    - provider: new provider (kimi, openrouter, ollama, custom)
+    - orchestration_mode: "plan" or "agent"
+    """
+    settings = get_settings()
+    changes = {}
+
+    if "model" in request:
+        old = settings.llm_model
+        settings.llm_model = request["model"]
+        changes["model"] = {"old": old, "new": request["model"]}
+
+    if "provider" in request:
+        old = settings.llm_provider
+        settings.llm_provider = request["provider"]
+        changes["provider"] = {"old": old, "new": request["provider"]}
+
+    if "orchestration_mode" in request:
+        old = settings.orchestration_mode
+        settings.orchestration_mode = request["orchestration_mode"]
+        changes["orchestration_mode"] = {"old": old, "new": request["orchestration_mode"]}
+
+    if not changes:
+        return {"status": "no_changes", "message": "No valid fields provided"}
+
+    logger.info("Model configuration updated: %s", changes)
+
+    app.state.model_versions.append({
+        "version": f"1.0.{len(app.state.model_versions)}",
+        "model": settings.llm_model,
+        "provider": settings.llm_provider,
+        "timestamp": time.time(),
+        "note": f"Switched: {', '.join(changes.keys())}",
+    })
+
+    return {
+        "status": "updated",
+        "changes": changes,
+        "message": "Configuration updated. Changes take effect on next request.",
+        "current": {
+            "model": settings.llm_model,
+            "provider": settings.llm_provider,
+            "orchestration_mode": settings.orchestration_mode,
+        }
+    }
+
+
+@app.get("/api/model/versions")
+async def model_versions() -> dict:
+    """Get model version history."""
+    return {
+        "versions": app.state.model_versions,
+        "current_version": app.state.model_versions[-1] if app.state.model_versions else None,
+    }
+
+
+@app.get("/api/metrics")
+async def get_metrics() -> dict:
+    """Return operational metrics for monitoring."""
+    try:
+        import psutil
+        process = psutil.Process()
+        memory = process.memory_info()
+        memory_rss_mb = round(memory.rss / 1024 / 1024, 1)
+        cpu_percent = process.cpu_percent()
+    except ImportError:
+        memory_rss_mb = None
+        cpu_percent = None
+
+    return {
+        "uptime_seconds": time.time() - app.state.start_time,
+        "requests_total": app.state.request_count,
+        "orchestrations_total": app.state.orchestration_count,
+        "orchestrations_errors": app.state.orchestration_errors,
+        "avg_orchestration_ms": round(app.state.total_orchestration_ms / max(app.state.orchestration_count, 1), 1),
+        "embeddings_generated": app.state.embeddings_count,
+        "memory_rss_mb": memory_rss_mb,
+        "cpu_percent": cpu_percent,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -425,8 +631,9 @@ async def orchestrate_stream(request: OrchestrationRequest):
                 context=request.context,
             )
 
-            # Build execution context with endpoints available for format_output
+            # Build execution context
             exec_context = dict(request.context or {})
+            exec_context["original_query"] = query
             if endpoints:
                 exec_context["available_endpoints"] = endpoints
 

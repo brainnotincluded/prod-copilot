@@ -13,6 +13,8 @@ export default {
   'nav.apiSources': 'API Sources',
   'nav.apiMaps': 'API Maps',
   'nav.dashboard': 'Dashboard',
+  'nav.scenarios': 'Scenarios',
+  'nav.history': 'History',
   'nav.appName': 'Prod Copilot',
 
   // Chat
@@ -130,6 +132,33 @@ export default {
   'settings.canUpload': 'Upload APIs',
   'settings.canDelete': 'Delete APIs',
   'settings.canView': 'View APIs',
+
+  // Scenarios
+  'scenarios.title': 'Scenarios',
+  'scenarios.description': 'Visual execution history with step-by-step graphs. Click a scenario to see its execution flow.',
+  'scenarios.loading': 'Loading scenarios...',
+  'scenarios.empty': 'No scenarios yet',
+  'scenarios.emptyHint': 'Run a query in Chat to create your first scenario.',
+  'scenarios.goToChat': 'Go to Chat',
+  'scenarios.status': 'Status',
+  'scenarios.steps': 'steps',
+  'scenarios.completed': 'completed',
+  'scenarios.running': 'running',
+  'scenarios.error': 'error',
+  'scenarios.cancelled': 'cancelled',
+  'scenarios.graph': 'Execution Graph',
+  'scenarios.details': 'Step Details',
+  'scenarios.reasoning': 'Reasoning',
+  'scenarios.alternatives': 'Alternatives considered',
+  'scenarios.request': 'Request',
+  'scenarios.response': 'Response',
+  'scenarios.duration': 'Duration',
+  'scenarios.confirmation': 'Confirmation',
+  'scenarios.pending': 'Pending approval',
+  'scenarios.approved': 'Approved',
+  'scenarios.rejected': 'Rejected',
+  'scenarios.noGraph': 'No execution graph available',
+  'scenarios.filterAll': 'All',
 
   // Errors (store level)
   'error.noData': 'No data was returned.',

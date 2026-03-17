@@ -18,9 +18,11 @@ const { t } = useLocale()
 
 const navItems = computed(() => [
   { path: '/chat', label: t('nav.chat'), icon: 'pi pi-comment' },
-  { path: '/history', label: 'History', icon: 'pi pi-clock' },
+  { path: '/history', label: t('nav.history'), icon: 'pi pi-clock' },
   { path: '/swagger', label: t('nav.apiSources'), icon: 'pi pi-file' },
   { path: '/endpoints', label: t('nav.apiMaps'), icon: 'pi pi-sitemap' },
+  { path: '/scenarios', label: t('nav.scenarios'), icon: 'pi pi-share-alt' },
+  { path: '/dashboard', label: t('nav.dashboard'), icon: 'pi pi-chart-bar' },
 ])
 
 function isActive(path: string): boolean {

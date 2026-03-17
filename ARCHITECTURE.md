@@ -1465,3 +1465,152 @@ flowchart TD
     SAVE_EP --> RESPONSE["SwaggerUploadResponse:<br/>id, name, base_url, endpoints_count"]
 ```
 
+---
+
+## Competitive Analysis
+
+### Market Landscape
+
+| Solution | Approach | Limitations |
+|----------|----------|-------------|
+| Zapier / Make | Visual automation, predefined connectors | No AI-driven plan building, limited to pre-built integrations, no semantic API discovery |
+| Postman Flows | API workflow builder | Requires manual endpoint selection, no natural language interface, no auto-generated dashboards |
+| LangChain / CrewAI | Code-first AI agents | Requires developer setup, no visual layer, no built-in confirmation flow |
+| Custom Internal Tools | Hand-coded dashboards | Expensive to maintain, no reusability across platforms, no universal connector |
+| ChatGPT + Plugins | Chat interface with API access | No scenario persistence, no visual execution graph, no role-based confirmation |
+
+### Prod Copilot Differentiation
+
+1. **Universal API connector**: Any OpenAPI/Swagger spec becomes a capability — no custom integration code needed
+2. **Three-layer interface**: API map + Visual scenario + Chat — users choose their interaction mode
+3. **Auto-generated dashboards**: KPI panels, charts, tables built from API response schemas, not hard-coded
+4. **Confirmation workflow**: Mutating actions require explicit approval from system owners — production-safe
+5. **Semantic discovery**: pgvector RAG finds relevant endpoints by meaning, not just keyword matching
+6. **Transparent reasoning**: Every step shows why it was chosen and what alternatives were considered
+
+---
+
+## Product Roadmap (3-Year Plan)
+
+### Year 1: Foundation (Current → Q4 2026)
+
+**Q2 2026 — MVP Launch**
+- Core chat + API map + scenario execution
+- Marketing demo domain
+- Basic RBAC (viewer/editor/admin)
+
+**Q3 2026 — Enterprise Readiness**
+- SSO/OIDC integration
+- Audit trail export (CSV, JSON)
+- Webhook notifications for confirmation requests
+- Multi-tenant workspace isolation
+
+**Q4 2026 — Extensibility**
+- Plugin marketplace for custom data transformers
+- gRPC and GraphQL spec support
+- Scheduled scenario execution (cron-like)
+- Custom widget builder
+
+### Year 2: Scale (2027)
+
+**Q1-Q2 2027 — Intelligence**
+- Fine-tuned domain models for better plan accuracy
+- Auto-suggest scenarios based on usage patterns
+- Anomaly detection on API response drift
+- Cross-scenario dependency graphs
+
+**Q3-Q4 2027 — Collaboration**
+- Team scenario sharing and versioning
+- Approval chains (multi-level confirmation)
+- Collaborative editing of execution plans
+- Integration with Slack, Teams for confirmation flows
+
+### Year 3: Platform (2028)
+
+**Q1-Q2 2028 — Ecosystem**
+- Self-hosted and cloud deployment options
+- API marketplace for sharing capabilities across teams
+- Custom LLM adapter (bring your own model)
+- Real-time data streaming pipelines
+
+**Q3-Q4 2028 — Intelligence Platform**
+- Autonomous agents that monitor KPIs and trigger scenarios
+- Predictive analytics layer
+- Natural language reporting ("summarize last week's campaigns")
+- White-label SDK for embedding in third-party tools
+
+---
+
+## Extensibility Guide
+
+### Adding a New API (Capability)
+
+The simplest way to add new capabilities:
+
+1. **Upload Swagger/OpenAPI spec** via UI or API:
+   ```bash
+   curl -X POST http://backend:8000/api/v1/swagger/upload \
+     -F "file=@new-api.json" \
+     -H "Authorization: Bearer <token>"
+   ```
+
+2. The system automatically:
+   - Parses all endpoints (method, path, parameters, schemas)
+   - Generates 384-dim embeddings via sentence-transformers
+   - Indexes in pgvector with HNSW index
+   - Makes endpoints available for semantic search and orchestration
+
+3. No code changes required — the LLM discovers and uses new endpoints automatically.
+
+### Adding a Custom Data Transformer
+
+Extend `mlops/app/mcp/data_processor.py`:
+
+```python
+# In DataProcessor.transform():
+elif operation == "my_custom_op":
+    result = self._my_custom_transform(df, params)
+```
+
+### Adding a New Orchestration Step Type
+
+Extend `mlops/app/orchestrator/executor.py`:
+
+```python
+# In execute_step():
+elif step.action == "my_custom_action":
+    result = await self._execute_custom(step, context)
+```
+
+### Adding a New Widget Type
+
+Extend `backend/app/api/widgets.py`:
+
+```python
+# In _detect_widget_type():
+if "geo" in str(data).lower():
+    return "map"
+```
+
+---
+
+## Known Limitations and Trade-offs
+
+### Architecture Decisions
+
+| Decision | Rationale | Trade-off |
+|----------|-----------|-----------|
+| Header-based RBAC (X-User-Role) | Lightweight, works with API gateways | Not suitable for zero-trust environments without gateway |
+| SQLite for demo API (test-api1) | Zero-config, fast setup for hackathon | Not production-grade for high-concurrency |
+| Pre-trained models only (no fine-tuning) | Fast deployment, no training data needed | Less accurate for domain-specific terminology |
+| Plan-then-execute (not agent loop default) | More predictable, easier to visualize | Slower for simple queries that need 1 API call |
+| pgvector in PostgreSQL (not dedicated vector DB) | Single database, simpler ops | May not scale to millions of endpoints |
+
+### Known Limitations
+
+1. **LLM hallucination**: The planner may suggest API calls with incorrect parameters. Mitigated by schema validation in executor.
+2. **No streaming for API calls**: External API calls are synchronous within steps. Long-running APIs may hit the 120s timeout.
+3. **Single LLM provider at a time**: Cannot mix models for different tasks (e.g., fast model for classification, large for planning).
+4. **No data persistence between scenarios**: Each scenario starts fresh; no shared state across executions.
+5. **Limited error recovery**: If a step fails mid-scenario, the remaining steps are skipped rather than retried with adjusted parameters.
+

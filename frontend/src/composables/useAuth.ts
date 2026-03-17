@@ -56,16 +56,36 @@ async function apiCall<T>(
     headers['Authorization'] = `Bearer ${token.value}`
   }
   
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  })
-  
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
-    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
+  let response: Response
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    })
+  } catch (networkErr: any) {
+    throw new Error('Server unavailable. Please try again later.')
   }
-  
+
+  if (!response.ok) {
+    let detail = ''
+    try {
+      const errorData = await response.json()
+      detail = errorData.detail || errorData.message || ''
+    } catch {
+      // response body is not JSON
+    }
+
+    if (!detail) {
+      if (response.status === 401) detail = 'Invalid email or password'
+      else if (response.status === 403) detail = 'Access denied'
+      else if (response.status === 422) detail = 'Invalid input data'
+      else if (response.status >= 500) detail = 'Server error. Please try again later.'
+      else detail = `Request failed (${response.status})`
+    }
+
+    throw new Error(detail)
+  }
+
   return response.json()
 }
 

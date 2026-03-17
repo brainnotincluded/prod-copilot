@@ -1,0 +1,729 @@
+{
+  "timestamp": "2026-03-17T01:03:10Z",
+  "metrics": {
+    "total_cases": 25,
+    "intent_accuracy": 100.0,
+    "step_match_rate": 100.0,
+    "result_type_accuracy": 100.0,
+    "overall_pass_rate": 100.0,
+    "error_count": 0,
+    "avg_latency_ms": 0.01,
+    "by_difficulty": {
+      "easy": {
+        "count": 9,
+        "intent_accuracy": 100.0,
+        "step_match_rate": 100.0,
+        "result_type_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "medium": {
+        "count": 10,
+        "intent_accuracy": 100.0,
+        "step_match_rate": 100.0,
+        "result_type_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "hard": {
+        "count": 6,
+        "intent_accuracy": 100.0,
+        "step_match_rate": 100.0,
+        "result_type_accuracy": 100.0,
+        "pass_rate": 100.0
+      }
+    },
+    "by_tag": {
+      "analytics": {
+        "count": 7,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "audiences": {
+        "count": 4,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "campaigns": {
+        "count": 3,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "edge_case": {
+        "count": 4,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "follow_up": {
+        "count": 3,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "greeting": {
+        "count": 3,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "kpi": {
+        "count": 4,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "push": {
+        "count": 2,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "segments": {
+        "count": 5,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      },
+      "users": {
+        "count": 3,
+        "intent_accuracy": 100.0,
+        "pass_rate": 100.0
+      }
+    }
+  },
+  "results": [
+    {
+      "index": 0,
+      "query": "hi",
+      "difficulty": "easy",
+      "tags": [
+        "greeting"
+      ],
+      "expected_intent": "chat",
+      "actual_intent": "chat",
+      "intent_match": true,
+      "expected_steps": [
+        "chat_response"
+      ],
+      "actual_steps": [
+        "chat_response"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 1,
+      "query": "привет",
+      "difficulty": "easy",
+      "tags": [
+        "greeting"
+      ],
+      "expected_intent": "chat",
+      "actual_intent": "chat",
+      "intent_match": true,
+      "expected_steps": [
+        "chat_response"
+      ],
+      "actual_steps": [
+        "chat_response"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.0,
+      "error": null
+    },
+    {
+      "index": 2,
+      "query": "hello, how are you?",
+      "difficulty": "easy",
+      "tags": [
+        "greeting"
+      ],
+      "expected_intent": "chat",
+      "actual_intent": "chat",
+      "intent_match": true,
+      "expected_steps": [
+        "chat_response"
+      ],
+      "actual_steps": [
+        "chat_response"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 3,
+      "query": "show all segments",
+      "difficulty": "easy",
+      "tags": [
+        "segments"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 4,
+      "query": "list campaigns",
+      "difficulty": "easy",
+      "tags": [
+        "campaigns"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 5,
+      "query": "покажи все аудитории",
+      "difficulty": "easy",
+      "tags": [
+        "audiences"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.02,
+      "error": null
+    },
+    {
+      "index": 6,
+      "query": "show push notification templates",
+      "difficulty": "easy",
+      "tags": [
+        "push"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 7,
+      "query": "get user with id 5",
+      "difficulty": "easy",
+      "tags": [
+        "users"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 8,
+      "query": "покажи общие KPI маркетинга",
+      "difficulty": "medium",
+      "tags": [
+        "kpi",
+        "analytics"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.03,
+      "error": null
+    },
+    {
+      "index": 9,
+      "query": "forecast audience size for segments 1 and 2 combined",
+      "difficulty": "medium",
+      "tags": [
+        "audiences",
+        "analytics"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 10,
+      "query": "show performance metrics for campaign 1",
+      "difficulty": "medium",
+      "tags": [
+        "campaigns",
+        "analytics",
+        "kpi"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 11,
+      "query": "какие KPI у сегмента 3?",
+      "difficulty": "medium",
+      "tags": [
+        "segments",
+        "kpi",
+        "analytics"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.02,
+      "error": null
+    },
+    {
+      "index": 12,
+      "query": "show user statistics breakdown by segment and status",
+      "difficulty": "medium",
+      "tags": [
+        "users",
+        "analytics"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 13,
+      "query": "find segments with more than 50 users, then create an audience from the largest ",
+      "difficulty": "hard",
+      "tags": [
+        "segments",
+        "audiences"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 14,
+      "query": "покажи все сегменты, выбери самый большой и сгенерируй для него пуш-уведомление ",
+      "difficulty": "hard",
+      "tags": [
+        "segments",
+        "push"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.02,
+      "error": null
+    },
+    {
+      "index": 15,
+      "query": "get all campaigns, filter only active ones, and show their A/B test variant resu",
+      "difficulty": "hard",
+      "tags": [
+        "campaigns"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 16,
+      "query": "compare KPIs between segment 1 and segment 2",
+      "difficulty": "hard",
+      "tags": [
+        "segments",
+        "kpi",
+        "analytics"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "api_call",
+        "data_process",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "api_call",
+        "data_process",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 17,
+      "query": "find users with avg check above 5000, check which audiences they belong to, then",
+      "difficulty": "hard",
+      "tags": [
+        "users",
+        "audiences",
+        "analytics"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "data_process",
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 18,
+      "query": "",
+      "difficulty": "easy",
+      "tags": [
+        "edge_case"
+      ],
+      "expected_intent": "chat",
+      "actual_intent": "chat",
+      "intent_match": true,
+      "expected_steps": [],
+      "actual_steps": [],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.0,
+      "error": null
+    },
+    {
+      "index": 19,
+      "query": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "difficulty": "medium",
+      "tags": [
+        "edge_case"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "format_output"
+      ],
+      "actual_steps": [
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.04,
+      "error": null
+    },
+    {
+      "index": 20,
+      "query": "deploy the application to production",
+      "difficulty": "medium",
+      "tags": [
+        "edge_case"
+      ],
+      "expected_intent": "chat",
+      "actual_intent": "chat",
+      "intent_match": true,
+      "expected_steps": [
+        "chat_response"
+      ],
+      "actual_steps": [
+        "chat_response"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 21,
+      "query": "сегменты или кампании... не знаю, что-нибудь покажи",
+      "difficulty": "medium",
+      "tags": [
+        "edge_case"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.02,
+      "error": null
+    },
+    {
+      "index": 22,
+      "query": "а их всего 5?",
+      "difficulty": "medium",
+      "tags": [
+        "follow_up"
+      ],
+      "expected_intent": "chat",
+      "actual_intent": "chat",
+      "intent_match": true,
+      "expected_steps": [
+        "chat_response"
+      ],
+      "actual_steps": [
+        "chat_response"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 23,
+      "query": "filter those by status active",
+      "difficulty": "medium",
+      "tags": [
+        "follow_up"
+      ],
+      "expected_intent": "api_query",
+      "actual_intent": "api_query",
+      "intent_match": true,
+      "expected_steps": [
+        "api_call",
+        "data_process",
+        "format_output"
+      ],
+      "actual_steps": [
+        "api_call",
+        "data_process",
+        "format_output"
+      ],
+      "steps_match": true,
+      "expected_result_type": "table",
+      "actual_result_type": "table",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    },
+    {
+      "index": 24,
+      "query": "покажи подробнее про второй из списка",
+      "difficulty": "hard",
+      "tags": [
+        "follow_up"
+      ],
+      "expected_intent": "chat",
+      "actual_intent": "chat",
+      "intent_match": true,
+      "expected_steps": [
+        "chat_response"
+      ],
+      "actual_steps": [
+        "chat_response"
+      ],
+      "steps_match": true,
+      "expected_result_type": "text",
+      "actual_result_type": "text",
+      "result_type_match": true,
+      "elapsed_ms": 0.01,
+      "error": null
+    }
+  ]
+}

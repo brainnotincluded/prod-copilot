@@ -73,8 +73,10 @@ async def create_scenario(
     This creates the scenario record and initiates orchestration,
     storing the execution plan for visual display.
     """
+    import uuid
     # Create scenario record
     scenario = ScenarioRun(
+        correlation_id=str(uuid.uuid4())[:8],
         query=request.query,
         status="running",
         graph_nodes=[],

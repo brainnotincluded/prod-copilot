@@ -46,6 +46,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import time as _time
+import uuid
+
+
+@app.middleware("http")
+async def request_logging_middleware(request, call_next):
+    # Generate or propagate trace ID
+    trace_id = request.headers.get("x-trace-id") or str(uuid.uuid4())[:8]
+    request.state.trace_id = trace_id
+
+    start = _time.monotonic()
+    response = await call_next(request)
+    duration_ms = (_time.monotonic() - start) * 1000
+
+    # Add trace ID to response
+    response.headers["X-Trace-Id"] = trace_id
+
+    path = request.url.path
+    if path not in ("/health", "/metrics"):
+        logger.info(
+            "[%s] %s %s → %d (%.1fms)",
+            trace_id, request.method, path, response.status_code, duration_ms,
+            extra={"trace_id": trace_id, "method": request.method, "path": path, "status": response.status_code, "duration_ms": round(duration_ms, 1)},
+        )
+
+    return response
+
 app.include_router(api_router, prefix="/api/v1")
 
 
@@ -94,6 +121,50 @@ async def health_check():
             "mlops": mlops_status,
             "version": "1.0.0",
         },
+    )
+
+
+@app.get("/metrics")
+async def prometheus_metrics():
+    """Prometheus-compatible metrics endpoint."""
+    from starlette.responses import Response
+    from app.db.session import async_session_factory
+    from sqlalchemy import select, func
+    from app.db.models import ScenarioRun, ApiEndpoint, SwaggerSource, ActionConfirmation
+
+    lines = []
+
+    try:
+        async with async_session_factory() as session:
+            # Count scenarios by status
+            for status in ["running", "completed", "error", "cancelled"]:
+                result = await session.execute(
+                    select(func.count()).select_from(ScenarioRun).where(ScenarioRun.status == status)
+                )
+                count = result.scalar() or 0
+                lines.append(f'scenarios_total{{status="{status}"}} {count}')
+
+            # Count endpoints
+            result = await session.execute(select(func.count()).select_from(ApiEndpoint))
+            lines.append(f'api_endpoints_total {result.scalar() or 0}')
+
+            # Count swagger sources
+            result = await session.execute(select(func.count()).select_from(SwaggerSource))
+            lines.append(f'swagger_sources_total {result.scalar() or 0}')
+
+            # Count confirmations by status
+            for status in ["pending", "approved", "rejected"]:
+                result = await session.execute(
+                    select(func.count()).select_from(ActionConfirmation).where(ActionConfirmation.status == status)
+                )
+                count = result.scalar() or 0
+                lines.append(f'confirmations_total{{status="{status}"}} {count}')
+    except Exception as e:
+        lines.append(f'# Error collecting metrics: {e}')
+
+    return Response(
+        content="\n".join(lines) + "\n",
+        media_type="text/plain; version=0.0.4; charset=utf-8",
     )
 
 
