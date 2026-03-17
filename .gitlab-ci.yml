@@ -20,7 +20,6 @@ deploy:
       echo "$ENV_FILE" | ssh "$SSH_USER@$SSH_HOST" "cat > /opt/copilot/.env"
       ssh "$SSH_USER@$SSH_HOST" << EOF
         cd /opt/copilot
-        sudo docker compose down
         sudo -E docker compose up -d --build
       EOF
 
