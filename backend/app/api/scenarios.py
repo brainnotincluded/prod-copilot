@@ -105,7 +105,7 @@ async def create_scenario(
             if i > 0:
                 edges.append({"from": f"step_{i}", "to": node_id})
 
-        scenario.status = "completed" if result.metadata.get("status") != "error" else "error"
+        scenario.status = "completed" if result.metadata and result.metadata.get("status") != "error" else "error"
         scenario.graph_nodes = nodes or [{"id": "step_1", "type": "orchestrate", "label": request.query}]
         scenario.graph_edges = edges
         scenario.summary = {

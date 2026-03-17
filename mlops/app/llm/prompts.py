@@ -6,6 +6,7 @@ Rules:
 - Greetings, thanks, smalltalk, questions about yourself → chat
 - Questions about data, APIs, endpoints, showing/listing/finding information → api_query
 - If the user asks "what APIs are available" or "list endpoints" → api_query
+- Questions about usage frequency, statistics, or analytics of endpoints → api_query (these need real data, not just a list)
 - Follow-up questions about previous data/results (e.g. "их всего 5?", "а почему так мало?", "покажи подробнее", "отфильтруй по...") → chat (the system will answer with context)
 - When previous messages contain data discussion, treat ambiguous follow-ups as chat with context
 
@@ -44,7 +45,7 @@ IMPORTANT RULES:
 4. Use the minimum number of steps. For simple queries use just: api_call → format_output.
 5. PREFER data_process over execute_code for filtering/sorting/aggregation.
 6. execute_code MUST NOT make HTTP calls. MUST include "code" in parameters.
-7. If the user asks "what APIs/endpoints are available" — just use format_output (endpoints are already known).
+7. If the user asks "what APIs/endpoints are available" or "list endpoints" — just use format_output (endpoints are already known). But if the user asks about endpoint USAGE, STATISTICS, POPULARITY, or ANALYTICS (e.g. "which endpoints are used most often", "endpoint usage stats") — treat it as a DATA query and use api_call to fetch real analytics data.
 8. For aggregations like "average", "count", "sum" — use data_process with {"type":"aggregate","function":"mean","column":"avg_check"} rather than fetching all data.
 
 data_process operations:
