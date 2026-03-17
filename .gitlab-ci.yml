@@ -17,6 +17,7 @@ deploy:
           sudo chown $USER:$USER "$DEPLOY_PATH"
         fi
         
+        
         cd "$DEPLOY_PATH"
         
         if [ ! -d ".git" ]; then
