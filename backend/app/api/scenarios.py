@@ -86,14 +86,41 @@ async def create_scenario(
     db.add(scenario)
     await db.flush()
 
-    # Run orchestration (this will populate steps)
+    # Run orchestration and capture result
+    from datetime import datetime, timezone
     service = OrchestrationService(db)
-    await service.execute(
-        query=request.query,
-        swagger_source_ids=request.swagger_source_ids,
-    )
+    try:
+        result = await service.execute(
+            query=request.query,
+            swagger_source_ids=request.swagger_source_ids,
+        )
 
-    # Reload scenario with updated data
+        # Build graph from result metadata
+        steps_info = result.metadata.get("steps", []) if result.metadata else []
+        nodes = []
+        edges = []
+        for i, s in enumerate(steps_info):
+            node_id = f"step_{i+1}"
+            nodes.append({"id": node_id, "type": s.get("action", "unknown"), "label": s.get("description", f"Step {i+1}")})
+            if i > 0:
+                edges.append({"from": f"step_{i}", "to": node_id})
+
+        scenario.status = "completed" if result.metadata.get("status") != "error" else "error"
+        scenario.graph_nodes = nodes or [{"id": "step_1", "type": "orchestrate", "label": request.query}]
+        scenario.graph_edges = edges
+        scenario.summary = {
+            "total_steps": result.metadata.get("steps_total", len(nodes)) if result.metadata else len(nodes),
+            "completed": result.metadata.get("steps_completed", len(nodes)) if result.metadata else len(nodes),
+            "result_type": result.type,
+        }
+        scenario.finished_at = datetime.now(timezone.utc)
+    except Exception as exc:
+        logger.error("Scenario execution failed: %s", exc)
+        scenario.status = "error"
+        scenario.summary = {"error": str(exc)}
+        scenario.finished_at = datetime.now(timezone.utc)
+
+    await db.commit()
     await db.refresh(scenario)
 
     return ScenarioResponse(
