@@ -400,6 +400,14 @@ class LLMClient:
                 )
             ]
 
+        # New format: {"reasoning": "...", "plan": [...]}
+        reasoning = ""
+        if isinstance(steps_data, dict) and "plan" in steps_data:
+            reasoning = steps_data.get("reasoning", "")
+            steps_data = steps_data["plan"]
+            if reasoning:
+                logger.info("Plan reasoning: %s", reasoning[:200])
+
         if not isinstance(steps_data, list):
             steps_data = [steps_data]
 
@@ -417,13 +425,19 @@ class LLMClient:
             )
             steps.append(step)
 
-        return steps if steps else [
+        result = steps if steps else [
             OrchestrationStep(
                 step=1, action="error",
                 description="LLM returned an empty plan",
                 status="error", error="Empty plan",
             )
         ]
+
+        # Attach reasoning to the first step for downstream propagation
+        if reasoning and result:
+            result[0]._reasoning = reasoning
+
+        return result
 
     async def execute_step(
         self, step: OrchestrationStep, context: dict

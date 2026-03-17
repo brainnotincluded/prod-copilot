@@ -35,6 +35,7 @@ export default {
   'chat.send': 'Send message',
   'chat.allApis': 'All APIs',
   'chat.noSteps': 'No orchestration steps',
+  'chat.reasoning': 'Model Reasoning',
 
   // Swagger
   'swagger.title': 'API Sources',
@@ -159,6 +160,19 @@ export default {
   'scenarios.rejected': 'Rejected',
   'scenarios.noGraph': 'No execution graph available',
   'scenarios.filterAll': 'All',
+
+  // Confirmations
+  'confirmations.title': 'Pending Approvals',
+  'confirmations.empty': 'No pending approvals',
+  'confirmations.approve': 'Approve',
+  'confirmations.reject': 'Reject',
+  'confirmations.approved': 'Approved',
+  'confirmations.rejected': 'Rejected',
+  'confirmations.action': 'Action',
+  'confirmations.endpoint': 'Endpoint',
+  'confirmations.payload': 'Payload',
+  'confirmations.awaiting': 'Awaiting admin approval',
+  'confirmations.resolve_error': 'Failed to resolve',
 
   // Errors (store level)
   'error.noData': 'No data was returned.',

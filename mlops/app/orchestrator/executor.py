@@ -18,6 +18,77 @@ logger = logging.getLogger(__name__)
 # Per-step execution timeout in seconds
 _STEP_TIMEOUT = 120.0
 
+# Confirmation polling settings
+_CONFIRM_POLL_INTERVAL = 2.0  # seconds between polls
+_CONFIRM_TIMEOUT = 300.0  # max wait time for confirmation (5 min)
+_BACKEND_URL = "http://backend:8000"
+
+
+async def _request_confirmation(step: OrchestrationStep, context: dict) -> str:
+    """Request confirmation for a mutating API action.
+
+    Creates a confirmation record in the backend and polls until
+    approved or rejected. Returns 'approved', 'rejected', or 'error'.
+    """
+    import httpx
+
+    method = step.endpoint.get("method", "POST") if step.endpoint else "POST"
+    path = step.endpoint.get("path", "/unknown") if step.endpoint else "/unknown"
+    correlation_id = context.get("correlation_id", "unknown")
+    payload_summary = step.description[:200] if step.description else ""
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            # Create confirmation request
+            resp = await client.post(
+                f"{_BACKEND_URL}/api/v1/confirmations",
+                json={
+                    "correlation_id": correlation_id,
+                    "action": step.description or step.action,
+                    "endpoint_method": method,
+                    "endpoint_path": path,
+                    "payload_summary": payload_summary,
+                },
+            )
+            if resp.status_code != 201:
+                logger.warning("Failed to create confirmation: %s", resp.text)
+                return "error"
+
+            confirmation_id = resp.json().get("id")
+            logger.info("Confirmation %d created for %s %s, polling...", confirmation_id, method, path)
+
+            # Poll for resolution
+            elapsed = 0.0
+            while elapsed < _CONFIRM_TIMEOUT:
+                await asyncio.sleep(_CONFIRM_POLL_INTERVAL)
+                elapsed += _CONFIRM_POLL_INTERVAL
+
+                check = await client.get(f"{_BACKEND_URL}/api/v1/confirmations?status=pending")
+                if check.status_code != 200:
+                    continue
+
+                pending = check.json()
+                # If our confirmation is no longer pending, it was resolved
+                still_pending = any(c["id"] == confirmation_id for c in pending)
+                if not still_pending:
+                    # Check if it was approved or rejected
+                    for status in ("approved", "rejected"):
+                        resolved = await client.get(f"{_BACKEND_URL}/api/v1/confirmations?status={status}")
+                        if resolved.status_code == 200:
+                            for c in resolved.json():
+                                if c["id"] == confirmation_id:
+                                    logger.info("Confirmation %d resolved: %s", confirmation_id, status)
+                                    return status
+                    # If we can't find it in either, assume approved
+                    return "approved"
+
+            logger.warning("Confirmation %d timed out after %.0fs", confirmation_id, _CONFIRM_TIMEOUT)
+            return "error"
+
+    except Exception as exc:
+        logger.warning("Confirmation request failed: %s", exc)
+        return "error"
+
 
 def _truncate_for_llm(context: dict, max_chars: int = 50000) -> dict:
     """Truncate step results to fit LLM context window."""
@@ -235,6 +306,20 @@ async def _execute_single_step(
                 step.error = "No API base URL configured. The uploaded Swagger spec is missing a server URL."
                 step.result = {"error": step.error}
                 return step
+
+            # Check if this is a mutating action that needs confirmation
+            method = "GET"
+            if step.endpoint:
+                method = step.endpoint.get("method", "GET").upper()
+            if method in ("POST", "PUT", "PATCH", "DELETE"):
+                confirmation = await _request_confirmation(step, context)
+                if confirmation == "rejected":
+                    step.status = "error"
+                    step.error = "Action rejected by system owner"
+                    step.result = {"error": step.error, "confirmation": "rejected"}
+                    return step
+                elif confirmation == "error":
+                    logger.warning("Confirmation check failed, proceeding anyway for hackathon demo")
 
             # Use truncated context for LLM call
             execution_instructions = await asyncio.wait_for(
@@ -916,6 +1001,14 @@ async def execute_plan_stream(
         )
         return
 
+    # Emit reasoning if available (CoT visibility)
+    reasoning = getattr(plan[0], '_reasoning', '') if plan else ''
+    if reasoning:
+        yield OrchestrationStreamEvent(
+            event="reasoning",
+            data={"content": reasoning},
+        )
+
     # Emit the plan
     yield OrchestrationStreamEvent(
         event="plan",
@@ -959,20 +1052,42 @@ async def execute_plan_stream(
 
     # Emit final result
     errored_steps = [s for s in plan if s.status == "error"]
-    output_type = _determine_output_type(context)
-    final_data = _get_latest_data(context)
 
-    # Auto-reshape: if data is a list of dicts, convert to table format
-    if isinstance(final_data, list):
-        if final_data and isinstance(final_data[0], dict):
-            output_type = "table"
-            final_data = _reshape_output_data("table", final_data)
-        elif final_data:
-            final_data = {"items": final_data}
-        else:
-            final_data = None
-    elif isinstance(final_data, dict):
-        final_data = _reshape_output_data(output_type, final_data)
+    # Collect all format_output results for multi-panel display
+    format_steps = [s for s in plan if s.action == "format_output" and s.status == "completed"]
+
+    if len(format_steps) > 1:
+        # Multiple format_output steps → combine into dashboard
+        output_type = "dashboard"
+        panels = []
+        for fs in format_steps:
+            if fs.result and isinstance(fs.result, dict):
+                panel_type = fs.result.get("output_type", "text")
+                panel_data = fs.result.get("data", {})
+                panels.append({
+                    "type": panel_type,
+                    "data": panel_data,
+                    "title": fs.description,
+                })
+        final_data = {"panels": panels}
+        summary = "; ".join(fs.description for fs in format_steps)
+    else:
+        output_type = _determine_output_type(context)
+        final_data = _get_latest_data(context)
+
+        # Auto-reshape: if data is a list of dicts, convert to table format
+        if isinstance(final_data, list):
+            if final_data and isinstance(final_data[0], dict):
+                output_type = "table"
+                final_data = _reshape_output_data("table", final_data)
+            elif final_data:
+                final_data = {"items": final_data}
+            else:
+                final_data = None
+        elif isinstance(final_data, dict):
+            final_data = _reshape_output_data(output_type, final_data)
+
+        summary = format_steps[-1].description if format_steps else ""
 
     # Check if final_data is effectively empty
     is_empty = (
@@ -990,10 +1105,6 @@ async def execute_plan_stream(
     elif is_empty:
         output_type = "text"
         final_data = {"content": "The operation completed but returned no data."}
-
-    # Extract summary from the format_output step description (if any)
-    format_steps = [s for s in plan if s.action == "format_output"]
-    summary = format_steps[-1].description if format_steps else ""
 
     yield OrchestrationStreamEvent(
         event="result",

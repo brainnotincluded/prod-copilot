@@ -59,6 +59,15 @@ export const useQueryStore = defineStore('query', () => {
         }
         break
       }
+      case 'reasoning': {
+        const content = msg.data.content as string
+        if (currentMessageId.value && content) {
+          chatStore.updateMessage(currentMessageId.value, {
+            reasoning: content,
+          })
+        }
+        break
+      }
       case 'step': {
         const step = msg.data as OrchestrationStep
         const existingIdx = orchestrationSteps.value.findIndex(
@@ -145,6 +154,22 @@ export const useQueryStore = defineStore('query', () => {
         break
       }
       case 'done': {
+        // Auto-save scenario if there were orchestration steps (non-chat query)
+        if (orchestrationSteps.value.length > 0 && currentResult.value) {
+          const token = localStorage.getItem('auth_token')
+          if (token) {
+            const scenarioTitle = currentResult.value.metadata?.summary || 'Auto-saved scenario'
+            fetch('/api/v1/scenarios', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({
+                title: scenarioTitle,
+                steps: orchestrationSteps.value,
+                result: currentResult.value,
+              }),
+            }).catch(() => { /* fire-and-forget */ })
+          }
+        }
         isLoading.value = false
         currentMessageId.value = null
         break

@@ -35,6 +35,7 @@ export default {
   'chat.send': 'Отправить',
   'chat.allApis': 'Все API',
   'chat.noSteps': 'Нет шагов оркестрации',
+  'chat.reasoning': 'Рассуждения модели',
 
   // Swagger
   'swagger.title': 'API-источники',
@@ -159,6 +160,19 @@ export default {
   'scenarios.rejected': 'Отклонён',
   'scenarios.noGraph': 'Граф выполнения недоступен',
   'scenarios.filterAll': 'Все',
+
+  // Confirmations
+  'confirmations.title': 'Ожидают подтверждения',
+  'confirmations.empty': 'Нет ожидающих подтверждений',
+  'confirmations.approve': 'Подтвердить',
+  'confirmations.reject': 'Отклонить',
+  'confirmations.approved': 'Подтверждено',
+  'confirmations.rejected': 'Отклонено',
+  'confirmations.action': 'Действие',
+  'confirmations.endpoint': 'Эндпоинт',
+  'confirmations.payload': 'Данные',
+  'confirmations.awaiting': 'Ожидает подтверждения администратора',
+  'confirmations.resolve_error': 'Ошибка при обработке',
 
   // Errors (store level)
   'error.noData': 'Данные не были возвращены.',

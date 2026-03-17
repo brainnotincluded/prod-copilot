@@ -15,8 +15,10 @@ const props = defineProps<{
 
 const { t } = useLocale()
 const showSteps = ref(false)
+const showReasoning = ref(false)
 
 const isUser = computed(() => props.message.role === 'user')
+const hasReasoning = computed(() => !!props.message.reasoning)
 const hasSteps = computed(
   () => props.message.steps && props.message.steps.length > 0
 )
@@ -36,6 +38,11 @@ const isLoading = computed(() => {
 const renderedContent = computed(() => {
   if (!props.message.content) return ''
   return marked.parse(props.message.content) as string
+})
+
+const reasoningHtml = computed(() => {
+  if (!props.message.reasoning) return ''
+  return marked.parse(props.message.reasoning) as string
 })
 
 const stepsLabel = computed(() => {
@@ -95,6 +102,20 @@ watch(
             <span></span>
           </div>
           <span class="thinking-text">{{ t('chat.thinking') }}</span>
+        </div>
+
+        <!-- Model Reasoning (Chain of Thought) -->
+        <div v-if="hasReasoning" class="message-reasoning">
+          <button class="reasoning-toggle" @click="showReasoning = !showReasoning">
+            <i class="pi" :class="showReasoning ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+            <i class="pi pi-lightbulb reasoning-icon"></i>
+            <span class="reasoning-label">{{ t('chat.reasoning') }}</span>
+          </button>
+          <transition name="steps-expand">
+            <div v-if="showReasoning" class="reasoning-content">
+              <div v-html="reasoningHtml"></div>
+            </div>
+          </transition>
         </div>
 
         <div v-if="hasSteps" class="message-steps">
@@ -278,6 +299,59 @@ watch(
   font-size: 13px;
   color: var(--color-text-tertiary);
 }
+
+/* Reasoning (CoT) */
+.message-reasoning {
+  margin-top: 8px;
+}
+
+.reasoning-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid #fbbc0440;
+  border-radius: var(--radius-pill);
+  background: #fbbc0410;
+  color: #b8860b;
+  font-size: 12px;
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.reasoning-toggle:hover {
+  background: #fbbc0425;
+}
+
+.reasoning-toggle i {
+  font-size: 9px;
+  width: 10px;
+}
+
+.reasoning-icon {
+  color: #fbbc04;
+  font-size: 12px !important;
+  width: auto !important;
+}
+
+.reasoning-label {
+  font-weight: 500;
+}
+
+.reasoning-content {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #fbbc0408;
+  border-left: 3px solid #fbbc04;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.reasoning-content :deep(p) { margin: 0 0 6px 0; }
+.reasoning-content :deep(p:last-child) { margin-bottom: 0; }
+.reasoning-content :deep(strong) { color: var(--color-text-primary); }
 
 /* Steps */
 .message-steps {

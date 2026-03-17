@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import { useLocale, type Locale } from '@/composables/useLocale'
 import { useTheme, type Theme } from '@/composables/useTheme'
-import { useAuth, type UserRole } from '@/composables/useAuth'
+import { useAuth } from '@/composables/useAuth'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 
 const { locale, t } = useLocale()
 const { theme, setTheme } = useTheme()
-const { user, role, canUpload, canDelete, logout } = useAuth()
-
-const roles: { value: UserRole; label: string; icon: string; desc: string }[] = [
-  { value: 'viewer', label: 'Viewer', icon: 'pi pi-eye', desc: 'Read-only access' },
-  { value: 'editor', label: 'Editor', icon: 'pi pi-pencil', desc: 'Upload & query APIs' },
-  { value: 'admin', label: 'Admin', icon: 'pi pi-shield', desc: 'Full access' },
-]
+const { user, role, logout } = useAuth()
 
 const languages: { value: Locale; label: string; flag: string }[] = [
   { value: 'ru', label: 'Русский', flag: '🇷🇺' },
@@ -105,40 +99,6 @@ function handleLogout() {
         </div>
       </section>
 
-      <!-- User Role (read-only) -->
-      <section class="settings-section">
-        <h2 class="section-title">{{ t('settings.devRole') }}</h2>
-        <p class="section-desc">{{ t('settings.devRoleDesc') }}</p>
-        <div class="option-cards three">
-          <div
-            v-for="r in roles"
-            :key="r.value"
-            class="option-card readonly"
-            :class="{ active: role === r.value }"
-          >
-            <i :class="r.icon" class="option-icon"></i>
-            <div class="role-info">
-              <span class="option-label">{{ r.label }}</span>
-              <span class="role-desc">{{ r.desc }}</span>
-            </div>
-            <i v-if="role === r.value" class="pi pi-check option-check"></i>
-          </div>
-        </div>
-        <div class="role-permissions">
-          <div class="permission-item" :class="{ allowed: true }">
-            <i :class="'pi pi-check'"></i>
-            <span>{{ t('settings.canView') }}</span>
-          </div>
-          <div class="permission-item" :class="{ allowed: canUpload }">
-            <i :class="canUpload ? 'pi pi-check' : 'pi pi-times'"></i>
-            <span>{{ t('settings.canUpload') }}</span>
-          </div>
-          <div class="permission-item" :class="{ allowed: canDelete }">
-            <i :class="canDelete ? 'pi pi-check' : 'pi pi-times'"></i>
-            <span>{{ t('settings.canDelete') }}</span>
-          </div>
-        </div>
-      </section>
     </div>
   </div>
 </template>
@@ -293,19 +253,6 @@ function handleLogout() {
   background: var(--color-accent-light);
 }
 
-.option-card.readonly {
-  cursor: default;
-}
-
-.option-card.readonly:hover {
-  border-color: var(--color-border-light);
-  box-shadow: none;
-}
-
-.option-card.readonly.active:hover {
-  border-color: var(--color-accent);
-}
-
 .option-flag {
   font-size: 20px;
   line-height: 1;
@@ -333,62 +280,11 @@ function handleLogout() {
   font-weight: 700;
 }
 
-.role-info {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: 2px;
-}
-
-.role-desc {
-  font-size: 11px;
-  color: var(--color-text-secondary);
-}
-
-.dev-section {
-  border-top: 1px dashed var(--color-border);
-  padding-top: 24px;
-}
-
-.role-permissions {
-  display: flex;
-  gap: 20px;
-  margin-top: 8px;
-  padding: 12px 16px;
-  background: var(--color-bg-elevated);
-  border-radius: var(--radius-lg);
-}
-
-.permission-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.permission-item i {
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.permission-item.allowed i {
-  color: var(--color-success);
-}
-
-.permission-item.allowed {
-  color: var(--color-text-primary);
-}
 
 @media (max-width: 480px) {
   .option-cards,
   .option-cards.three {
     grid-template-columns: 1fr;
-  }
-  
-  .role-permissions {
-    flex-direction: column;
-    gap: 8px;
   }
   
   .profile-content {

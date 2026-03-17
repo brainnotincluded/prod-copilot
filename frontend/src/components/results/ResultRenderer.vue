@@ -40,9 +40,15 @@ const hasData = computed(() => {
   return true
 })
 const isDashboard = computed(() => props.result.type === 'dashboard')
-const dashboardItems = computed(() => {
+const dashboardItems = computed((): QueryResult[] => {
   if (!isDashboard.value) return []
-  return (props.result.data.items || []) as QueryResult[]
+  // Support both formats: {items: [...]} and {panels: [{type, data, title}]}
+  const items = props.result.data.items || props.result.data.panels || []
+  return items.map((item: any) => ({
+    type: item.type || 'text',
+    data: item.data || item,
+    metadata: { title: item.title || '', ...item.metadata },
+  }))
 })
 </script>
 
@@ -55,6 +61,7 @@ const dashboardItems = computed(() => {
           :key="index"
           class="dashboard-item"
         >
+          <div v-if="item.metadata?.title" class="dashboard-item-title">{{ item.metadata.title }}</div>
           <ResultRenderer :result="item" />
         </div>
       </div>
@@ -84,6 +91,13 @@ const dashboardItems = computed(() => {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   overflow: hidden;
+}
+
+.dashboard-item-title {
+  padding: 10px 14px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
 }
 
 /* Tablet styles (641-768px) */

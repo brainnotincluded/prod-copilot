@@ -9,6 +9,7 @@ import Menu from 'primevue/menu'
 import Avatar from 'primevue/avatar'
 import Badge from 'primevue/badge'
 import type { MenuItem } from 'primevue/menuitem'
+import ConfirmationsPanel from '@/components/confirmations/ConfirmationsPanel.vue'
 
 const props = defineProps<{
   sidebarCollapsed: boolean
@@ -122,6 +123,9 @@ const toggleUserMenu = (event: MouseEvent) => {
         <span class="status-text">{{ queryStore.isConnected ? t('common.connected') : t('common.disconnected') }}</span>
       </div>
       
+      <!-- Confirmations Bell -->
+      <ConfirmationsPanel />
+
       <!-- User Menu -->
       <div class="user-menu-wrapper">
         <button

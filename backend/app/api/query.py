@@ -204,6 +204,12 @@ async def ws_query(websocket: WebSocket, token: str | None = None) -> None:
                             "data": {"token": chunk.get("token", "")}
                         })
 
+                    elif event_type == "reasoning":
+                        await websocket.send_json({
+                            "type": "reasoning",
+                            "data": {"content": chunk.get("content", "")}
+                        })
+
                     elif event_type in ("step_start", "step_complete", "step_error"):
                         step_num = chunk.get("step", step_counter)
                         action_name = chunk.get("action", "")

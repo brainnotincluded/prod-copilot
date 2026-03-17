@@ -89,9 +89,13 @@ async def live_dashboard(
             if isinstance(auds, list):
                 dashboard["audiences"] = auds
 
-            # Campaigns
+            # Campaigns (list + enrich with KPIs from detail endpoint)
             camps = await _fetch(client, f"{base}/api/campaigns")
             if isinstance(camps, list):
+                for camp in camps:
+                    detail = await _fetch(client, f"{base}/api/campaigns/{camp['id']}")
+                    if detail and "kpis" in detail:
+                        camp["kpis"] = detail["kpis"]
                 dashboard["campaigns"] = camps
 
             # User stats (by segment, by status)
@@ -99,10 +103,18 @@ async def live_dashboard(
             if stats:
                 dashboard["user_stats"] = stats
 
-            # Campaign performance for first campaign
-            if isinstance(camps, list) and camps:
-                perf = await _fetch(client, f"{base}/api/analytics/campaign/{camps[0]['id']}/performance")
-                if perf:
-                    dashboard["campaign_performance"] = perf.get("daily_metrics", [])
+            # Campaign performance for each campaign
+            if isinstance(camps, list):
+                all_perf = []
+                for camp in camps:
+                    perf = await _fetch(client, f"{base}/api/analytics/campaign/{camp['id']}/performance")
+                    if perf:
+                        all_perf.append({
+                            "campaign_id": camp["id"],
+                            "title": camp.get("title", ""),
+                            "daily_metrics": perf.get("daily_metrics", []),
+                        })
+                dashboard["campaign_performance"] = all_perf[0].get("daily_metrics", []) if all_perf else []
+                dashboard["all_campaign_performance"] = all_perf
 
     return dashboard

@@ -1,61 +1,61 @@
 {
-  "timestamp": "2026-03-17T01:03:10Z",
+  "timestamp": "2026-03-17T01:16:56Z",
   "metrics": {
     "total_cases": 25,
-    "intent_accuracy": 100.0,
-    "step_match_rate": 100.0,
-    "result_type_accuracy": 100.0,
-    "overall_pass_rate": 100.0,
+    "intent_accuracy": 96.0,
+    "step_match_rate": 28.0,
+    "result_type_accuracy": 60.0,
+    "overall_pass_rate": 28.0,
     "error_count": 0,
-    "avg_latency_ms": 0.01,
+    "avg_latency_ms": 13641.67,
     "by_difficulty": {
       "easy": {
         "count": 9,
         "intent_accuracy": 100.0,
-        "step_match_rate": 100.0,
-        "result_type_accuracy": 100.0,
-        "pass_rate": 100.0
+        "step_match_rate": 44.4,
+        "result_type_accuracy": 55.6,
+        "pass_rate": 44.4
       },
       "medium": {
         "count": 10,
-        "intent_accuracy": 100.0,
-        "step_match_rate": 100.0,
-        "result_type_accuracy": 100.0,
-        "pass_rate": 100.0
+        "intent_accuracy": 90.0,
+        "step_match_rate": 20.0,
+        "result_type_accuracy": 60.0,
+        "pass_rate": 20.0
       },
       "hard": {
         "count": 6,
         "intent_accuracy": 100.0,
-        "step_match_rate": 100.0,
-        "result_type_accuracy": 100.0,
-        "pass_rate": 100.0
+        "step_match_rate": 16.7,
+        "result_type_accuracy": 66.7,
+        "pass_rate": 16.7
       }
     },
     "by_tag": {
       "analytics": {
         "count": 7,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 0.0
       },
       "audiences": {
         "count": 4,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 0.0
       },
       "campaigns": {
         "count": 3,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 0.0
       },
       "edge_case": {
         "count": 4,
-        "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "intent_accuracy": 75.0,
+        "pass_rate": 50.0
       },
       "follow_up": {
         "count": 3,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 66.7
       },
       "greeting": {
         "count": 3,
@@ -65,22 +65,22 @@
       "kpi": {
         "count": 4,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 0.0
       },
       "push": {
         "count": 2,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 0.0
       },
       "segments": {
         "count": 5,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 0.0
       },
       "users": {
         "count": 3,
         "intent_accuracy": 100.0,
-        "pass_rate": 100.0
+        "pass_rate": 0.0
       }
     }
   },
@@ -105,7 +105,7 @@
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 6.22,
       "error": null
     },
     {
@@ -128,7 +128,7 @@
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.0,
+      "elapsed_ms": 1457.86,
       "error": null
     },
     {
@@ -151,7 +151,7 @@
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 1946.33,
       "error": null
     },
     {
@@ -169,14 +169,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 9035.29,
       "error": null
     },
     {
@@ -194,14 +193,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 8934.03,
       "error": null
     },
     {
@@ -219,14 +217,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.02,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 6830.14,
       "error": null
     },
     {
@@ -244,14 +241,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 9143.23,
       "error": null
     },
     {
@@ -269,14 +265,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 18177.48,
       "error": null
     },
     {
@@ -295,14 +290,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.03,
+      "elapsed_ms": 30883.7,
       "error": null
     },
     {
@@ -321,14 +315,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 29652.74,
       "error": null
     },
     {
@@ -348,14 +341,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 9673.19,
       "error": null
     },
     {
@@ -375,14 +367,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.02,
+      "elapsed_ms": 10198.57,
       "error": null
     },
     {
@@ -401,14 +392,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 33153.7,
       "error": null
     },
     {
@@ -429,16 +419,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
-        "data_process",
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 30470.89,
       "error": null
     },
     {
@@ -459,16 +446,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
-        "data_process",
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.02,
+      "elapsed_ms": 26341.14,
       "error": null
     },
     {
@@ -488,16 +472,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
-        "data_process",
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 25648.04,
       "error": null
     },
     {
@@ -519,16 +500,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
-        "api_call",
-        "data_process",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 9908.4,
       "error": null
     },
     {
@@ -550,16 +528,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
-        "data_process",
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 37739.52,
       "error": null
     },
     {
@@ -589,19 +564,19 @@
         "edge_case"
       ],
       "expected_intent": "api_query",
-      "actual_intent": "api_query",
-      "intent_match": true,
+      "actual_intent": "chat",
+      "intent_match": false,
       "expected_steps": [
         "format_output"
       ],
       "actual_steps": [
-        "format_output"
+        "chat_response"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.04,
+      "elapsed_ms": 3460.08,
       "error": null
     },
     {
@@ -624,7 +599,7 @@
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 10950.09,
       "error": null
     },
     {
@@ -642,14 +617,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.02,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 8765.03,
       "error": null
     },
     {
@@ -672,7 +646,7 @@
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 1306.88,
       "error": null
     },
     {
@@ -691,15 +665,13 @@
         "format_output"
       ],
       "actual_steps": [
-        "api_call",
-        "data_process",
         "format_output"
       ],
-      "steps_match": true,
+      "steps_match": false,
       "expected_result_type": "table",
-      "actual_result_type": "table",
-      "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "actual_result_type": "text",
+      "result_type_match": false,
+      "elapsed_ms": 14687.99,
       "error": null
     },
     {
@@ -722,7 +694,7 @@
       "expected_result_type": "text",
       "actual_result_type": "text",
       "result_type_match": true,
-      "elapsed_ms": 0.01,
+      "elapsed_ms": 2671.23,
       "error": null
     }
   ]

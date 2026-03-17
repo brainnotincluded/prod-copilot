@@ -20,6 +20,7 @@ export interface ChatMessage {
   content: string
   steps?: OrchestrationStep[]
   result?: QueryResult
+  reasoning?: string
   timestamp: Date
 }
 
@@ -41,7 +42,7 @@ export interface SwaggerUploadResult {
 }
 
 export interface WebSocketMessage {
-  type: 'step' | 'result' | 'error' | 'done' | 'chat_token'
+  type: 'step' | 'result' | 'error' | 'done' | 'chat_token' | 'reasoning'
   data: any
 }
 

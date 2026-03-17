@@ -83,7 +83,7 @@ class ResultResponse(BaseModel):
 
 
 class OrchestrationStreamEvent(BaseModel):
-    event: Literal["step_start", "step_complete", "step_error", "plan", "result"] = (
+    event: Literal["step_start", "step_complete", "step_error", "plan", "result", "reasoning"] = (
         Field(..., description="Type of stream event")
     )
     data: dict = Field(..., description="Event data payload")

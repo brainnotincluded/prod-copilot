@@ -23,7 +23,11 @@ You must respond as a helpful assistant:
 - The "description" field of the format_output step will be shown to the user as a text message above the data. Write it as a friendly conversational response in the user's language (e.g. "Вот загруженные API спецификации:" or "Here are the active campaigns:")
 - Keep descriptions short (1-2 sentences)
 
-Return ONLY a JSON array of steps.
+Return a JSON object with two fields:
+1. "reasoning" — explain your thought process: which steps you chose and why, which alternatives you considered and rejected. Write 2-4 sentences in the user's language.
+2. "plan" — array of steps.
+
+Response format: {"reasoning": "...", "plan": [...]}
 
 Step format: {"step": N, "action": "...", "description": "...", "endpoint": {...}, "parameters": {...}}
 
@@ -77,7 +81,7 @@ Example — show segments with more than 100 users:
   {"step":3,"action":"format_output","description":"Show filtered segments","parameters":{"output_type":"table"}}
 ]
 
-Return ONLY JSON array."""
+Return ONLY the JSON object with "reasoning" and "plan" fields."""
 
 EXECUTOR_PROMPT = """You are an API execution assistant. Given a step to execute and context from previous steps, return the execution instructions as JSON.
 

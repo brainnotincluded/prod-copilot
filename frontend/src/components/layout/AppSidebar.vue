@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLocale } from '@/composables/useLocale'
+import { useQueryStore } from '@/stores/query'
 
 const props = defineProps<{
   collapsed: boolean
@@ -15,6 +16,7 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const { t } = useLocale()
+const queryStore = useQueryStore()
 
 const navItems = computed(() => [
   { path: '/chat', label: t('nav.chat'), icon: 'pi pi-comment' },
@@ -124,7 +126,7 @@ onUnmounted(() => {
         class="nav-item touch-friendly"
         :class="{ active: isActive(item.path) }"
         :title="collapsed && !isMobile ? item.label : undefined"
-        @click="isMobile && $emit('close')"
+        @click="() => { if (item.path === '/chat') queryStore.startNewConversation(); if (isMobile) $emit('close'); }"
       >
         <i :class="item.icon" class="nav-icon"></i>
         <span v-if="!collapsed || isMobile" class="nav-label">{{ item.label }}</span>
